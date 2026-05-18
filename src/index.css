@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg-base: #0D0D0D;
+  --bg-2: #111111;
+  --bg-3: #161616;
+  --card: #131313;
+  --card-2: #1A1A1A;
+  --border: #232323;
+  --border-2: #2A2A2A;
+
+  --text-main: #F0F0F0;
+  --text-sub: #888888;
+  --text-light: #555555;
+  --text-muted: #333333;
+
+  --primary: #1A3A28;
+  --primary-bright: #2A5C3F;
+  --primary-dim: rgba(26,58,40,0.25);
+
+  --lime: #C8FF00;
+  --lime-dim: rgba(200,255,0,0.08);
+  --lime-mid: rgba(200,255,0,0.15);
+
+  --danger: #FF3B3B;
+  --warning: #F59E0B;
+  --success: #00E676;
+  --online: #00E676;
+  
+  --gold: #FFD700;
+  --gold-bg: rgba(255,215,0,0.1);
+  --silver: #B0B0B0;
+  --silver-bg: rgba(176,176,176,0.1);
+  --bronze: #CD7F32;
+  --bronze-bg: rgba(205,127,50,0.1);
+}
+
+[data-theme="light"] {
+  --bg-base: #F2F7F4;
+  --bg-2: rgba(255, 255, 255, 0.65);
+  --bg-3: rgba(255, 255, 255, 0.35);
+  --card: rgba(255, 255, 255, 0.65);
+  --card-2: rgba(255, 255, 255, 0.45);
+  --border: rgba(186, 207, 195, 0.5);
+  --border-2: rgba(144, 168, 154, 0.5);
+
+  --text-main: #111C15;
+  --text-sub: #384F41;
+  --text-light: #607969;
+  --text-muted: #8EA898;
+
+  --primary: #29573B;
+  --primary-bright: #367A50;
+  --primary-dim: rgba(41, 87, 59, 0.10);
+
+  --lime: #1D8A4C;
+  --lime-dim: rgba(29, 138, 76, 0.08);
+  --lime-mid: rgba(29, 138, 76, 0.15);
+
+  --danger: #DC2626;
+  --warning: #D97706;
+  --success: #059669;
+  --online: #059669;
+
+  --gold: #B45309;
+  --gold-bg: rgba(180,83,9,0.09);
+  --silver: #4B5563;
+  --silver-bg: rgba(75,85,99,0.09);
+  --bronze: #78350F;
+  --bronze-bg: rgba(120,53,15,0.09);
+}
+
+@theme {
+  --color-bg-base: var(--bg-base);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-border: var(--border);
+  --color-border-2: var(--border-2);
+
+  --color-text-main: var(--text-main);
+  --color-text-sub: var(--text-sub);
+  --color-text-light: var(--text-light);
+  --color-text-muted: var(--text-muted);
+
+  --color-primary: var(--primary);
+  --color-primary-bright: var(--primary-bright);
+  --color-primary-dim: var(--primary-dim);
+
+  --color-lime: var(--lime);
+  --color-lime-dim: var(--lime-dim);
+  --color-lime-mid: var(--lime-mid);
+
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  --color-online: var(--online);
+  
+  --color-gold: var(--gold);
+  --color-gold-bg: var(--gold-bg);
+  --color-silver: var(--silver);
+  --color-silver-bg: var(--silver-bg);
+  --color-bronze: var(--bronze);
+  --color-bronze-bg: var(--bronze-bg);
+
+  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.shadow-sh0 { box-shadow: 2px 2px 0 #000; }
+.shadow-sh1 { box-shadow: 3px 3px 0 #000; }
+.shadow-sh2 { box-shadow: 4px 4px 0 #000; }
+.shadow-lime { box-shadow: 3px 3px 0 var(--color-lime); }
+.shadow-green { box-shadow: 3px 3px 0 var(--color-primary-bright); }
+
+@keyframes pulse-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.animate-pulse-slow {
+  animation: pulse-pulse 2s infinite;
+}
+
+@keyframes pgIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-pgIn {
+  animation: pgIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--color-bg-2);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-border-2);
+}
