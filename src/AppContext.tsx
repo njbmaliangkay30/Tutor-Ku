@@ -114,6 +114,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         else setUserRole("siswa");
       } else if (error && error.code === "PGRST116" && authUser) {
         // Not found, auto-create a basic profile for OAuth users
+        const authRoleRaw = authUser.user_metadata?.role;
+        const authRole =
+          authRoleRaw === "tutor"
+            ? "tutor"
+            : authRoleRaw === "admin"
+              ? "admin"
+              : "student";
         const { data: newProfile, error: insertError } = await supabase
           .from("profiles")
           .insert({
@@ -122,14 +129,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
               authUser.user_metadata?.full_name ||
               authUser.email?.split("@")[0] ||
               "User",
-            role: "siswa",
+            role: authRole,
           })
           .select()
           .single();
 
+        if (insertError) {
+          console.error("Auto-create profile failed:", insertError);
+        }
+
         if (newProfile) {
+          // Also create sub-profile
+          if (authRole === "tutor") {
+            await supabase.from("tutor_profiles").insert({ id: userId });
+          } else if (authRole === "student") {
+            await supabase.from("student_profiles").insert({ id: userId });
+          }
+
           setUserProfile(newProfile);
-          setUserRole("siswa");
+          if (authRole === "admin") setUserRole("admin");
+          else if (authRole === "tutor") setUserRole("tutor");
+          else setUserRole("siswa");
         }
       }
     } catch (e) {
@@ -159,6 +179,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Also handle cases where OAuth redirection returned an error in the URL
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const authError =
+        hashParams.get("error_description") || hashParams.get("error");
+
+      if (window.opener && authError) {
+        window.close();
+      } else if (authError && !window.opener) {
+        // If we are in the main window and there's an error in the URL (e.g. redirected here)
+        setTimeout(
+          () => alert("Auth Error: " + decodeURIComponent(authError)),
+          500,
+        );
+        // clean up the hash
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+
+      // If we are in a popup window (from OAuth) and authentication succeeds, close it
+      if (session && window.opener) {
+        window.close();
+      }
+
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id, session.user);

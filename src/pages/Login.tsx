@@ -31,7 +31,12 @@ export function Login() {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message === "Invalid login credentials") {
+          throw new Error("Email atau password salah. Jika Anda mendaftar dengan Google sebelumnya, silakan gunakan 'Lanjut dengan Google'. Jika baru mendaftar, pastikan email Anda sudah dikonfirmasi (cek kotak masuk/spam).");
+        }
+        throw error;
+      }
 
       // In a real app, you would fetch the role from the profiles table here
       // For now, we use the selected role from the UI or default
@@ -63,12 +68,59 @@ export function Login() {
         options: {
           data: {
             full_name: fullName,
-            role: selectedRole === "siswa" ? "siswa" : "tutor",
+            role: selectedRole === "siswa" ? "student" : "tutor",
           },
         },
       });
 
       if (error) throw error;
+
+      // Ensure profile and child table rows are created if user exists
+      if (data?.user) {
+        // If identities is empty, this is a fake user returned to prevent email enumeration.
+        if (data.user.identities && data.user.identities.length === 0) {
+          throw new Error("Email ini sudah terdaftar. Silakan login.");
+        }
+
+        const userRole = selectedRole === "siswa" ? "student" : "tutor";
+
+        // Try inserting into profiles
+        const { error: profileError } = await supabase.from("profiles").insert({
+          id: data.user.id,
+          full_name: fullName || email.split("@")[0],
+          role: userRole,
+        });
+
+        if (profileError) {
+          // Don't throw if it's just a duplicate from previous attempt
+          if (profileError.code !== "23505") {
+            console.error("Profile insert error: ", profileError);
+            throw new Error("Gagal menyimpan profil: " + profileError.message);
+          }
+        }
+
+        // Insert into specific sub-profile table if profile insert succeeded or already exists
+        if (!profileError || profileError.code === "23505") {
+          // 23505 is unique violation (already exists)
+          if (userRole === "tutor") {
+            const { error: tutorErr } = await supabase
+              .from("tutor_profiles")
+              .insert({ id: data.user.id });
+            if (tutorErr && tutorErr.code !== "23505")
+              throw new Error(
+                "Gagal menyimpan tutor profil: " + tutorErr.message,
+              );
+          } else {
+            const { error: studentErr } = await supabase
+              .from("student_profiles")
+              .insert({ id: data.user.id });
+            if (studentErr && studentErr.code !== "23505")
+              throw new Error(
+                "Gagal menyimpan student profil: " + studentErr.message,
+              );
+          }
+        }
+      }
 
       if (selectedRole) {
         setUserRole(selectedRole);
@@ -87,16 +139,28 @@ export function Login() {
   };
 
   const handleGoogleAuth = async () => {
+    const popup = window.open(
+      "about:blank",
+      "oauth_popup",
+      "width=600,height=700",
+    );
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
+          skipBrowserRedirect: true,
           redirectTo: window.location.origin,
         },
       });
       if (error) throw error;
-      // After OAuth flow, it redirects back.
+
+      if (data?.url && popup) {
+        popup.location.href = data.url;
+      } else if (popup) {
+        popup.close();
+      }
     } catch (err: any) {
+      if (popup) popup.close();
       setErrorMsg(err.message || "Google Auth failed");
     }
   };
