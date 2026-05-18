@@ -1,11 +1,15 @@
-import { useState } from 'react';
-import { LogOut, ArrowRight, Edit3 as PencilSimple, AlertCircle as WarningCircle, CheckCircle, Notebook, Bell, X as XIcon, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { LogOut, ArrowRight, Edit3 as PencilSimple, AlertCircle as WarningCircle, CheckCircle, Notebook, Bell, X as XIcon, Clock, Loader2 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
-import { TUTORS } from '../data'; // Use existing mock data where applicable
+import { supabase } from '../lib/supabase';
 
 export function TutorDashboard() {
-  const { setActiveTab, setUserRole } = useAppContext();
+  const { setActiveTab, setUserRole, user, userProfile } = useAppContext();
   
+  const [isLoading, setIsLoading] = useState(true);
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessionReports, setSessionReports] = useState<any[]>([]);
+  const [tutorStats, setTutorStats] = useState({ rating: 0, total_reviews: 0 });  
   const [isEditingDays, setIsEditingDays] = useState(false);
   const [editedDays, setEditedDays] = useState<{[key: number]: string}>({
     1: '08:00 - 12:00', 
@@ -14,39 +18,169 @@ export function TutorDashboard() {
     6: '10:00 - 14:00'
   });
   
-  const [reviewModalTarget, setReviewModalTarget] = useState<string | null>(null);
+  const [reviewModalTarget, setReviewModalTarget] = useState<{sessionId: string, studentName: string} | null>(null);
+  const [reportText, setReportText] = useState("");
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
-  const handleLogout = () => {
+  const submitReport = async () => {
+    if (!reviewModalTarget || !reportText.trim() || !user) return;
+    setIsSubmittingReport(true);
+    
+    try {
+      const { error } = await supabase.from('session_reports').insert({
+        session_id: reviewModalTarget.sessionId,
+        tutor_id: user.id,
+        summary: reportText,
+        student_understanding_level: 4 // default
+      });
+      
+      if (error) throw error;
+      
+      await supabase.from('sessions').update({status: 'completed'}).eq('id', reviewModalTarget.sessionId);
+      
+      setReviewModalTarget(null);
+      setReportText("");
+      
+      // Update local state instead of reload to be smoother, but easiest is to re-render using a toggle trigger or reload
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert('Gagal mengirim laporan');
+      setIsSubmittingReport(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setUserRole('guest');
     setActiveTab('home');
   };
 
-  const TUTOR_DATA = {
-    name: 'Ahmad',
-    xp: 4280,
-    xpThisMonth: 420,
-    streak: 12,
-    tier: 'Gold',
-    activeDays: Object.keys(editedDays).map(Number),
-    activeStudents: [
-      { id: 's1', name: 'Ahmad Rizki', gender: 'M', level: 'SMA', subject: 'Pemrograman', nextSession: 'Sab, 19 Apr · 14.00', sessions: 8, remaining: 4, avatarColor: '#1A3A28' },
-      { id: 's2', name: 'Lina Wati', gender: 'F', level: 'SMA', subject: 'Matematika', nextSession: 'Ming, 20 Apr · 10.00', sessions: 3, remaining: 5, avatarColor: '#4A1A8B' },
-    ],
-    pendingReviews: [
-      { id: 'r1', student: 'Ahmad Rizki', subject: 'Pemrograman', date: 'Rab, 16 Apr', topic: 'OOP & Class Inheritance', duration: 90, avatarColor: '#1A3A28' },
-    ],
-    teachingHistory: [
-      { id: 'h1', student: 'Ahmad Rizki', subject: 'Pemrograman', date: 'Rab, 16 Apr', topic: 'OOP & Class Inheritance', dur: 90, xp: 150, rating: 5.0, reviewed: false },
-      { id: 'h2', student: 'Budi Hartono', subject: 'Pemrograman', date: 'Sel, 15 Apr', topic: 'Algoritma Sorting', dur: 60, xp: 100, rating: 5.0, reviewed: false },
-      { id: 'h3', student: 'Lina Wati', subject: 'Matematika', date: 'Sen, 14 Apr', topic: 'Integral Tentu', dur: 90, xp: 175, rating: 4.5, reviewed: true },
-    ]
-  };
+  useEffect(() => {
+    async function fetchData() {
+      if (!user) return;
+      setIsLoading(true);
 
-  const DAYS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+      try {
+        // Fetch tutor profile (rating)
+        const { data: tutorProfile } = await supabase
+          .from('tutor_profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (tutorProfile) {
+          setTutorStats({ rating: tutorProfile.rating || 0, total_reviews: tutorProfile.total_reviews || 0 });
+        }
+
+        // Fetch all sessions for this tutor
+        const { data: tutorSessions } = await supabase
+          .from('sessions')
+          .select(`
+            *,
+            student:student_profiles(
+              id,
+              profiles(full_name, avatar_url)
+            )
+          `)
+          .eq('tutor_id', user.id)
+          .order('session_date', { ascending: false });
+
+        // Fetch session reports
+        const { data: reports } = await supabase
+          .from('session_reports')
+          .select('*')
+          .eq('tutor_id', user.id);
+
+        if (tutorSessions) setSessions(tutorSessions);
+        if (reports) setSessionReports(reports);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchData();
+  }, [user]);
+
+  // Derived data
+  const tutorName = userProfile?.full_name || "Tutor";
+  const xp = sessions.filter(s => s.status === 'completed').length * 100;
+  const xpThisMonth = sessions.filter(s => s.status === 'completed' && new Date(s.session_date).getMonth() === new Date().getMonth()).length * 100;
+  const totalSessions = sessions.length;
+
+  const xpTarget = xp >= 5000 ? 5000 : xp >= 1000 ? 5000 : 1000;
+  const xpFloor = xp >= 5000 ? 5000 : xp >= 1000 ? 1000 : 0;
+  const xpPct = xpTarget > xpFloor ? Math.min(100, Math.round(((xp - xpFloor) / (xpTarget - xpFloor)) * 100)) : 100;
+  let tier = 'Bronze';
+  if (xp >= 5000) tier = 'Gold';
+  else if (xp >= 1000) tier = 'Silver';
+
+  // Process pending reviews
+  const reportSessionIds = new Set(sessionReports.map(r => r.session_id));
+  const pastSessions = sessions.filter(s => new Date(`${s.session_date}T${s.end_time}`) < new Date());
   
-  const xpFloor = TUTOR_DATA.xp >= 5000 ? 5000 : TUTOR_DATA.xp >= 1000 ? 1000 : 0;
-  const xpTarget = TUTOR_DATA.xp >= 5000 ? 5000 : TUTOR_DATA.xp >= 1000 ? 5000 : 1000;
-  const xpPct = Math.min(100, Math.round(((TUTOR_DATA.xp - xpFloor) / (xpTarget - xpFloor)) * 100));
+  const pendingReviews = pastSessions
+    .filter(s => !reportSessionIds.has(s.id))
+    .map(s => {
+      const start = new Date(`1970-01-01T${s.start_time}`);
+      const end = new Date(`1970-01-01T${s.end_time}`);
+      const duration = (end.getTime() - start.getTime()) / 60000;
+      const studentName = s.student?.profiles?.full_name || 'Student';
+      
+      return {
+        id: s.id,
+        studentId: s.student_id,
+        session_id: s.id,
+        student: studentName,
+        subject: s.subject,
+        date: new Date(s.session_date).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }),
+        topic: s.material_notes || 'Review Sesi',
+        duration: duration || 60,
+      };
+    });
+
+  // Teaching history (completed/past sessions)
+  const teachingHistory = pastSessions.map(s => {
+      const start = new Date(`1970-01-01T${s.start_time}`);
+      const end = new Date(`1970-01-01T${s.end_time}`);
+      const duration = (end.getTime() - start.getTime()) / 60000;
+      const studentName = s.student?.profiles?.full_name || 'Student';
+      
+      const isReviewed = reportSessionIds.has(s.id);
+
+      return {
+        id: s.id,
+        session_id: s.id,
+        student: studentName,
+        subject: s.subject,
+        date: new Date(s.session_date).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }),
+        topic: s.material_notes || 'Selesai',
+        dur: duration || 60,
+        xp: 100,
+        rating: tutorStats.rating || 5.0, // simplified for now
+        reviewed: isReviewed,
+      };
+  });
+
+  // Active students
+  const studentMap = new Map();
+  sessions.forEach(s => {
+    if (!studentMap.has(s.student_id) && s.student) {
+      studentMap.set(s.student_id, {
+        id: s.student_id,
+        name: s.student.profiles?.full_name || 'Student',
+        level: 'Siswa',
+        subject: s.subject,
+        sessions: sessions.filter(sess => sess.student_id === s.student_id).length,
+        nextSession: sessions.find(sess => sess.student_id === s.student_id && new Date(`${sess.session_date}T${sess.start_time}`) > new Date())?.session_date || 'Belum ada',
+        remaining: 0, // if we want to query packages
+        avatarColor: '#1A3A28', // Placeholder color
+      });
+    }
+  });
+  const activeStudents = Array.from(studentMap.values());
 
   const tierBadge = (tier: string) => {
     let classes = "";
@@ -58,7 +192,7 @@ export function TutorDashboard() {
     </span>
   };
 
-  const activeDayNames = TUTOR_DATA.activeDays.map(d => DAYS[d]).join(', ');
+  const DAYS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 
   const toggleEditDay = (dayIndex: number) => {
     if (!isEditingDays) return;
@@ -80,6 +214,14 @@ export function TutorDashboard() {
     }));
   };
 
+  if (isLoading) {
+    return (
+      <div className="w-full flex justify-center items-center h-[50vh]">
+        <Loader2 className="animate-spin text-lime" size={32} />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full relative h-full animate-pgIn flex flex-col items-center">
       <div className="w-full max-w-[800px] px-4 py-4 md:py-6 relative z-10 flex flex-col pb-8">
@@ -87,7 +229,7 @@ export function TutorDashboard() {
         {/* Header */}
         <div className="sticky top-0 bg-bg-base/80 backdrop-blur-md z-10 border-b-[1.5px] border-border pb-3 mb-4 pt-4 md:pt-0 -mx-4 px-4 md:mx-0 md:px-0">
           <div className="font-display text-[20px] font-extrabold mb-[1px]">Dasbor Tutor</div>
-          <div className="text-[12px] text-text-sub">Halo, {TUTOR_DATA.name}! 👋</div>
+          <div className="text-[12px] text-text-sub">Halo, {tutorName}! 👋</div>
         </div>
 
         {/* XP Card */}
@@ -96,9 +238,9 @@ export function TutorDashboard() {
            <div className="flex justify-between items-start relative z-10">
               <div>
                  <div className="text-[9px] text-white/45 font-bold uppercase tracking-[0.1em] mb-[3px] font-mono">TOTAL XP</div>
-                 <div className="font-mono text-[44px] font-bold text-lime leading-none tracking-[-1px] animate-pgIn">{TUTOR_DATA.xp.toLocaleString('id-ID')}</div>
+                 <div className="font-mono text-[44px] font-bold text-lime leading-none tracking-[-1px] animate-pgIn">{xp.toLocaleString('id-ID')}</div>
               </div>
-              {tierBadge(TUTOR_DATA.tier)}
+              {tierBadge(tier)}
            </div>
            
            <div className="relative z-10 mt-2">
@@ -106,24 +248,24 @@ export function TutorDashboard() {
                  <div className="h-full bg-lime rounded-[4px] transition-all duration-1000 ease-out" style={{ width: `${xpPct}%` }}></div>
               </div>
               <div className="flex justify-between">
-                 <div className="text-[10px] text-white/45 font-mono">{xpPct}% menuju {TUTOR_DATA.xp >= 1000 ? 'Gold' : 'Silver'}</div>
-                 <div className="text-[10px] text-white/45 font-mono">+{TUTOR_DATA.xpThisMonth} XP bulan ini</div>
+                 <div className="text-[10px] text-white/45 font-mono">{xpPct}% menuju {xp >= 1000 ? 'Gold' : 'Silver'}</div>
+                 <div className="text-[10px] text-white/45 font-mono">+{xpThisMonth} XP bulan ini</div>
               </div>
            </div>
 
            <div className="flex gap-3 mt-[13px] relative z-10 bg-black/25 rounded-lg py-2.5 px-3 items-center">
               <div className="text-center">
-                <div className="font-mono text-[18px] text-lime leading-tight">{TUTOR_DATA.streak}</div>
+                <div className="font-mono text-[18px] text-lime leading-tight">0</div>
                 <div className="text-[9px] text-white/40 font-semibold font-mono">🔥 STREAK</div>
               </div>
               <div className="w-[1px] bg-white/10 h-[28px] mx-1"></div>
               <div className="text-center">
-                <div className="font-mono text-[18px] text-white leading-tight">87</div>
+                <div className="font-mono text-[18px] text-white leading-tight">{totalSessions}</div>
                 <div className="text-[9px] text-white/40 font-semibold font-mono">TOTAL SESI</div>
               </div>
               <div className="w-[1px] bg-white/10 h-[28px] mx-1"></div>
               <div className="text-center">
-                <div className="font-mono text-[18px] text-white leading-tight">{TUTOR_DATA.activeStudents.length}</div>
+                <div className="font-mono text-[18px] text-white leading-tight">{activeStudents.length}</div>
                 <div className="text-[9px] text-white/40 font-semibold font-mono">SISWA AKTIF</div>
               </div>
               <button 
@@ -136,11 +278,11 @@ export function TutorDashboard() {
         </div>
 
         {/* Warning Reviews */}
-        {TUTOR_DATA.pendingReviews.length > 0 && (
+        {pendingReviews.length > 0 && (
           <div className="bg-warning/10 border-[1.5px] border-warning/35 rounded-xl p-3 mb-3.5 flex items-center gap-2.5 cursor-pointer hover:bg-warning/20 transition-colors">
              <WarningCircle className="text-[22px] text-warning shrink-0" fill="currentColor" stroke="none" />
              <div className="flex-1">
-                <div className="text-[13px] font-bold text-warning font-display">{TUTOR_DATA.pendingReviews.length} Laporan Sesi Belum Diisi</div>
+                <div className="text-[13px] font-bold text-warning font-display">{pendingReviews.length} Laporan Sesi Belum Diisi</div>
                 <div className="text-[11px] text-text-sub font-mono">Scroll ke bawah untuk mengisi ↓</div>
              </div>
           </div>
@@ -204,8 +346,8 @@ export function TutorDashboard() {
 
         {/* Siswa Aktif */}
         <div className="bg-card rounded-xl p-4 border-[1.5px] border-border mb-3.5">
-           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono mb-[4px]">SISWA AKTIFKU ({TUTOR_DATA.activeStudents.length})</div>
-           {TUTOR_DATA.activeStudents.map(s => (
+           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono mb-[4px]">SISWA AKTIFKU ({activeStudents.length})</div>
+           {activeStudents.map(s => (
              <div key={s.id} className="flex items-center gap-2.5 py-2.5 border-b-[1.5px] border-border last:border-b-0 cursor-pointer hover:bg-bg-3 rounded-lg px-1 transition-colors">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center font-display font-extrabold text-white/90 text-[14px] shrink-0" style={{ background: s.avatarColor }}>
                   {s.name.split(' ').map(w=>w[0]).join('').substring(0,2)}
@@ -230,12 +372,12 @@ export function TutorDashboard() {
 
         {/* Pending Reviews */}
         <div className="mb-3.5">
-           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono mb-2.5">REVIEW PERLU DILAKUKAN ({TUTOR_DATA.pendingReviews.length})</div>
-           {TUTOR_DATA.pendingReviews.map(r => (
-             <div key={r.id} onClick={() => setReviewModalTarget(r.student)} className="bg-card border-[1.5px] border-warning rounded-[12px] p-3 mb-2 cursor-pointer hover:shadow-[3px_3px_0_#F59E0B] hover:-translate-y-[1px] hover:-translate-x-[1px] transition-all">
+           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono mb-2.5">REVIEW PERLU DILAKUKAN ({pendingReviews.length})</div>
+           {pendingReviews.map(r => (
+             <div key={r.id} onClick={() => setReviewModalTarget({sessionId: r.session_id, studentName: r.student})} className="bg-card border-[1.5px] border-warning rounded-[12px] p-3 mb-2 cursor-pointer hover:shadow-[3px_3px_0_#F59E0B] hover:-translate-y-[1px] hover:-translate-x-[1px] transition-all">
                 <div className="flex justify-between items-start">
                    <div className="flex gap-2.5 items-center">
-                      <div className="w-[38px] h-[38px] rounded-lg flex items-center justify-center font-display font-extrabold text-white/90 text-[14px] shrink-0" style={{ background: r.avatarColor }}>
+                      <div className="w-[38px] h-[38px] rounded-lg flex items-center justify-center font-display font-extrabold text-white/90 text-[14px] shrink-0" style={{ background: '#1A3A28' }}>
                         {r.student.split(' ').map(w=>w[0]).join('').substring(0,2)}
                       </div>
                       <div>
@@ -256,7 +398,7 @@ export function TutorDashboard() {
         {/* RIWAYAT MENGAJAR */}
         <div className="mb-2">
            <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono mb-2.5">RIWAYAT MENGAJAR</div>
-           {TUTOR_DATA.teachingHistory.map(h => (
+           {teachingHistory.map(h => (
               <div key={h.id} className={`bg-card rounded-xl p-3 mb-2 border-[1.5px] border-border border-l-[3.5px] ${h.reviewed ? 'border-l-lime' : 'border-l-warning'}`}>
                  <div className="flex justify-between items-start">
                     <div>
@@ -271,7 +413,7 @@ export function TutorDashboard() {
                     </div>
                  </div>
                  {!h.reviewed ? (
-                   <button onClick={() => setReviewModalTarget(h.student)} className="mt-2 bg-warning/10 text-warning border border-warning/30 rounded-[4px] px-3 py-[5px] text-[11px] font-bold font-mono cursor-pointer flex items-center gap-1 hover:bg-warning/20 transition-colors">
+                   <button onClick={() => setReviewModalTarget({sessionId: h.session_id, studentName: h.student})} className="mt-2 bg-warning/10 text-warning border border-warning/30 rounded-[4px] px-3 py-[5px] text-[11px] font-bold font-mono cursor-pointer flex items-center gap-1 hover:bg-warning/20 transition-colors">
                      <PencilSimple strokeWidth={2.5} size={14} /> Isi Review Siswa
                    </button>
                  ) : (
@@ -303,20 +445,24 @@ export function TutorDashboard() {
             </div>
             <div className="p-5">
               <div className="text-[13px] text-text-sub mb-4">
-                 Siswa: <strong className="text-text-main">{reviewModalTarget}</strong>
+                 Siswa: <strong className="text-text-main">{reviewModalTarget.studentName}</strong>
               </div>
               <div className="flex flex-col gap-1.5 mb-4">
                  <label className="text-[11px] font-bold font-mono text-text-sub uppercase">Topik & Catatan Belajar</label>
                  <textarea 
                    className="w-full bg-bg-2 border-[1.5px] border-border rounded-lg p-3 text-[13px] focus:outline-none focus:border-lime min-h-[100px] resize-none"
                    placeholder="Materi yang dibahas dan progres siswa..."
+                   value={reportText}
+                   onChange={(e) => setReportText(e.target.value)}
                  ></textarea>
               </div>
               <button 
-                onClick={() => setReviewModalTarget(null)}
-                className="w-full bg-lime border-[2px] border-lime text-black font-bold font-display px-4 py-3 rounded-lg mt-2 cursor-pointer shadow-sh1 hover:shadow-sh2 hover:-translate-y-[1px] hover:-translate-x-[1px] transition-all"
+                onClick={submitReport}
+                disabled={isSubmittingReport || !reportText.trim()}
+                className="w-full flex items-center justify-center gap-2 bg-lime border-[2px] border-lime text-black font-bold font-display px-4 py-3 rounded-lg mt-2 cursor-pointer shadow-sh1 hover:shadow-sh2 hover:-translate-y-[1px] hover:-translate-x-[1px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Kirim Laporan
+                {isSubmittingReport ? <Loader2 size={16} className="animate-spin" /> : null}
+                {isSubmittingReport ? 'Mengirim...' : 'Kirim Laporan'}
               </button>
             </div>
           </div>

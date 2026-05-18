@@ -25,6 +25,8 @@ import { TutorSessions } from "./pages/TutorSessions";
 import { StudentSessions } from "./pages/StudentSessions";
 import { StudentProgress } from "./pages/StudentProgress";
 import { OnboardingForm } from "./components/OnboardingForm";
+import { UnverifiedTutorView } from "./components/UnverifiedTutorView";
+import { VerificationForm } from "./components/VerificationForm";
 import { useAppContext } from "./AppContext";
 
 export default function App() {
@@ -38,6 +40,8 @@ export default function App() {
     setUserRole,
     user,
     userProfile,
+    tutorProfileData,
+    isLoadingProfile,
   } = useAppContext();
 
   const [showDesktopSidebar, setShowDesktopSidebar] = useState(true);
@@ -299,37 +303,50 @@ export default function App() {
           </div>
 
           <div className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth relative z-10 custom-scrollbar">
-            {activeTab === "home" && userRole === "tutor" && <TutorDashboard />}
-            {activeTab === "schedule" && userRole === "tutor" && (
-              <TutorSchedule />
-            )}
-            {activeTab === "sessions" && userRole === "tutor" && (
-              <TutorSessions />
-            )}
-
-            {activeTab === "home" && userRole !== "tutor" && <PageHome />}
-            {activeTab === "search" && userRole !== "tutor" && <PageSearch />}
-            {activeTab === "student_sessions" && userRole !== "tutor" && (
-              <StudentSessions />
-            )}
-            {activeTab === "progress" && userRole !== "tutor" && (
-              <StudentProgress />
-            )}
-
-            {activeTab === "daftar-tutor" && <PageDaftarTutor />}
-            {activeTab === "login" && userRole === "guest" && <PageLogin />}
-            {activeTab === "login" && userRole !== "guest" && <PageProfile />}
-
-            {userRole === "admin" && activeTab === "admin" && (
-              <div className="p-6 text-center text-text-sub mt-20 animate-pgIn font-mono">
-                <h2 className="text-xl font-bold text-red-500 mb-2">
-                  ADMIN PANEL
-                </h2>
-                <p>
-                  User Management · Tutor Verification · Escrow & Payments ·
-                  Session Reports · Analytics
-                </p>
+            {isLoadingProfile ? (
+              <div className="w-full h-full flex items-center justify-center">
+                 <div className="w-8 h-8 rounded-full border-4 border-lime/30 border-t-lime animate-spin"></div>
               </div>
+            ) : (
+              <>
+                {userRole === "tutor" && tutorProfileData?.is_verified !== true ? (
+                  <>
+                    {activeTab === "home" && <VerificationForm />}
+                    {["schedule", "sessions"].includes(activeTab) && <UnverifiedTutorView />}
+                  </>
+                ) : (
+                  <>
+                    {activeTab === "home" && userRole === "tutor" && <TutorDashboard />}
+                    {activeTab === "schedule" && userRole === "tutor" && <TutorSchedule />}
+                    {activeTab === "sessions" && userRole === "tutor" && <TutorSessions />}
+                  </>
+                )}
+
+                {activeTab === "home" && userRole !== "tutor" && <PageHome />}
+                {activeTab === "search" && userRole !== "tutor" && <PageSearch />}
+                {activeTab === "student_sessions" && userRole !== "tutor" && (
+                  <StudentSessions />
+                )}
+                {activeTab === "progress" && userRole !== "tutor" && (
+                  <StudentProgress />
+                )}
+
+                {activeTab === "daftar-tutor" && <PageDaftarTutor />}
+                {activeTab === "login" && userRole === "guest" && <PageLogin />}
+                {activeTab === "login" && userRole !== "guest" && <PageProfile />}
+
+                {userRole === "admin" && activeTab === "admin" && (
+                  <div className="p-6 text-center text-text-sub mt-20 animate-pgIn font-mono">
+                    <h2 className="text-xl font-bold text-red-500 mb-2">
+                      ADMIN PANEL
+                    </h2>
+                    <p>
+                      User Management · Tutor Verification · Escrow & Payments ·
+                      Session Reports · Analytics
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
 

@@ -27,8 +27,10 @@ type AppContextType = {
   setUserRole: (role: UserRoleType) => void;
   user: User | null;
   userProfile: any | null;
+  tutorProfileData: any | null;
   tutors: any[];
   isLoadingTutors: boolean;
+  isLoadingProfile: boolean;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -42,6 +44,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [userRole, setUserRole] = useState<UserRoleType>("guest");
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<any | null>(null);
+  const [tutorProfileData, setTutorProfileData] = useState<any | null>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   const [tutors, setTutors] = useState<any[]>([]);
   const [isLoadingTutors, setIsLoadingTutors] = useState(true);
@@ -176,8 +180,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
           else setUserRole("siswa");
         }
       }
+      
+      let finalRole = profile?.role;
+      if (error && error.code === "PGRST116" && authUser) {
+        // Find what was assigned
+        const authRoleRaw = authUser.user_metadata?.role;
+        const preferredRole = localStorage.getItem("preferredRole"); // we already removed it, but let's just re-calculate or assume authRole from earlier scope
+        
+        // Let's just use a refetch to be safe since we just upserted it
+        const { data: newFetch } = await supabase.from("profiles").select("role").eq("id", userId).single();
+        if (newFetch) finalRole = newFetch.role;
+      }
+      
+      if (finalRole === "tutor") {
+        const { data: tutorProf } = await supabase
+          .from("tutor_profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
+        if (tutorProf) setTutorProfileData(tutorProf);
+      }
     } catch (e) {
       console.error(e);
+    } finally {
+      setIsLoadingProfile(false);
     }
   };
 
@@ -196,6 +222,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } else {
         setUserRole("guest");
         setUserProfile(null);
+        setIsLoadingProfile(false);
       }
     });
 
@@ -227,10 +254,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       setUser(session?.user ?? null);
       if (session?.user) {
+        setIsLoadingProfile(true);
         fetchProfile(session.user.id, session.user);
       } else {
         setUserRole("guest");
         setUserProfile(null);
+        setIsLoadingProfile(false);
       }
     });
 
@@ -263,6 +292,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setUserRole,
         user,
         userProfile,
+        tutorProfileData,
         tutors,
         isLoadingTutors,
       }}
