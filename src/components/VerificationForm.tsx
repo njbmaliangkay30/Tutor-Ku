@@ -9,47 +9,26 @@ export function VerificationForm() {
   const [ktpFileName, setKtpFileName] = useState("");
   const [ijazahFileName, setIjazahFileName] = useState("");
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   useEffect(() => {
-    // Check if previously submitted
-    if (user) {
-      const status = localStorage.getItem(`verification_status_${user.id}`);
-      if (status === 'submitted') {
-        setIsSubmitted(true);
+    // Check url params for formsubmit success
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === 'true') {
+      if (user) {
+        localStorage.setItem(`verification_status_${user.id}`, 'submitted');
+      }
+      setIsSubmitted(true);
+      // Clean up url
+      window.history.replaceState(null, '', window.location.pathname);
+    } else {
+      // Check if previously submitted
+      if (user) {
+        const status = localStorage.getItem(`verification_status_${user.id}`);
+        if (status === 'submitted') {
+          setIsSubmitted(true);
+        }
       }
     }
   }, [user]);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
-    try {
-      const response = await fetch("https://formsubmit.co/ajax/njbmaliangkay30@gmail.com", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        if (user) {
-          localStorage.setItem(`verification_status_${user.id}`, 'submitted');
-        }
-        setIsSubmitted(true);
-        window.history.replaceState(null, '', window.location.pathname);
-      } else {
-        alert("Terjadi kesalahan saat mengirim dokumen. Silakan coba lagi.");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Gagal mengirim dokumen. Periksa koneksi internet Anda.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   if (isSubmitted) {
     return (
@@ -90,9 +69,14 @@ export function VerificationForm() {
         </p>
 
         <form 
-          onSubmit={handleSubmit}
+          action="https://formsubmit.co/njbmaliangkay30@gmail.com" 
+          method="POST" 
+          encType="multipart/form-data"
           className="bg-bg-2 border border-border shadow-sm rounded-2xl p-6 md:p-8 flex flex-col gap-6"
         >
+          {/* Automatically redirect back here with success=true */}
+          <input type="hidden" name="_next" value={window.location.origin + window.location.pathname + "?success=true"} />
+          <input type="hidden" name="_captcha" value="false" />
           <input type="hidden" name="_subject" value={`Pengajuan Verifikasi Tutor: ${userProfile?.full_name || 'Tutor'}`} />
           <input type="hidden" name="email_tutor" value={user?.email || ''} />
           <input type="hidden" name="nama_tutor" value={userProfile?.full_name || ''} />
@@ -186,12 +170,9 @@ export function VerificationForm() {
             <span className="text-[12px] text-text-sub text-center md:text-left">File akan dikirimkan dengan aman ke tim verifikasi.</span>
             <button 
               type="submit"
-              disabled={isSubmitting}
-              className={`font-bold px-8 py-3 rounded-xl transition-colors w-full md:w-auto ${
-                isSubmitting ? "bg-bg-3 cursor-not-allowed text-text-sub" : "bg-primary hover:bg-primary-bright text-white"
-              }`}
+              className="bg-primary hover:bg-primary-bright text-white font-bold px-8 py-3 rounded-xl transition-colors w-full md:w-auto"
             >
-              {isSubmitting ? "Mengirim..." : "Kirim Dokumen"}
+              Kirim Dokumen
             </button>
           </div>
         </form>
