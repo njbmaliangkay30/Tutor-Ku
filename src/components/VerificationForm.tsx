@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Upload, CheckCircle, Clock } from "lucide-react";
 import { useAppContext } from "../AppContext";
+import { supabase } from "../lib/supabase";
 
 export function VerificationForm() {
   const { userProfile, user } = useAppContext();
@@ -26,32 +27,60 @@ export function VerificationForm() {
     setIsSubmitting(true);
 
     const form = e.currentTarget;
-    const formData = new FormData(form);
+    const ktpInput = form.elements.namedItem('attachment_ktp') as HTMLInputElement;
+    const ijazahInput = form.elements.namedItem('attachment_ijazah') as HTMLInputElement;
+    const pengalamanInput = form.elements.namedItem('pengalaman_mengajar') as HTMLTextAreaElement;
 
-    // Add hidden fields
-    formData.append("email_tutor", user?.email || "");
-    formData.append("nama_tutor", userProfile?.full_name || "");
-    formData.append("tutor_id", user?.id || "");
-    formData.append("_subject", `Pengajuan Verifikasi Tutor: ${userProfile?.full_name || 'Tutor'}`);
+    const ktpFile = ktpInput?.files?.[0];
+    const ijazahFile = ijazahInput?.files?.[0];
+    const pengalaman = pengalamanInput?.value || "";
+
+    if (!ktpFile || !ijazahFile || !user) {
+        alert("Mohon lengkapi dokumen yang diwajibkan.");
+        setIsSubmitting(false);
+        return;
+    }
 
     try {
-      const response = await fetch("/api/verify", {
-        method: "POST",
-        body: formData,
-      });
+      const ktpPath = `ktp_${user.id}_${Date.now()}_${ktpFile.name}`;
+      const { error: ktpError } = await supabase.storage
+        .from('Data Verifikasi Tutor')
+        .upload(ktpPath, ktpFile);
 
-      if (response.ok) {
-        if (user) {
-          localStorage.setItem(`verification_status_${user.id}`, 'submitted');
-        }
-        setIsSubmitted(true);
-      } else {
-        const errData = await response.json().catch(() => null);
-        alert(`Terjadi kesalahan saat mengirim dokumen: ${errData?.error || response.statusText}`);
-      }
-    } catch (error) {
+      if (ktpError) throw new Error("Gagal mengunggah KTP: " + ktpError.message);
+
+      const ijazahPath = `ijazah_${user.id}_${Date.now()}_${ijazahFile.name}`;
+      const { error: ijazahError } = await supabase.storage
+        .from('Data Verifikasi Tutor')
+        .upload(ijazahPath, ijazahFile);
+
+      if (ijazahError) throw new Error("Gagal mengunggah Ijazah: " + ijazahError.message);
+
+      const ktpUrlRes = supabase.storage.from('Data Verifikasi Tutor').getPublicUrl(ktpPath);
+      const ijazahUrlRes = supabase.storage.from('Data Verifikasi Tutor').getPublicUrl(ijazahPath);
+
+      // Pastikan tutor profile exist 
+      await supabase.from('profiles').upsert({ id: user.id, full_name: userProfile?.full_name || 'Tutor', role: 'tutor' }, { onConflict: 'id' }).select();
+      await supabase.from('tutor_profiles').upsert({ id: user.id }, { onConflict: 'id' }).select();
+
+      const { error: dbError } = await supabase
+        .from('tutor_verifications')
+        .insert({
+          tutor_id: user.id,
+          ktp_url: ktpUrlRes.data.publicUrl,
+          ijazah_url: ijazahUrlRes.data.publicUrl,
+          pengalaman_mengajar: pengalaman,
+          status: 'pending'
+        });
+
+      if (dbError) throw new Error("Gagal menyimpan data verifikasi: " + dbError.message);
+
+      localStorage.setItem(`verification_status_${user.id}`, 'submitted');
+      setIsSubmitted(true);
+      
+    } catch (error: any) {
       console.error(error);
-      alert("Gagal mengirim dokumen. Periksa koneksi internet Anda.");
+      alert(error.message || "Gagal mengirim dokumen. Periksa koneksi internet Anda.");
     } finally {
       setIsSubmitting(false);
     }
