@@ -35,6 +35,8 @@ export default function App() {
     selectedTutorId,
     userRole,
     setUserRole,
+    user,
+    userProfile,
   } = useAppContext();
 
   const [showDesktopSidebar, setShowDesktopSidebar] = useState(true);
@@ -247,9 +249,18 @@ export default function App() {
                 {userRole === "guest" ? (
                   <LogIn size={22} />
                 ) : (
-                  <div className="w-[22px] h-[22px] rounded-full bg-[#1A3A28] border-2 border-lime/30 text-lime flex items-center justify-center text-[10px] font-bold font-display leading-none shadow-[0_0_8px_rgba(200,255,0,0.1)]">
-                    AR
-                  </div>
+                  userProfile?.avatar_url || user?.user_metadata?.avatar_url ? (
+                    <img 
+                      src={userProfile?.avatar_url || user?.user_metadata?.avatar_url} 
+                      alt="Avatar" 
+                      className="w-[22px] h-[22px] rounded-full border border-lime/30 object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-[22px] h-[22px] rounded-full bg-[#1A3A28] border-2 border-lime/30 text-lime flex items-center justify-center text-[10px] font-bold font-display leading-none shadow-[0_0_8px_rgba(200,255,0,0.1)]">
+                      {(userProfile?.full_name || user?.user_metadata?.full_name || "U").substring(0, 2).toUpperCase()}
+                    </div>
+                  )
                 )}
               </span>
               <span
@@ -406,9 +417,18 @@ export default function App() {
                 {userRole === "guest" ? (
                   <LogIn size={18} />
                 ) : (
-                  <div className="w-[18px] h-[18px] rounded-full bg-[#1A3A28] border border-border text-white flex items-center justify-center text-[9px] font-bold font-display leading-none">
-                    AR
-                  </div>
+                  userProfile?.avatar_url || user?.user_metadata?.avatar_url ? (
+                    <img 
+                      src={userProfile?.avatar_url || user?.user_metadata?.avatar_url} 
+                      alt="Avatar" 
+                      className="w-[18px] h-[18px] rounded-full border border-border object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-[18px] h-[18px] rounded-full bg-[#1A3A28] border border-border text-white flex items-center justify-center text-[9px] font-bold font-display leading-none">
+                      {(userProfile?.full_name || user?.user_metadata?.full_name || "U").substring(0, 2).toUpperCase()}
+                    </div>
+                  )
                 )}
               </span>
               <span className="text-[10px] font-mono">

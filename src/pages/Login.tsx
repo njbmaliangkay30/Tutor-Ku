@@ -139,29 +139,18 @@ export function Login() {
   };
 
   const handleGoogleAuth = async () => {
-    const popup = window.open(
-      "about:blank",
-      "oauth_popup",
-      "width=600,height=700",
-    );
+    setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          skipBrowserRedirect: true,
           redirectTo: window.location.origin,
         },
       });
       if (error) throw error;
-
-      if (data?.url && popup) {
-        popup.location.href = data.url;
-      } else if (popup) {
-        popup.close();
-      }
     } catch (err: any) {
-      if (popup) popup.close();
-      setErrorMsg(err.message || "Google Auth failed");
+      setErrorMsg(err.message || "Gagal masuk dengan Google.");
+      setIsLoading(false);
     }
   };
 
