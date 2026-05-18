@@ -9,9 +9,9 @@ import { createClient } from "@supabase/supabase-js";
 
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "";
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const resend = new Resend(process.env.RESEND_API_KEY || 're_123'); // Polyfill for safe initialization
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "https://xyz.supabase.co"; // dummy for safe init
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "dummy_key";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -22,6 +22,10 @@ async function startServer() {
 
   // Middleware for parsing JSON requests (if needed)
   app.use(express.json());
+
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok" });
+  });
 
   // API Route to handle verify
   app.post("/api/verify", upload.fields([
@@ -175,4 +179,4 @@ async function startServer() {
   });
 }
 
-startServer();
+startServer().catch(console.error);
