@@ -140,6 +140,9 @@ export function Login() {
 
   const handleGoogleAuth = async () => {
     setIsLoading(true);
+    if (selectedRole) {
+      localStorage.setItem("preferredRole", selectedRole);
+    }
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",

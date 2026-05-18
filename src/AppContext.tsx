@@ -107,7 +107,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .eq("id", userId)
         .single();
 
+      const preferredRole = localStorage.getItem("preferredRole");
+
       if (profile) {
+        if (preferredRole && profile.role !== "admin") {
+          const targetRole = preferredRole === "tutor" ? "tutor" : "student";
+          if (profile.role !== targetRole) {
+            const { error: updateErr } = await supabase
+              .from("profiles")
+              .update({ role: targetRole })
+              .eq("id", userId);
+            
+            if (!updateErr) {
+              profile.role = targetRole;
+              if (targetRole === "tutor") {
+                await supabase.from("tutor_profiles").upsert({ id: userId });
+              } else {
+                await supabase.from("student_profiles").upsert({ id: userId });
+              }
+            }
+          }
+        }
+        localStorage.removeItem("preferredRole");
+
         setUserProfile(profile);
         if (profile.role === "admin") setUserRole("admin");
         else if (profile.role === "tutor") setUserRole("tutor");
@@ -115,12 +137,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } else if (error && error.code === "PGRST116" && authUser) {
         // Not found, auto-create a basic profile for OAuth users
         const authRoleRaw = authUser.user_metadata?.role;
-        const authRole =
-          authRoleRaw === "tutor"
-            ? "tutor"
-            : authRoleRaw === "admin"
-              ? "admin"
-              : "student";
+        let authRole = "student";
+        if (preferredRole === "tutor") authRole = "tutor";
+        else if (preferredRole === "siswa") authRole = "student";
+        else if (authRoleRaw === "tutor") authRole = "tutor";
+        else if (authRoleRaw === "admin") authRole = "admin";
+        
+        localStorage.removeItem("preferredRole");
+
         const { data: newProfile, error: insertError } = await supabase
           .from("profiles")
           .insert({
