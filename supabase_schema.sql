@@ -3,7 +3,12 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Users table handled by Supabase Auth (auth.users), we create a profiles table
 
-CREATE TYPE user_role AS ENUM ('student', 'tutor', 'admin');
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
+    CREATE TYPE user_role AS ENUM ('student', 'tutor', 'admin');
+  END IF;
+END$$;
 
 -- PROFILES
 CREATE TABLE profiles (
@@ -121,4 +126,36 @@ CREATE TABLE transactions (
   reference_id TEXT, -- For external gateways (Midtrans, etc)
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- TUTOR VERIFICATIONS
+CREATE TABLE tutor_verifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tutor_id UUID REFERENCES tutor_profiles(id) ON DELETE CASCADE,
+  status TEXT DEFAULT 'pending', -- pending, approved, rejected
+  ktp_url TEXT,
+  ijazah_url TEXT,
+  bidang_mengajar TEXT,
+  pengalaman_mengajar TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- CREATE BUCKET AND SET POLICIES FOR 'Data Verifikasi Tutor'
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('Data Verifikasi Tutor', 'Data Verifikasi Tutor', true)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Allow public uploads to Data Verifikasi Tutor" ON storage.objects;
+DROP POLICY IF EXISTS "Allow public reading Data Verifikasi Tutor" ON storage.objects;
+DROP POLICY IF EXISTS "Allow public update to Data Verifikasi Tutor" ON storage.objects;
+
+CREATE POLICY "Allow public uploads to Data Verifikasi Tutor" ON storage.objects
+FOR INSERT TO public WITH CHECK (bucket_id = 'Data Verifikasi Tutor');
+
+CREATE POLICY "Allow public reading Data Verifikasi Tutor" ON storage.objects
+FOR SELECT TO public USING (bucket_id = 'Data Verifikasi Tutor');
+
+CREATE POLICY "Allow public update to Data Verifikasi Tutor" ON storage.objects
+FOR UPDATE TO public USING (bucket_id = 'Data Verifikasi Tutor');
+
 
