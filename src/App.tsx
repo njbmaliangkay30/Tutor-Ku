@@ -24,6 +24,7 @@ import { TutorSchedule } from "./pages/TutorSchedule";
 import { TutorSessions } from "./pages/TutorSessions";
 import { StudentSessions } from "./pages/StudentSessions";
 import { StudentProgress } from "./pages/StudentProgress";
+import { OnboardingForm } from "./components/OnboardingForm";
 import { useAppContext } from "./AppContext";
 
 export default function App() {
@@ -441,6 +442,10 @@ export default function App() {
             <div className="absolute inset-0 z-50 bg-bg-base overflow-y-auto animate-pgIn custom-scrollbar">
               <TutorDetail />
             </div>
+          )}
+          
+          {user && userProfile && !userProfile.phone && userRole !== "guest" && (
+            <OnboardingForm />
           )}
         </main>
       </div>
