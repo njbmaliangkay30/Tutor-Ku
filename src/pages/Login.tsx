@@ -32,8 +32,8 @@ export function Login() {
       });
 
       if (error) {
-        if (error.message === "Invalid login credentials") {
-          throw new Error("Email atau password salah. Jika Anda mendaftar dengan Google sebelumnya, silakan gunakan 'Lanjut dengan Google'. Jika baru mendaftar, pastikan email Anda sudah dikonfirmasi (cek kotak masuk/spam).");
+        if (error.message === "Invalid login credentials" || error.message.includes("Email not confirmed")) {
+          throw new Error("Email/password salah atau email belum diverifikasi! Silakan cek kotak masuk/spam email Anda untuk link verifikasi.");
         }
         throw error;
       }
@@ -79,7 +79,7 @@ export function Login() {
       if (data?.user) {
         // If identities is empty, this is a fake user returned to prevent email enumeration.
         if (data.user.identities && data.user.identities.length === 0) {
-          throw new Error("Email ini sudah terdaftar. Silakan login.");
+          throw new Error("Email ini sudah terdaftar. Silakan login (pastikan Anda sudah klik link konfirmasi di email Anda).");
         }
 
         const userRole = selectedRole === "siswa" ? "student" : "tutor";
@@ -124,6 +124,10 @@ export function Login() {
 
       if (selectedRole) {
         setUserRole(selectedRole);
+      }
+
+      if (!data.session) {
+        throw new Error("Pendaftaran berhasil! Silakan cek email Anda (termasuk folder spam) untuk link konfirmasi sebelum masuk.");
       }
 
       if (selectedRole === "tutor") {

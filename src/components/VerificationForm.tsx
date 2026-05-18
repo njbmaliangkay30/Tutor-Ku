@@ -6,13 +6,13 @@ export function VerificationForm() {
   const { userProfile, user } = useAppContext();
   
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
-    ktp: "",
-    ijazah: "",
-    pengalaman: ""
-  });
+  const [ktpFileName, setKtpFileName] = useState("");
+  const [ijazahFileName, setIjazahFileName] = useState("");
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    // Check if previously submitted
     if (user) {
       const status = localStorage.getItem(`verification_status_${user.id}`);
       if (status === 'submitted') {
@@ -21,11 +21,33 @@ export function VerificationForm() {
     }
   }, [user]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (user) {
-      localStorage.setItem(`verification_status_${user.id}`, 'submitted');
-      setIsSubmitted(true);
+    setIsSubmitting(true);
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/njbmaliangkay30@gmail.com", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        if (user) {
+          localStorage.setItem(`verification_status_${user.id}`, 'submitted');
+        }
+        setIsSubmitted(true);
+        window.history.replaceState(null, '', window.location.pathname);
+      } else {
+        alert("Terjadi kesalahan saat mengirim dokumen. Silakan coba lagi.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Gagal mengirim dokumen. Periksa koneksi internet Anda.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -49,7 +71,7 @@ export function VerificationForm() {
             <CheckCircle size={20} className="shrink-0 mt-0.5 text-blue-500" />
             <div className="text-[13px] text-blue-600">
               <strong className="font-bold block mb-1">Pengajuan Berhasil</strong>
-              Kami akan menghubungi Anda jika ada informasi tambahan yang diperlukan melalui Email atau WhatsApp.
+              Kami akan menghubungi Anda jika ada informasi tambahan yang diperlukan melalui Email.
             </div>
           </div>
         </div>
@@ -67,17 +89,47 @@ export function VerificationForm() {
           Untuk mulai mengajar dan dilihat oleh siswa di TutorKu, kami perlu memverifikasi identitas dan kualifikasi Anda.
         </p>
 
-        <form onSubmit={handleSubmit} className="bg-bg-2 border border-border shadow-sm rounded-2xl p-6 md:p-8 flex flex-col gap-6">
+        <form 
+          onSubmit={handleSubmit}
+          className="bg-bg-2 border border-border shadow-sm rounded-2xl p-6 md:p-8 flex flex-col gap-6"
+        >
+          <input type="hidden" name="_subject" value={`Pengajuan Verifikasi Tutor: ${userProfile?.full_name || 'Tutor'}`} />
+          <input type="hidden" name="email_tutor" value={user?.email || ''} />
+          <input type="hidden" name="nama_tutor" value={userProfile?.full_name || ''} />
+          <input type="hidden" name="_template" value="table" />
           
           <div>
             <h3 className="font-bold text-lg mb-4 text-text-main">1. Dokumen Identitas</h3>
             <div className="flex flex-col gap-2 relative">
-              <label className="text-[13px] font-bold text-text-sub">Kartu Tanda Penduduk (KTP) *</label>
-              <div className="border border-dashed border-border-2 rounded-xl p-6 text-center hover:bg-bg-3 transition-colors cursor-pointer group">
-                <Upload size={24} className="mx-auto mb-2 text-text-disabled group-hover:text-lime transition-colors" />
-                <p className="text-[13px] text-text-sub">Klik atau seret file ke sini</p>
-                <p className="text-[11px] text-text-disabled mt-1">PNG, JPG (Max. 5MB)</p>
-              </div>
+              <label className="text-[13px] font-bold text-text-sub" htmlFor="ktp-upload">Kartu Tanda Penduduk (KTP/KTM) *</label>
+              
+              <input 
+                type="file" 
+                name="attachment_ktp" 
+                id="ktp-upload" 
+                className="hidden" 
+                accept="image/png, image/jpeg, application/pdf"
+                required
+                onChange={(e) => setKtpFileName(e.target.files?.[0]?.name || "")}
+              />
+              <label 
+                htmlFor="ktp-upload" 
+                className="border border-dashed border-border-2 rounded-xl p-6 text-center hover:bg-bg-3 transition-colors cursor-pointer group flex flex-col items-center"
+              >
+                {ktpFileName ? (
+                  <>
+                    <CheckCircle size={24} className="mx-auto mb-2 text-lime transition-colors" />
+                    <p className="text-[13px] text-text-main font-bold">{ktpFileName}</p>
+                    <p className="text-[11px] text-text-sub mt-1">Klik untuk mengubah file</p>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={24} className="mx-auto mb-2 text-text-disabled group-hover:text-lime transition-colors" />
+                    <p className="text-[13px] text-text-sub">Klik untuk memilih file KTP/KTM</p>
+                    <p className="text-[11px] text-text-disabled mt-1">PNG, JPG, PDF (Max. 5MB)</p>
+                  </>
+                )}
+              </label>
             </div>
           </div>
 
@@ -87,16 +139,41 @@ export function VerificationForm() {
             <h3 className="font-bold text-lg mb-4 text-text-main">2. Kualifikasi Pendidikan</h3>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2 relative">
-                <label className="text-[13px] font-bold text-text-sub">Ijazah / Transkrip Nilai Terakhir *</label>
-                <div className="border border-dashed border-border-2 rounded-xl p-6 text-center hover:bg-bg-3 transition-colors cursor-pointer group">
-                  <Upload size={24} className="mx-auto mb-2 text-text-disabled group-hover:text-lime transition-colors" />
-                  <p className="text-[13px] text-text-sub">Klik atau seret file PDF / JPG ke sini</p>
-                </div>
+                <label className="text-[13px] font-bold text-text-sub" htmlFor="ijazah-upload">Ijazah / Transkrip Nilai Terakhir *</label>
+                <input 
+                  type="file" 
+                  name="attachment_ijazah" 
+                  id="ijazah-upload" 
+                  className="hidden" 
+                  accept="image/png, image/jpeg, application/pdf"
+                  required
+                  onChange={(e) => setIjazahFileName(e.target.files?.[0]?.name || "")}
+                />
+                <label 
+                  htmlFor="ijazah-upload"
+                  className="border border-dashed border-border-2 rounded-xl p-6 text-center hover:bg-bg-3 transition-colors cursor-pointer group flex flex-col items-center"
+                >
+                  {ijazahFileName ? (
+                    <>
+                      <CheckCircle size={24} className="mx-auto mb-2 text-lime transition-colors" />
+                      <p className="text-[13px] text-text-main font-bold">{ijazahFileName}</p>
+                      <p className="text-[11px] text-text-sub mt-1">Klik untuk mengubah file</p>
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={24} className="mx-auto mb-2 text-text-disabled group-hover:text-lime transition-colors" />
+                      <p className="text-[13px] text-text-sub">Klik untuk memilih file Transkrip/Ijazah</p>
+                      <p className="text-[11px] text-text-disabled mt-1">PDF, PNG, JPG (Max. 5MB)</p>
+                    </>
+                  )}
+                </label>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-bold text-text-sub">Ceritakan Pengalaman Mengajar Anda (Opsional)</label>
+              <div className="flex flex-col gap-2 mt-2">
+                <label className="text-[13px] font-bold text-text-sub" htmlFor="pengalaman">Ceritakan Pengalaman Mengajar Anda (Opsional)</label>
                 <textarea 
+                  id="pengalaman"
+                  name="pengalaman"
                   rows={4}
                   className="w-full bg-bg-base border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime"
                   placeholder="Ceritakan pengalaman mengajar, pencapaian, dsb..."
@@ -106,12 +183,15 @@ export function VerificationForm() {
           </div>
 
           <div className="pt-4 flex flex-col md:flex-row justify-end gap-3 items-center">
-            <span className="text-[12px] text-text-sub text-center md:text-left">Semua data Anda dijamin kerahasiaannya.</span>
+            <span className="text-[12px] text-text-sub text-center md:text-left">File akan dikirimkan dengan aman ke tim verifikasi.</span>
             <button 
               type="submit"
-              className="bg-primary hover:bg-primary-bright text-white font-bold px-8 py-3 rounded-xl transition-colors w-full md:w-auto"
+              disabled={isSubmitting}
+              className={`font-bold px-8 py-3 rounded-xl transition-colors w-full md:w-auto ${
+                isSubmitting ? "bg-bg-3 cursor-not-allowed text-text-sub" : "bg-primary hover:bg-primary-bright text-white"
+              }`}
             >
-              Ajukan Verifikasi
+              {isSubmitting ? "Mengirim..." : "Kirim Dokumen"}
             </button>
           </div>
         </form>
