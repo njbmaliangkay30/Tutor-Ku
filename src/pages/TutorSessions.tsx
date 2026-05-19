@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Calendar, Video, FileText, Star, Clock, Edit3, X } from "lucide-react";
 import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
@@ -158,9 +159,9 @@ export function TutorSessions() {
         )}
       </div>
 
-      {reportModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden">
+      {reportModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>
+          <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center p-4 border-b-[1.5px] border-border bg-bg-2">
               <div className="font-display font-bold text-[16px]">
                 Laporan Sesi
@@ -230,7 +231,7 @@ export function TutorSessions() {
               </button>
             </div>
           </div>
-        </div>
+        </div>, document.body
       )}
     </div>
   );

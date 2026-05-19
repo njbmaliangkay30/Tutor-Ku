@@ -74,16 +74,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
 
       const mapped = (data || []).map((t) => {
-        const tags = t.tutor_subjects
-          ? t.tutor_subjects.map((s: any) => s.subject_name)
-          : [];
+        const tags = t.target_subjects || (t.tutor_subjects ? t.tutor_subjects.map((s: any) => s.subject_name) : []);
         return {
           id: t.id,
           name: t.profiles?.full_name || "Tutor",
           initials: (t.profiles?.full_name || "T")
             .substring(0, 2)
             .toUpperCase(),
-          university: "Universtas Terbuka",
+          university: t.university || "-",
           major: tags[0] || "Umum",
           rating: Number(t.rating) || 0,
           sessions: t.total_reviews || 0,

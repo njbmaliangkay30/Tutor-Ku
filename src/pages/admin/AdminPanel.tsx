@@ -283,9 +283,9 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
       </div>
 
       {/* User Details Modal */}
-      {selectedUser && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-lg shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+      {selectedUser && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-pgIn" style={{overscrollBehavior: 'none'}}>
+          <div className="bg-card border border-border rounded-2xl w-full max-w-lg shadow-2xl relative animate-slideUp flex flex-col max-h-[90vh]">
             <button
                onClick={() => setSelectedUser(null)}
                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-bg-2 text-text-sub hover:text-text-main transition-colors z-10"
@@ -414,7 +414,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
               </div>
             </div>
           </div>
-        </div>
+        </div>, document.body
       )}
     </>
   );

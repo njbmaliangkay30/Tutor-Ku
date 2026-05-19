@@ -1,4 +1,5 @@
 import { ChevronLeft, Medal, Star } from "lucide-react";
+import { createPortal } from "react-dom";
 import { useAppContext } from "../AppContext";
 import {
   PKG_SUBSCRIPTIONS,
@@ -322,8 +323,8 @@ export function TutorDetail() {
       </div>
 
       {/* Success ModalOverlay */}
-      {bookingSuccess && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      {bookingSuccess && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-pgIn" style={{overscrollBehavior: 'none'}}>
           <div className="bg-card w-full max-w-sm rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden p-6 text-center">
             <div className="w-16 h-16 bg-lime-mid text-lime rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-lime">
               <Star size={32} />
@@ -335,7 +336,7 @@ export function TutorDetail() {
               Menunggu konfirmasi dari tutor...
             </p>
           </div>
-        </div>
+        </div>, document.body
       )}
     </div>
   );

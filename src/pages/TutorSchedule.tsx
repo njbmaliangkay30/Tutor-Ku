@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Calendar as CalendarIcon, Clock, Check, X, User } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAppContext } from "../AppContext";
@@ -244,9 +245,9 @@ export function TutorSchedule() {
       </div>
 
       {/* Booking Detail Modal */}
-      {bookingModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden">
+      {bookingModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>
+          <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center p-4 border-b-[1.5px] border-border bg-bg-2">
               <div className="font-display font-bold text-[16px]">
                 Detail Request
@@ -324,7 +325,7 @@ export function TutorSchedule() {
               </div>
             </div>
           </div>
-        </div>
+        </div>, document.body
       )}
     </div>
   );
