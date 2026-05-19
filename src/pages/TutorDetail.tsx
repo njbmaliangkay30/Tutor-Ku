@@ -66,21 +66,25 @@ export function TutorDetail() {
        // Calculate end time (assuming 1h 30m duration)
        const baseDate = new Date(selectedDate);
        const [h, m] = selectedTime.split(':').map(Number);
-       baseDate.setHours(h + 1, m + 30);
-       const endDateStr = baseDate.toTimeString().substring(0, 5);
 
        const inserts = [];
        for (let i = 0; i < sessionsCount; i++) {
          const sDate = new Date(selectedDate);
          sDate.setDate(sDate.getDate() + (i * 7)); // Add 7 days per subsequent session
          
+         const startDateTime = new Date(sDate);
+         startDateTime.setHours(h, m, 0, 0);
+
+         const endDateTime = new Date(startDateTime);
+         endDateTime.setHours(h + 1, m + 30, 0, 0);
+
          inserts.push({
            student_id: userProfile.id,
            tutor_id: tutor.id,
            subject: tutor.major,
-           session_date: sDate.toISOString().split('T')[0],
-           start_time: selectedTime,
-           end_time: endDateStr,
+           session_date: sDate.toISOString().split('T')[0], // Useful for day-based queries if needed
+           start_time: startDateTime.toISOString(),
+           end_time: endDateTime.toISOString(),
            material_notes: i === 0 ? notes : "Sesi " + (i+1) + " dari paket (Terjadwal Otomatis)",
            status: 'pending',
            meeting_type: meetingType,

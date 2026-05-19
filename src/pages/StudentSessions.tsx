@@ -39,17 +39,26 @@ export function StudentSessions() {
 
   const now = new Date();
   
+  const getSessionEndDateTime = (s: any) => {
+    if (s.end_time?.includes('T')) return new Date(s.end_time);
+    return s.session_date && s.end_time ? new Date(`${s.session_date}T${s.end_time}`) : new Date(0);
+  };
+
+  const formatTime = (timeStr: string) => {
+    if (!timeStr) return '';
+    if (timeStr.includes('T')) return new Date(timeStr).toLocaleTimeString(['id-ID', 'en-US'], { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+    return timeStr.substring(0, 5);
+  };
+
   const upcoming = sessions.filter(s => {
     if (s.status === 'pending') return true;
     if (s.status === 'completed' || s.status === 'rejected') return false;
-    const sDate = s.session_date && s.end_time ? new Date(`${s.session_date}T${s.end_time}`) : new Date(0);
-    return sDate >= now;
+    return getSessionEndDateTime(s) >= now;
   });
   const past = sessions.filter(s => {
     if (s.status === 'completed' || s.status === 'rejected' || s.status === 'waiting_for_student') return true;
     if (s.status === 'pending') return false;
-    const sDate = s.session_date && s.end_time ? new Date(`${s.session_date}T${s.end_time}`) : new Date(0);
-    return sDate < now;
+    return getSessionEndDateTime(s) < now;
   });
 
   const displayList = type === 'upcoming' ? upcoming : past;
@@ -141,7 +150,7 @@ export function StudentSessions() {
                  </div>
                  <div className="flex items-center gap-2 text-sm text-text-main">
                    <Clock size={16} className="text-text-sub" />
-                   <span>{session.start_time.substring(0,5)} - {session.end_time.substring(0,5)} WIB</span>
+                   <span>{formatTime(session.start_time)} - {formatTime(session.end_time)}</span>
                  </div>
                  {session.material_notes && (
                    <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">

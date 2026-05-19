@@ -43,6 +43,12 @@ export function TutorSchedule() {
     }
   }, [userProfile, userRole]);
 
+  const formatTime = (timeStr: string) => {
+    if (!timeStr) return '';
+    if (timeStr.includes('T')) return new Date(timeStr).toLocaleTimeString(['id-ID', 'en-US'], { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+    return timeStr.substring(0, 5);
+  };
+
   const handleAction = async (
     sessionId: string,
     action: "confirmed" | "cancelled",
@@ -213,8 +219,8 @@ export function TutorSchedule() {
                     <div className="flex items-center gap-2 text-xs text-lime bg-lime-mid px-2 py-0.5 rounded w-max mb-1.5">
                       <CalendarIcon size={12} />{" "}
                       {new Date(req.session_date).toLocaleDateString()} ·{" "}
-                      {req.start_time.substring(0, 5)} -{" "}
-                      {req.end_time.substring(0, 5)}
+                      {formatTime(req.start_time)} -{" "}
+                      {formatTime(req.end_time)}
                     </div>
                     {req.meeting_type && (
                       <div className="text-[10px] bg-bg-2 border border-border px-2 py-0.5 rounded text-text-sub font-mono inline-block">
@@ -300,8 +306,8 @@ export function TutorSchedule() {
                 </div>
                 <div className="flex items-center gap-2 text-sm font-bold mt-1">
                   <Clock size={16} className="text-text-sub" />{" "}
-                  {bookingModal.start_time.substring(0, 5)} -{" "}
-                  {bookingModal.end_time.substring(0, 5)}
+                  {formatTime(bookingModal.start_time)} -{" "}
+                  {formatTime(bookingModal.end_time)}
                 </div>
                 {bookingModal.meeting_type && (
                    <div className="mt-3 bg-bg-2 p-2 rounded-lg border border-border">

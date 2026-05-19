@@ -88,10 +88,21 @@ export function TutorSessions() {
     }
   };
 
+  const getSessionEndDateTime = (s: any) => {
+    if (s.end_time?.includes('T')) return new Date(s.end_time);
+    return s.session_date && s.end_time ? new Date(`${s.session_date}T${s.end_time}`) : new Date(0);
+  };
+
+  const formatTime = (timeStr: string) => {
+    if (!timeStr) return '';
+    if (timeStr.includes('T')) return new Date(timeStr).toLocaleTimeString(['id-ID', 'en-US'], { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+    return timeStr.substring(0, 5);
+  };
+
   const now = new Date();
   
-  const upcoming = sessions.filter(s => new Date(`${s.session_date}T${s.end_time}`) >= now);
-  const pendingReviews = sessions.filter(s => new Date(`${s.session_date}T${s.end_time}`) < now && !sessionReports.has(s.id));
+  const upcoming = sessions.filter(s => getSessionEndDateTime(s) >= now);
+  const pendingReviews = sessions.filter(s => getSessionEndDateTime(s) < now && !sessionReports.has(s.id));
   const waitingForStudent = sessions.filter(s => s.status === 'waiting_for_student');
 
   return (
@@ -150,7 +161,7 @@ export function TutorSessions() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-text-main">
                           <Clock size={16} className="text-text-sub" />
-                          <span>{session.start_time.substring(0,5)} - {session.end_time.substring(0,5)} WIB</span>
+                          <span>{formatTime(session.start_time)} - {formatTime(session.end_time)}</span>
                         </div>
                       </div>
 
@@ -206,7 +217,7 @@ export function TutorSessions() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-text-main">
                           <Clock size={16} className="text-text-sub" />
-                          <span>{session.start_time.substring(0,5)} - {session.end_time.substring(0,5)} WIB</span>
+                          <span>{formatTime(session.start_time)} - {formatTime(session.end_time)}</span>
                         </div>
                       </div>
                     </div>
@@ -257,7 +268,7 @@ export function TutorSessions() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-text-main">
                           <Clock size={16} className="text-text-sub" />
-                          <span>{session.start_time.substring(0,5)} - {session.end_time.substring(0,5)} WIB</span>
+                          <span>{formatTime(session.start_time)} - {formatTime(session.end_time)}</span>
                         </div>
                         {session.material_notes && (
                           <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">

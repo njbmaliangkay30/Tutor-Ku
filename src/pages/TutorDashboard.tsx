@@ -128,6 +128,17 @@ export function TutorDashboard() {
   }, [user]);
 
   // Derived data
+
+  const getSessionEndDateTime = (s: any) => {
+    if (s.end_time?.includes('T')) return new Date(s.end_time);
+    return s.session_date && s.end_time ? new Date(`${s.session_date}T${s.end_time}`) : new Date(0);
+  };
+  
+  const getSessionStartDateTime = (s: any) => {
+    if (s.start_time?.includes('T')) return new Date(s.start_time);
+    return s.session_date && s.start_time ? new Date(`${s.session_date}T${s.start_time}`) : new Date(0);
+  };
+
   const tutorName = userProfile?.full_name || "Tutor";
   const xp = sessions.filter(s => s.status === 'completed').length * 100;
   const xpThisMonth = sessions.filter(s => s.status === 'completed' && new Date(s.session_date).getMonth() === new Date().getMonth()).length * 100;
@@ -142,7 +153,7 @@ export function TutorDashboard() {
 
   // Process pending reviews
   const reportSessionIds = new Set(sessionReports.map(r => r.session_id));
-  const pastSessions = sessions.filter(s => new Date(`${s.session_date}T${s.end_time}`) < new Date());
+  const pastSessions = sessions.filter(s => getSessionEndDateTime(s) < new Date());
   
   const pendingReviews = pastSessions
     .filter(s => !reportSessionIds.has(s.id));
@@ -157,7 +168,7 @@ export function TutorDashboard() {
         level: 'Siswa',
         subject: s.subject,
         sessions: sessions.filter(sess => sess.student_id === s.student_id).length,
-        nextSession: sessions.find(sess => sess.student_id === s.student_id && new Date(`${sess.session_date}T${sess.start_time}`) > new Date())?.session_date || 'Belum ada',
+        nextSession: sessions.find(sess => sess.student_id === s.student_id && getSessionStartDateTime(sess) > new Date())?.session_date || 'Belum ada',
         remaining: 0, // if we want to query packages
         avatarColor: '#1A3A28', // Placeholder color
       });

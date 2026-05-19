@@ -10,6 +10,12 @@ export function TutorHistory() {
   const [isLoading, setIsLoading] = useState(false);
   const { userProfile } = useAppContext();
 
+  const formatTime = (timeStr: string) => {
+    if (!timeStr) return '';
+    if (timeStr.includes('T')) return new Date(timeStr).toLocaleTimeString(['id-ID', 'en-US'], { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+    return timeStr.substring(0, 5);
+  };
+
   useEffect(() => {
     const fetchSessions = async () => {
        if (!userProfile) return;
@@ -101,7 +107,7 @@ export function TutorHistory() {
                 </div>
                 <div className="flex items-center gap-1.5 font-mono">
                   <Clock size={14} />
-                  <span>{session.start_time.substring(0,5)} - {session.end_time.substring(0,5)} WIB</span>
+                  <span>{formatTime(session.start_time)} - {formatTime(session.end_time)}</span>
                 </div>
               </div>
 
