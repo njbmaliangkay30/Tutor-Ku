@@ -42,35 +42,37 @@ export function Search() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <div className="flex gap-2 items-center mb-2">
-           <div className="text-[10px] font-bold text-text-sub font-mono uppercase whitespace-nowrap">Gender:</div>
-           {['all', 'F', 'M'].map(st => {
-              const label = st === 'all' ? 'Semua' : st === 'F' ? 'Perempuan' : 'Laki-laki';
-              const active = genderFilter === st;
-              return (
-                <button
-                  key={st}
-                  onClick={() => setGenderFilter(st)}
-                  className={`border-[1.5px] rounded-sm px-3 py-[5px] text-[11px] font-bold cursor-pointer font-mono whitespace-nowrap transition-all ${
-                    active 
-                      ? 'border-lime bg-lime-mid text-lime' 
-                      : 'border-border bg-card text-text-sub hover:text-text-main'
-                  }`}
-                >
-                  {label}
-                </button>
-              )
-           })}
+        <div className="flex gap-2 items-center mb-3">
+           <div className="text-[10px] font-bold text-text-sub font-mono uppercase whitespace-nowrap opacity-60">Gender:</div>
+           <div className="flex-1 flex gap-1.5">
+             {['all', 'F', 'M'].map(st => {
+                const label = st === 'all' ? 'SEMUA' : st === 'F' ? 'WANITA' : 'PRIA';
+                const active = genderFilter === st;
+                return (
+                  <button
+                    key={st}
+                    onClick={() => setGenderFilter(st)}
+                    className={`flex-1 border-[1.5px] rounded-lg py-[7px] text-[10px] font-bold cursor-pointer font-mono whitespace-nowrap transition-all ${
+                      active 
+                        ? 'border-lime bg-lime-mid text-lime' 
+                        : 'border-border bg-card text-text-sub hover:text-text-main'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                )
+             })}
+           </div>
         </div>
-        <div className="flex gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+        <div className="flex gap-1.5 overflow-x-auto pb-1.5 custom-scrollbar">
            {allSubjects.map(s => {
              const active = (s === 'Semua' && !subjectFilter) || subjectFilter === s;
              return (
                <button
                  key={s}
                  onClick={() => setSubjectFilter(s === 'Semua' ? '' : s)}
-                 className={`border-[1.5px] rounded-sm px-3 py-[5px] text-[11px] cursor-pointer whitespace-nowrap font-mono transition-all ${
-                   active ? 'border-lime bg-lime-mid text-lime font-bold' : 'border-border bg-card text-text-sub font-medium hover:text-text-main hover:bg-bg-3'
+                 className={`border-[1.5px] rounded-lg px-[14px] py-[7px] text-[10px] cursor-pointer whitespace-nowrap font-mono transition-all font-bold tracking-tight uppercase ${
+                   active ? 'border-lime bg-lime-mid text-lime' : 'border-border bg-card text-text-sub hover:text-text-main hover:bg-bg-3'
                  }`}
                >
                  {s}
@@ -80,7 +82,7 @@ export function Search() {
         </div>
       </div>
 
-      <div className="p-3.5 flex flex-col gap-2">
+      <div className="p-3.5 flex flex-col gap-2 pb-20">
         {filteredTutors.length === 0 ? (
           <div className="text-center py-10 px-5 text-text-light">
              <SearchIcon size={40} className="mx-auto mb-2 text-border" />

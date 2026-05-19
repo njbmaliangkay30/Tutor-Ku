@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Bell } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -14,7 +14,7 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
+  const [popupPos, setPopupPos] = useState<any>({ top: 0, right: 0 });
 
   useEffect(() => {
     if (!userProfile?.id) return;
@@ -86,13 +86,37 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
   const toggleOpen = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    console.log('Notification bell clicked. Current state:', !isOpen);
     
     if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      const right = window.innerWidth - rect.right;
-      // Use a fixed offset or calculated based on rect
-      setPopupPos({ top: rect.top + 48, right: right });
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      
+      const newPos: any = {};
+      
+      // Vertical placement
+      if (rect.top > viewportHeight / 2) {
+        // Bottom half -> pop UP
+        newPos.bottom = viewportHeight - rect.top + 10;
+        newPos.top = 'auto';
+      } else {
+        // Top half -> pop DOWN
+        newPos.top = rect.top + 48;
+        newPos.bottom = 'auto';
+      }
+      
+      // Horizontal placement
+      if (rect.left < viewportWidth / 2) {
+        // Left half (like Sidebar)
+        newPos.left = Math.max(10, rect.left);
+        newPos.right = 'auto';
+      } else {
+        // Right half (like Mobile Header)
+        newPos.right = Math.max(10, viewportWidth - rect.right);
+        newPos.left = 'auto';
+      }
+      
+      setPopupPos(newPos);
     }
     setIsOpen(!isOpen);
   };
@@ -122,7 +146,9 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
             className="fixed z-[9999] w-80 max-h-[400px] bg-card border-[2px] border-border rounded-2xl shadow-sh3 overflow-hidden flex flex-col animate-pgIn"
             style={{
               top: popupPos.top,
-              right: Math.max(20, popupPos.right)
+              bottom: popupPos.bottom,
+              left: popupPos.left,
+              right: popupPos.right
             }}
           >
             <div className="flex justify-between items-center p-4 border-b border-border bg-bg-2">

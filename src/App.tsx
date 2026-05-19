@@ -469,17 +469,18 @@ export default function App() {
         <main className="flex-1 flex flex-col overflow-hidden relative min-w-0">
           {/* Temporary Dev/Preview Admin Toggle Removed */}
           {/* Topbar (Mobile Only) */}
-          <div className="flex md:hidden h-[56px] py-1 bg-bg-2/80 backdrop-blur-xl items-center justify-between px-4 shrink-0 border-b border-border/60 relative z-50">
+          <div className="flex md:hidden h-[60px] py-2 bg-bg-2/80 backdrop-blur-xl items-center justify-between px-4 shrink-0 border-b border-border/60 relative z-50">
             <div
-              className="font-display text-[22px] font-extrabold text-lime tracking-[-1px] select-none cursor-pointer"
+              className="font-display text-[22px] font-extrabold text-lime tracking-[-1px] select-none cursor-pointer flex items-center gap-1"
               onClick={() => setActiveTab("home")}
               style={{ textShadow: "2px 2px 0 rgba(0,0,0,0.3)" }}
             >
+              <div className="w-8 h-8 rounded-lg bg-lime flex items-center justify-center text-black text-sm tracking-tighter" style={{ textShadow: 'none' }}>tk</div>
               tutorku
             </div>
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2.5 items-center">
               <button
-                className="w-[34px] h-[34px] bg-bg-3/80 rounded-lg border-[1.5px] border-border/60 flex items-center justify-center text-[16px] text-text-sub transition-all hover:border-lime hover:text-lime"
+                className="w-10 h-10 bg-bg-3/80 rounded-full border-[1.5px] border-border/60 flex items-center justify-center text-[18px] text-text-sub transition-all hover:border-lime hover:text-lime"
                 onClick={toggleTheme}
               >
                 {theme === "light" ? "🌙" : "☀️"}
@@ -522,7 +523,9 @@ export default function App() {
                 )}
 
                 {activeTab === "daftar-tutor" && <PageDaftarTutor />}
-                {activeTab === "login" && userRole === "guest" && <PageLogin />}
+                {activeTab === "login" && (
+                  userRole === "guest" ? <PageLogin /> : <PageProfile />
+                )}
 
                 {activeTab === "home" && userRole === "admin" && (
                   <AdminOverview />
@@ -555,221 +558,153 @@ export default function App() {
             )}
           </div>
 
-          {/* Bottom Nav (Mobile Only) */}
-          <nav className="flex md:hidden h-[64px] bg-bg-2/80 backdrop-blur-xl border-t border-border/60 pt-1.5 shrink-0 relative z-50 overflow-x-auto custom-scrollbar pb-2 shadow-[0_-4px_24px_rgba(0,0,0,0.02)] items-start gap-4 px-2">
+      {/* Bottom Nav (Mobile Only) */}
+          <nav className="flex md:hidden h-[72px] bg-bg-2/95 backdrop-blur-2xl border-t border-border/60 pt-2 shrink-0 relative z-50 overflow-x-auto custom-scrollbar pb-[14px] shadow-[0_-10px_30px_rgba(0,0,0,0.08)] items-center gap-2 px-4 sticky bottom-0">
             {userRole === "tutor" ? (
               <>
                 <button
                   onClick={() => setActiveTab("home")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[60px] ${activeTab === "home" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "home" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <Home size={18} />
+                    <Home size={19} />
                   </span>
-                  <span className="text-[10px] font-mono">Dashboard</span>
+                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100" : "opacity-70"}`}>Dash</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("schedule")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[60px] ${activeTab === "schedule" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "schedule" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "schedule" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "schedule" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <Calendar size={18} />
+                    <Calendar size={19} />
                   </span>
-                  <span className="text-[10px] font-mono">Schedule</span>
+                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "schedule" ? "opacity-100" : "opacity-70"}`}>Jadwal</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("sessions")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[60px] ${activeTab === "sessions" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "sessions" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <BookOpen size={18} />
+                    <BookOpen size={19} />
                   </span>
-                  <span className="text-[10px] font-mono">Sessions</span>
+                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "sessions" ? "opacity-100" : "opacity-70"}`}>Sesi</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("history")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[60px] ${activeTab === "history" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "history" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "history" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "history" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <Clock size={18} />
+                    <Clock size={19} />
                   </span>
-                  <span className="text-[10px] font-mono">History</span>
+                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "history" ? "opacity-100" : "opacity-70"}`}>History</span>
                 </button>
               </>
             ) : userRole === "admin" ? (
               <>
                 <button
                   onClick={() => setActiveTab("home")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[64px] ${activeTab === "home" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "home" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <Home size={18} />
+                    <Home size={19} />
                   </span>
-                  <span className="text-[10px] font-mono">Overview</span>
+                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100" : "opacity-70"}`}>Info</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("admin-tutors")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[64px] ${activeTab === "admin-tutors" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "admin-tutors" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "admin-tutors" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-tutors" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <BookOpen size={18} />
+                    <BookOpen size={19} />
                   </span>
-                  <span className="text-[10px] font-mono">Tutor</span>
+                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-tutors" ? "opacity-100" : "opacity-70"}`}>Tutor</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("admin-verifications")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[64px] ${activeTab === "admin-verifications" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "admin-verifications" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "admin-verifications" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-verifications" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <ShieldCheck size={18} />
+                    <ShieldCheck size={19} />
                   </span>
-                  <span className="text-[10px] font-mono">Verif</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab("admin-rate-requests")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[64px] ${activeTab === "admin-rate-requests" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
-                >
-                  <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "admin-rate-requests" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
-                  >
-                    <DollarSign size={18} />
-                  </span>
-                  <span className="text-[10px] font-mono">Harga</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab("admin-students")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[64px] ${activeTab === "admin-students" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
-                >
-                  <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "admin-students" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
-                  >
-                    <Users size={18} />
-                  </span>
-                  <span className="text-[10px] font-mono">Student</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab("admin-transactions")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[64px] ${activeTab === "admin-transactions" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
-                >
-                  <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "admin-transactions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
-                  >
-                    <CreditCard size={18} />
-                  </span>
-                  <span className="text-[10px] font-mono">Trx</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab("admin-packages")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[64px] ${activeTab === "admin-packages" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
-                >
-                  <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "admin-packages" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
-                  >
-                    <Package size={18} />
-                  </span>
-                  <span className="text-[10px] font-mono">Package</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab("admin-sessions")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[64px] ${activeTab === "admin-sessions" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
-                >
-                  <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "admin-sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
-                  >
-                    <Calendar size={18} />
-                  </span>
-                  <span className="text-[10px] font-mono">Sesi</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab("admin-reviews")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[64px] ${activeTab === "admin-reviews" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
-                >
-                  <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "admin-reviews" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
-                  >
-                    <Star size={18} />
-                  </span>
-                  <span className="text-[10px] font-mono">Review</span>
+                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-verifications" ? "opacity-100" : "opacity-70"}`}>Verif</span>
                 </button>
               </>
             ) : (
               <>
                 <button
                   onClick={() => setActiveTab("home")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all flex-1 ${activeTab === "home" || activeTab === "search" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "home" || activeTab === "search" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "home" || activeTab === "search" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" || activeTab === "search" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <Search size={18} />
+                    <Search size={22} />
                   </span>
-                  <span className="text-[10px] font-mono">Explore</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" || activeTab === "search" ? "opacity-100" : "opacity-70"}`}>Explore</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("student_sessions")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all flex-1 ${activeTab === "student_sessions" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "student_sessions" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "student_sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "student_sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <Calendar size={18} />
+                    <Calendar size={22} />
                   </span>
-                  <span className="text-[10px] font-mono">Sessions</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "student_sessions" ? "opacity-100" : "opacity-70"}`}>Sesi</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("progress")}
-                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all flex-1 ${activeTab === "progress" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "progress" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "progress" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "progress" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <Activity size={18} />
+                    <Activity size={22} />
                   </span>
-                  <span className="text-[10px] font-mono">Progress</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "progress" ? "opacity-100" : "opacity-70"}`}>Progres</span>
                 </button>
               </>
             )}
             <button
               onClick={() => setActiveTab("login")}
-              className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all flex-1 ${activeTab === "login" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+              className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "login" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
             >
               <span
-                className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "login" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "login" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
               >
                 {userRole === "guest" ? (
-                  <LogIn size={18} />
+                  <LogIn size={22} />
                 ) : (
                   userProfile?.avatar_url || user?.user_metadata?.avatar_url ? (
                     <img 
                       src={userProfile?.avatar_url || user?.user_metadata?.avatar_url} 
                       alt="Avatar" 
-                      className="w-[18px] h-[18px] rounded-full border border-border object-cover"
+                      className="w-[22px] h-[22px] rounded-full border-2 border-lime/20 object-cover"
                       referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <div className="w-[18px] h-[18px] rounded-full bg-[#1A3A28] border border-border text-white flex items-center justify-center text-[9px] font-bold font-display leading-none">
-                      {(userProfile?.full_name || user?.user_metadata?.full_name || "U").substring(0, 2).toUpperCase()}
+                    <div className="w-[22px] h-[22px] rounded-full bg-[#1A3A28] border-2 border-lime/20 text-lime flex items-center justify-center text-[10px] font-bold font-display leading-none">
+                      {(userProfile?.full_name || user?.user_metadata?.full_name || "U").substring(0, 1).toUpperCase()}
                     </div>
                   )
                 )}
               </span>
-              <span className="text-[10px] font-mono">
-                {userRole === "guest" ? "Masuk" : "Profil"}
-              </span>
+              <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "login" ? "opacity-100" : "opacity-70"}`}>Profil</span>
             </button>
           </nav>
 
@@ -779,12 +714,6 @@ export default function App() {
             </div>
           )}
 
-          {activeTab === "login" && userRole !== "guest" && (
-            <div className="fixed md:absolute inset-0 z-[100] md:z-50 bg-bg-base overflow-y-auto animate-pgIn custom-scrollbar">
-              <PageProfile />
-            </div>
-          )}
-          
           {user && userProfile && !userProfile.phone && userRole !== "guest" && (
             <OnboardingForm />
           )}

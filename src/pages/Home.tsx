@@ -142,7 +142,7 @@ export function PageHome() {
       </div>
 
       {/* Stats */}
-      <div className="px-3.5 py-4">
+      <div className="px-3.5 py-4 pb-20">
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-card rounded-xl p-3 border-[1.5px] border-border text-center transition-colors hover:border-border-2 shadow-sm">
             <div className="font-mono text-[22px] font-bold text-lime leading-none">12</div>

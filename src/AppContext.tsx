@@ -270,6 +270,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         setIsLoadingProfile(true);
         fetchProfile(session.user.id, session.user);
+        // If on login tab, redirect to home upon success
+        if (activeTab === "login") {
+           setActiveTab("home");
+        }
       } else {
         setUserRole("guest");
         setUserProfile(null);
@@ -278,7 +282,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [activeTab]);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";

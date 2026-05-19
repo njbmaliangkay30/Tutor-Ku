@@ -397,10 +397,12 @@ export function Profile() {
       </div>
 
       {isEditing && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>
-           <div className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-[500px] flex flex-col max-h-[85vh] overflow-hidden relative">
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <h3 className="font-display font-bold text-lg">Edit Profil</h3>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>
+           <div className="bg-card border border-border sm:shadow-2xl sm:rounded-2xl w-full h-full sm:h-auto sm:max-w-[500px] flex flex-col sm:max-h-[85vh] overflow-hidden relative">
+              <div className="flex items-center justify-between p-4 border-b border-border bg-bg-2">
+                <h3 className="font-display font-bold text-lg flex items-center gap-2">
+                  <Settings size={20} className="text-lime" /> Edit Profil
+                </h3>
                 <button onClick={() => setIsEditing(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-bg-2 transition-colors">
                   <X size={18} />
                 </button>
