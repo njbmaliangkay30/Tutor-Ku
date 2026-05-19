@@ -30,9 +30,10 @@ export function StudentProgress() {
           .from('session_reports')
           .select(`
             *,
-            sessions (subject, session_date),
+            sessions!inner (subject, session_date, student_id),
             tutor_profiles (profiles (full_name))
           `)
+          .eq('sessions.student_id', userProfile.id)
           .order('created_at', { ascending: false });
         
         if (!reportError && reportData) {
@@ -147,30 +148,56 @@ export function StudentProgress() {
             Belum ada feedback dari tutor. Selesaikan satu sesi untuk melihat laporan.
           </div>
         ) : (
-          reports.slice(0, 3).map((report) => (
-            <div 
-              key={report.id}
-              onClick={() => setSelectedReport(report)}
-              className="bg-card border-[1.5px] border-border rounded-xl p-4 cursor-pointer hover:border-lime/50 transition-all group"
-            >
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                   <h3 className="font-bold text-sm text-text-main group-hover:text-lime transition-colors">{report.sessions?.subject}</h3>
-                   <p className="text-[10px] text-text-sub font-mono uppercase tracking-wider">{new Date(report.sessions?.session_date).toLocaleDateString()}</p>
+          <>
+            {reports.slice(0, 3).map((report) => (
+              <div 
+                key={report.id}
+                onClick={() => setSelectedReport(report)}
+                className="bg-card border-[1.5px] border-border rounded-xl p-4 cursor-pointer hover:border-lime/50 transition-all group"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-bold text-sm text-text-main group-hover:text-lime transition-colors">{report.sessions?.subject}</h3>
+                    <p className="text-[10px] text-text-sub font-mono uppercase tracking-wider">{new Date(report.sessions?.session_date).toLocaleDateString()}</p>
+                  </div>
+                  <div className="flex text-warning">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={12} fill={i < report.student_understanding_level ? "currentColor" : "none"} strokeOpacity={i < report.student_understanding_level ? 1 : 0.3} />
+                    ))}
+                  </div>
                 </div>
-                <div className="flex text-warning">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={12} fill={i < report.student_understanding_level ? "currentColor" : "none"} strokeOpacity={i < report.student_understanding_level ? 1 : 0.3} />
-                  ))}
+                <p className="text-[12px] text-text-sub line-clamp-2 italic mb-3">"{report.summary}"</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-lime font-display">Oleh {report.tutor_profiles?.profiles?.full_name}</span>
+                  <span className="text-[10px] font-mono text-text-sub bg-bg-3 px-2 py-0.5 rounded border border-border">Klik untuk Detail</span>
                 </div>
               </div>
-              <p className="text-[12px] text-text-sub line-clamp-2 italic mb-3">"{report.summary}"</p>
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-lime font-display">Oleh {report.tutor_profiles?.profiles?.full_name}</span>
-                <span className="text-[10px] font-mono text-text-sub bg-bg-3 px-2 py-0.5 rounded border border-border">Klik untuk Detail</span>
-              </div>
-            </div>
-          ))
+            ))}
+            {reports.length > 3 && (
+              <details className="group">
+                <summary className="text-center py-2 text-xs font-bold text-text-sub cursor-pointer hover:text-lime transition-colors list-none font-mono uppercase tracking-widest">
+                   Lihat Semua Feedback ({reports.length})
+                </summary>
+                <div className="flex flex-col gap-3 mt-3 pt-3 border-t border-border/50">
+                   {reports.slice(3).map((report) => (
+                      <div 
+                        key={report.id}
+                        onClick={() => setSelectedReport(report)}
+                        className="bg-card/50 border-[1.5px] border-border rounded-xl p-4 cursor-pointer hover:border-lime/50 transition-all group"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h3 className="font-bold text-[13px] text-text-main group-hover:text-lime transition-colors">{report.sessions?.subject}</h3>
+                            <p className="text-[9px] text-text-sub font-mono tracking-wider">{new Date(report.sessions?.session_date).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <p className="text-[11px] text-text-sub truncate italic">"{report.summary}"</p>
+                      </div>
+                   ))}
+                </div>
+              </details>
+            )}
+          </>
         )}
       </div>
 
