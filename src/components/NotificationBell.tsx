@@ -17,19 +17,22 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
   const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
 
   useEffect(() => {
-    if (!userProfile) return;
+    if (!userProfile?.id) return;
 
     const fetchNotifications = async () => {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', userProfile.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-        
-      if (!error && data) {
-        setNotifications(data);
-        setUnreadCount(data.filter(n => !n.is_read).length);
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', userProfile.id)
+          .order('created_at', { ascending: false })
+          .limit(15);
+          
+        if (error) throw error;
+        setNotifications(data || []);
+        setUnreadCount(data?.filter(n => !n.is_read).length || 0);
+      } catch (err) {
+        console.error('Error fetching notifications:', err);
       }
     };
 
@@ -38,24 +41,28 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
     // Subscribe to new notifications
     const channelId = Math.random().toString(36).substring(7);
     const channelName = `notifications_${userProfile.id}_${channelId}`;
-    const channel = supabase.channel(channelName);
+    console.log(`Subscribing to realtime channel: ${channelName}`);
     
-    channel
+    const channel = supabase.channel(channelName)
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
         table: 'notifications',
         filter: `user_id=eq.${userProfile.id}`
       }, (payload) => {
-        setNotifications(prev => [payload.new, ...prev].slice(0, 10));
+        console.log('Realtime notification received:', payload);
+        setNotifications(prev => [payload.new, ...prev].slice(0, 15));
         setUnreadCount(prev => prev + 1);
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`Subscription status for ${channelName}: ${status}`);
+      });
 
     return () => {
+      console.log(`Unsubscribing from channel: ${channelName}`);
       supabase.removeChannel(channel);
     };
-  }, [userProfile]);
+  }, [userProfile?.id]);
 
   const markAsRead = async (id: string) => {
     try {
@@ -76,11 +83,16 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
     } catch(e) { console.error(e); }
   };
 
-  const toggleOpen = () => {
+  const toggleOpen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log('Notification bell clicked. Current state:', !isOpen);
+    
     if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       const right = window.innerWidth - rect.right;
-      setPopupPos({ top: rect.top + 45, right });
+      // Use a fixed offset or calculated based on rect
+      setPopupPos({ top: rect.top + 48, right: right });
     }
     setIsOpen(!isOpen);
   };
@@ -92,7 +104,7 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
       <button 
         ref={buttonRef}
         onClick={toggleOpen}
-        className="w-10 h-10 rounded-full bg-bg-2 border border-border flex items-center justify-center hover:bg-bg-3 transition-colors text-text-sub relative"
+        className="w-10 h-10 rounded-full bg-bg-2 border border-border flex items-center justify-center hover:bg-bg-3 transition-all text-text-sub relative active:scale-95"
       >
         <Bell size={18} />
         {unreadCount > 0 && (
