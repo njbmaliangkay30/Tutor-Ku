@@ -165,7 +165,6 @@ export default function App() {
               </div>
             </div>
             <div className={`flex items-center gap-3 transition-opacity duration-300 ${showDesktopSidebar ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-              <NotificationBell />
               <div
                 onClick={toggleTheme}
                 className="relative cursor-pointer w-[44px] h-[24px] rounded-[12px] bg-border-2 border-[1.5px] border-border shrink-0 flex items-center p-[2px]"
@@ -429,8 +428,11 @@ export default function App() {
           </div>
 
           <div
-            className={`px-3 py-3 border-t-[1.5px] border-border/60 transition-all duration-300 overflow-hidden shrink-0 ${showDesktopSidebar ? "opacity-100" : "opacity-100"}`}
+            className={`px-3 py-3 border-t-[1.5px] border-border/60 transition-all duration-300 overflow-hidden shrink-0 flex items-center gap-2`}
           >
+            <div className={`${showDesktopSidebar ? "block" : "hidden"}`}>
+              <NotificationBell />
+            </div>
             <button
               onClick={() => setActiveTab("login")}
               title={userRole === "guest" ? "Masuk / Daftar" : "Profil"}
@@ -475,8 +477,9 @@ export default function App() {
             >
               tutorku
             </div>
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-3 items-center">
               <NotificationBell />
+              <div className="w-px h-6 bg-border mx-1" />
               <button
                 className="w-[34px] h-[34px] bg-bg-3/80 rounded-lg border-[1.5px] border-border/60 flex items-center justify-center text-[16px] text-text-sub transition-all hover:border-lime hover:text-lime"
                 onClick={toggleTheme}
