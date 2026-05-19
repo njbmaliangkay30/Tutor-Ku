@@ -99,7 +99,11 @@ export function Profile() {
       if (userRole === "tutor") {
         const availableDaysList = Object.keys(schedule).map(Number);
         const allHoursSet = new Set<string>();
-        Object.values(schedule).forEach(hours => hours.forEach(h => allHoursSet.add(h)));
+        Object.values(schedule).forEach((hours: any) => {
+          if (Array.isArray(hours)) {
+            hours.forEach((h: string) => allHoursSet.add(h));
+          }
+        });
         const availableHoursList = Array.from(allHoursSet).sort();
         
         const { error: tutorError } = await supabase.from('tutor_profiles').upsert({

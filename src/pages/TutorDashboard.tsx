@@ -15,7 +15,15 @@ export function TutorDashboard() {
   const [selectedDayToEdit, setSelectedDayToEdit] = useState<number | null>(null);
   const [isSavingSchedule, setIsSavingSchedule] = useState(false);
   
+  const [hourlyRate, setHourlyRate] = useState<number>(0);
+  const [pendingRateRequest, setPendingRateRequest] = useState<number | null>(null);
+  const [isRateModalOpen, setIsRateModalOpen] = useState(false);
+  const [requestedRate, setRequestedRate] = useState("");
+  const [requestReason, setRequestReason] = useState("");
+  const [isSubmittingRate, setIsSubmittingRate] = useState(false);
+
   const [reviewModalTarget, setReviewModalTarget] = useState<{sessionId: string, studentName: string} | null>(null);
+
   const [reportText, setReportText] = useState("");
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
@@ -47,6 +55,39 @@ export function TutorDashboard() {
     }
   };
 
+  const submitRateRequest = async () => {
+    if (!user || !requestedRate) return;
+    
+    const rateNumber = parseInt(requestedRate.replace(/\D/g, ''));
+    if (isNaN(rateNumber) || rateNumber <= 0) {
+       alert("Masukkan nominal yang valid");
+       return;
+    }
+
+    setIsSubmittingRate(true);
+    try {
+      const { error } = await supabase.from('rate_requests').insert({
+        tutor_id: user.id,
+        current_rate: hourlyRate,
+        requested_rate: rateNumber,
+        reason: requestReason,
+        status: 'pending'
+      });
+
+      if (error) throw error;
+      
+      setPendingRateRequest(rateNumber);
+      setIsRateModalOpen(false);
+      setRequestedRate("");
+      setRequestReason("");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal mengajukan perubahan harga");
+    } finally {
+      setIsSubmittingRate(false);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUserRole('guest');
@@ -68,9 +109,23 @@ export function TutorDashboard() {
         
         if (tutorProfile) {
           setTutorStats({ rating: tutorProfile.rating || 0, total_reviews: tutorProfile.total_reviews || 0 });
+          setHourlyRate(tutorProfile.hourly_rate || 0);
           if (tutorProfile.schedule) {
             setTutorSchedule(tutorProfile.schedule);
           }
+        }
+
+        // Fetch rate requests
+        const { data: activeRateReqs } = await supabase
+          .from('rate_requests')
+          .select('requested_rate')
+          .eq('tutor_id', user.id)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(1);
+          
+        if (activeRateReqs && activeRateReqs.length > 0) {
+          setPendingRateRequest(activeRateReqs[0].requested_rate);
         }
 
         // Fetch all sessions for this tutor
@@ -216,16 +271,20 @@ export function TutorDashboard() {
     setIsSavingSchedule(true);
     try {
       // Clean up empty arrays before saving
-      const cleanedSchedule = { ...tutorSchedule };
-      for (const [key, val] of Object.entries(cleanedSchedule)) {
+      const cleanedSchedule: { [key: number]: string[] } = { ...tutorSchedule };
+      for (const key of Object.keys(cleanedSchedule)) {
+         const numericKey = Number(key);
+         const val = cleanedSchedule[numericKey];
          if (!val || val.length === 0) {
-            delete cleanedSchedule[Number(key)];
+            delete cleanedSchedule[numericKey];
          }
       }
 
       const availableDaysList = Object.keys(cleanedSchedule).map(Number);
       const allHoursSet = new Set<string>();
-      Object.values(cleanedSchedule).forEach(hours => hours.forEach(h => allHoursSet.add(h)));
+      Object.values(cleanedSchedule).forEach((hours: any) => {
+        if (Array.isArray(hours)) hours.forEach(h => allHoursSet.add(h));
+      });
       const availableHoursList = Array.from(allHoursSet).sort();
 
       const { error } = await supabase.from('tutor_profiles').update({
@@ -417,6 +476,26 @@ export function TutorDashboard() {
            </div>
         </div>
 
+        {/* Harga Layanan */}
+        <div className="bg-card rounded-xl p-4 border-[1.5px] border-border mb-3.5 flex justify-between items-center">
+           <div>
+              <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono mb-[4px]">HARGA PER JAM</div>
+              <div className="font-display font-black text-[18px] text-lime">Rp {hourlyRate.toLocaleString('id-ID')}</div>
+              {pendingRateRequest !== null && (
+                <div className="text-[10px] text-warning font-mono mt-1 flex items-center gap-1">
+                  <Clock size={10} /> Menunggu acc admin: Rp {pendingRateRequest.toLocaleString('id-ID')}
+                </div>
+              )}
+           </div>
+           <button 
+             onClick={() => setIsRateModalOpen(true)}
+             disabled={pendingRateRequest !== null}
+             className="bg-bg-2 border border-border text-[11px] font-bold px-3 py-2 rounded-[6px] transition-colors disabled:opacity-50 hover:bg-bg-3 font-mono text-text-main cursor-pointer"
+           >
+             Ajukan Ubah
+           </button>
+        </div>
+
         {/* Siswa Aktif */}
         <div className="bg-card rounded-xl p-4 border-[1.5px] border-border mb-3.5">
            <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono mb-[4px]">SISWA AKTIFKU ({activeStudents.length})</div>
@@ -536,6 +615,60 @@ export function TutorDashboard() {
               >
                 {isSubmittingReport ? <Loader2 size={16} className="animate-spin" /> : null}
                 {isSubmittingReport ? 'Mengirim...' : 'Kirim Laporan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Rate Request Modal */}
+      {isRateModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b-[1.5px] border-border bg-bg-2">
+              <div className="font-display font-bold text-[16px]">Ajukan Ubah Harga</div>
+              <button 
+                onClick={() => setIsRateModalOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-bg-3 text-text-sub transition-colors"
+              >
+                <XIcon size={18} />
+              </button>
+            </div>
+            <div className="p-5">
+              <div className="text-[13px] text-text-sub mb-4">
+                 Harga Anda saat ini adalah <strong className="text-lime font-mono">Rp {hourlyRate.toLocaleString('id-ID')}</strong>. Masukkan nominal harga per jam baru yang ingin Anda ajukan.
+              </div>
+              <div className="flex flex-col gap-1.5 mb-4">
+                 <label className="text-[11px] font-bold font-mono text-text-sub uppercase">Harga Baru (Rp)</label>
+                 <input 
+                   type="text"
+                   className="w-full bg-bg-2 border-[1.5px] border-border rounded-lg p-3 text-[13px] font-mono focus:outline-none focus:border-lime"
+                   placeholder="Contoh: 150000"
+                   value={requestedRate}
+                   onChange={(e) => {
+                     const val = e.target.value.replace(/\D/g, '');
+                     setRequestedRate(val ? parseInt(val).toLocaleString('id-ID') : '');
+                   }}
+                 />
+              </div>
+              <div className="flex flex-col gap-1.5 mb-4">
+                 <label className="text-[11px] font-bold font-mono text-text-sub uppercase">Alasan (Opsional)</label>
+                 <textarea 
+                   className="w-full bg-bg-2 border-[1.5px] border-border rounded-lg p-3 text-[13px] focus:outline-none focus:border-lime min-h-[80px] resize-none"
+                   placeholder="Berikan alasan mengapa Anda menaikkan harga..."
+                   value={requestReason}
+                   onChange={(e) => setRequestReason(e.target.value)}
+                 ></textarea>
+              </div>
+              <div className="text-[11px] text-text-muted mt-2 mb-4">
+                Pengubahan harga harus disetujui oleh tim administrasi untuk mencegah lonjakan harga sepihak yang dapat merugikan siswa.
+              </div>
+              <button 
+                onClick={submitRateRequest}
+                disabled={isSubmittingRate || !requestedRate.trim()}
+                className="w-full flex items-center justify-center gap-2 bg-lime border-[2px] border-lime text-black font-bold font-display px-4 py-3 rounded-lg mt-2 cursor-pointer shadow-sh1 hover:shadow-sh2 hover:-translate-y-[1px] hover:-translate-x-[1px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmittingRate ? <Loader2 size={16} className="animate-spin" /> : null}
+                {isSubmittingRate ? 'Mengajukan...' : 'Ajukan Perubahan'}
               </button>
             </div>
           </div>

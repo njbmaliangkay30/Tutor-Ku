@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   CreditCard,
   Package,
+  DollarSign
 } from "lucide-react";
 import { PageHome } from "./pages/Home";
 import { Search as PageSearch } from "./pages/Search";
@@ -31,6 +32,7 @@ import { StudentProgress } from "./pages/StudentProgress";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { AdminPanel } from "./pages/admin/AdminPanel";
 import { AdminOverview } from "./pages/admin/AdminOverview";
+import { AdminRateRequests } from "./pages/admin/AdminRateRequests";
 import { OnboardingForm } from "./components/OnboardingForm";
 import { UnverifiedTutorView } from "./components/UnverifiedTutorView";
 import { VerificationForm } from "./components/VerificationForm";
@@ -273,6 +275,20 @@ export default function App() {
                   </span>
                 </button>
                 <button
+                  onClick={() => setActiveTab("admin-rate-requests")}
+                  title="Pengajuan Harga"
+                  className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-rate-requests" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
+                >
+                  <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
+                    <DollarSign size={22} />
+                  </span>
+                  <span
+                    className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
+                  >
+                    Pengajuan Harga
+                  </span>
+                </button>
+                <button
                   onClick={() => setActiveTab("admin-students")}
                   title="Data Student"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-students" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
@@ -477,6 +493,9 @@ export default function App() {
                 {activeTab === "admin-verifications" && userRole === "admin" && (
                   <AdminDashboard /> 
                 )}
+                {activeTab === "admin-rate-requests" && userRole === "admin" && (
+                  <AdminRateRequests /> 
+                )}
                 {activeTab === "admin-students" && userRole === "admin" && (
                   <AdminPanel activeSubTab="students" />
                 )}
@@ -565,6 +584,17 @@ export default function App() {
                     <ShieldCheck size={18} />
                   </span>
                   <span className="text-[10px] font-mono">Verif</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("admin-rate-requests")}
+                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[64px] ${activeTab === "admin-rate-requests" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                >
+                  <span
+                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "admin-rate-requests" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                  >
+                    <DollarSign size={18} />
+                  </span>
+                  <span className="text-[10px] font-mono">Harga</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("admin-students")}
@@ -678,7 +708,7 @@ export default function App() {
             </button>
           </nav>
 
-          {selectedTutorId && tutors.some(t => t.id === selectedTutorId) && (
+          {selectedTutorId && (
             <div className="fixed md:absolute inset-0 z-[100] md:z-50 bg-bg-base overflow-y-auto animate-pgIn custom-scrollbar">
               <TutorDetail />
             </div>
