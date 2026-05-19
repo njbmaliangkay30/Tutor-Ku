@@ -1,5 +1,6 @@
 import { Calendar, Video, FileText, Star, Clock } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
 import { getAvatarColor } from '../data';
@@ -282,8 +283,8 @@ export function StudentSessions() {
         )}
       </div>
 
-      {reviewModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+      {reviewModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn" style={{overscrollBehavior: 'none'}}>
           <div className="bg-bg-1 border border-border w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl animate-slideUp">
             <div className="p-6">
               <h2 className="text-xl font-bold font-display text-text-main mb-2">Selesaikan Sesi & Beri Ulasan</h2>
@@ -330,7 +331,7 @@ export function StudentSessions() {
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
     </div>
   );

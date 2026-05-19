@@ -3,12 +3,13 @@ import { createPortal } from "react-dom";
 import { Users, BookOpen, Search, ShieldCheck, Eye, ShieldAlert, X, AlertOctagon, CreditCard, Calendar } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
-export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "students" | "transactions" | "sessions" | "packages" }) {
+export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "students" | "transactions" | "sessions" | "packages" | "reviews" }) {
   const [tutors, setTutors] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [sessions, setSessions] = useState<any[]>([]);
   const [packages, setPackages] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Modal states
@@ -80,6 +81,16 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
           .select("*")
           .order("price", { ascending: true });
         if (!error && data) setPackages(data);
+      } else if (activeSubTab === "reviews") {
+        const { data, error } = await supabase
+          .from("reviews")
+          .select(`
+            *,
+            student:student_profiles(profiles(full_name)),
+            tutor:tutor_profiles(profiles(full_name))
+          `)
+          .order("created_at", { ascending: false });
+        if (!error && data) setReviews(data);
       }
     } catch (err) {
       console.error("Failed to fetch data", err);
@@ -117,6 +128,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
       case "transactions": return "Transaksi";
       case "sessions": return "Sesi Belajar";
       case "packages": return "Package Management";
+      case "reviews": return "Review Tutor";
       default: return "Admin Panel";
     }
   };
@@ -278,6 +290,31 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
             </div>
           ))}
           {packages.length === 0 && <p className="text-sm text-text-sub text-center py-10">Belum ada package tersedia.</p>}
+        </div>
+      ) : activeSubTab === "reviews" ? (
+        <div className="space-y-3">
+          {reviews.map((r) => (
+            <div key={r.id} className="bg-card p-4 rounded-xl border border-border flex flex-col gap-3">
+              <div className="flex justify-between items-start">
+                 <div>
+                    <h3 className="text-sm font-bold text-text-main flex items-center gap-2">
+                       {r.tutor?.profiles?.full_name} <span className="text-text-sub font-normal text-xs">dinilai oleh</span> {r.student?.profiles?.full_name}
+                    </h3>
+                    <p className="text-xs text-text-sub mt-0.5">{new Date(r.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                 </div>
+                 <div className="flex items-center gap-1 bg-warning/10 text-warning px-2 py-1 rounded">
+                    <span className="text-sm font-bold font-mono">{r.rating}</span>
+                    <span className="text-xs">/ 5</span>
+                 </div>
+              </div>
+              {r.review_text && (
+                 <p className="text-sm text-text-sub bg-bg-2 p-3 rounded-lg flex-1">
+                    "{r.review_text}"
+                 </p>
+              )}
+            </div>
+          ))}
+          {reviews.length === 0 && <p className="text-sm text-text-sub text-center py-10">Belum ada review.</p>}
         </div>
       ) : null}
       </div>

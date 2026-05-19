@@ -17,7 +17,8 @@ import {
   CreditCard,
   Package,
   DollarSign,
-  Clock
+  Clock,
+  Star
 } from "lucide-react";
 import { PageHome } from "./pages/Home";
 import { Search as PageSearch } from "./pages/Search";
@@ -360,6 +361,20 @@ export default function App() {
                     Sesi Belajar
                   </span>
                 </button>
+                <button
+                  onClick={() => setActiveTab("admin-reviews")}
+                  title="Review Tutor"
+                  className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-reviews" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
+                >
+                  <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
+                    <Star size={22} />
+                  </span>
+                  <span
+                    className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
+                  >
+                    Review Tutor
+                  </span>
+                </button>
               </>
             ) : (
               <>
@@ -525,6 +540,9 @@ export default function App() {
                 {activeTab === "admin-packages" && userRole === "admin" && (
                   <AdminPanel activeSubTab="packages" />
                 )}
+                {activeTab === "admin-reviews" && userRole === "admin" && (
+                  <AdminPanel activeSubTab="reviews" />
+                )}
               </>
             )}
           </div>
@@ -667,6 +685,17 @@ export default function App() {
                     <Calendar size={18} />
                   </span>
                   <span className="text-[10px] font-mono">Sesi</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("admin-reviews")}
+                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[64px] ${activeTab === "admin-reviews" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                >
+                  <span
+                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "admin-reviews" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                  >
+                    <Star size={18} />
+                  </span>
+                  <span className="text-[10px] font-mono">Review</span>
                 </button>
               </>
             ) : (

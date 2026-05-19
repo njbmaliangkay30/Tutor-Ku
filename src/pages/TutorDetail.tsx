@@ -24,6 +24,7 @@ export function TutorDetail() {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [meetingType, setMeetingType] = useState<'online' | 'offline'>('online');
   const [location, setLocation] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
 
   const tutor = tutors.find((t:any) => t.id === selectedTutorId);
 
@@ -81,7 +82,7 @@ export function TutorDetail() {
          inserts.push({
            student_id: userProfile.id,
            tutor_id: tutor.id,
-           subject: tutor.major,
+           subject: selectedSubject || (tutor.tags?.length > 0 ? tutor.tags[0] : tutor.major),
            session_date: sDate.toISOString().split('T')[0], // Useful for day-based queries if needed
            start_time: startDateTime.toISOString(),
            end_time: endDateTime.toISOString(),
@@ -385,6 +386,25 @@ export function TutorDetail() {
               )}
             </div>
           )}
+        </div>
+
+        <div className="flex flex-col gap-[5px] mb-4">
+          <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
+            Mata Pelajaran
+          </label>
+          <select 
+            value={selectedSubject || (tutor.tags?.length > 0 ? tutor.tags[0] : tutor.major)}
+            onChange={(e) => setSelectedSubject(e.target.value)}
+            className="bg-bg-1 border-[1.5px] border-border rounded-xl p-3 text-[13px] font-bold text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime/50 transition-colors"
+          >
+            {tutor.tags && tutor.tags.length > 0 ? (
+               tutor.tags.map((tag: string, idx: number) => (
+                 <option key={idx} value={tag}>{tag}</option>
+               ))
+            ) : (
+               <option value={tutor.major}>{tutor.major}</option>
+            )}
+          </select>
         </div>
 
         <div className="flex flex-col gap-[5px] mb-4">
