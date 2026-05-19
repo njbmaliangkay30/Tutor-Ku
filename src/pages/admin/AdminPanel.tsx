@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Users, BookOpen, Search, ShieldCheck, Eye, ShieldAlert, X, AlertOctagon, CreditCard, Calendar } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
-export function AdminPanel() {
-  const [activeSubTab, setActiveSubTab] = useState<"tutors" | "students" | "transactions" | "sessions">("tutors");
+export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "students" | "transactions" | "sessions" | "packages" }) {
   const [tutors, setTutors] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [sessions, setSessions] = useState<any[]>([]);
+  const [packages, setPackages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Modal states
@@ -73,6 +73,12 @@ export function AdminPanel() {
           `)
           .order("created_at", { ascending: false });
         if (!error && data) setSessions(data);
+      } else if (activeSubTab === "packages") {
+        const { data, error } = await supabase
+          .from("packages")
+          .select("*")
+          .order("price", { ascending: true });
+        if (!error && data) setPackages(data);
       }
     } catch (err) {
       console.error("Failed to fetch data", err);
@@ -103,42 +109,22 @@ export function AdminPanel() {
     }
   };
 
-  return (
-    <div className="p-4 md:p-8 animate-pgIn max-w-5xl mx-auto w-full relative">
-      <div className="mb-6 pb-4 border-b border-border/60">
-        <h1 className="text-2xl font-display font-bold text-text-main">
-          Admin Panel
-        </h1>
-        <p className="text-text-sub text-sm">
-          Kelola tutor dan siswa (student)
-        </p>
-      </div>
+  const getRoleTitle = () => {
+    switch (activeSubTab) {
+      case "tutors": return "Data Tutor";
+      case "students": return "Data Student";
+      case "transactions": return "Transaksi";
+      case "sessions": return "Sesi Belajar";
+      case "packages": return "Package Management";
+      default: return "Admin Panel";
+    }
+  };
 
-      <div className="flex bg-bg-2 rounded-xl p-1 shrink-0 mb-6 border border-border overflow-x-auto custom-scrollbar">
-        <button
-          onClick={() => setActiveSubTab("tutors")}
-          className={`whitespace-nowrap flex-1 flex items-center justify-center gap-2 py-2 px-3 text-sm font-semibold rounded-lg transition-all ${activeSubTab === "tutors" ? "bg-bg-0 text-text-main shadow-sm" : "text-text-sub hover:text-text-main"}`}
-        >
-          <BookOpen size={16} /> Tutor Management
-        </button>
-        <button
-          onClick={() => setActiveSubTab("students")}
-          className={`whitespace-nowrap flex-1 flex items-center justify-center gap-2 py-2 px-3 text-sm font-semibold rounded-lg transition-all ${activeSubTab === "students" ? "bg-bg-0 text-text-main shadow-sm" : "text-text-sub hover:text-text-main"}`}
-        >
-          <Users size={16} /> Student Management
-        </button>
-        <button
-          onClick={() => setActiveSubTab("transactions")}
-          className={`whitespace-nowrap flex-1 flex items-center justify-center gap-2 py-2 px-3 text-sm font-semibold rounded-lg transition-all ${activeSubTab === "transactions" ? "bg-bg-0 text-text-main shadow-sm" : "text-text-sub hover:text-text-main"}`}
-        >
-          <CreditCard size={16} /> Transaksi
-        </button>
-        <button
-          onClick={() => setActiveSubTab("sessions")}
-          className={`whitespace-nowrap flex-1 flex items-center justify-center gap-2 py-2 px-3 text-sm font-semibold rounded-lg transition-all ${activeSubTab === "sessions" ? "bg-bg-0 text-text-main shadow-sm" : "text-text-sub hover:text-text-main"}`}
-        >
-          <Calendar size={16} /> Sesi Belajar
-        </button>
+  return (
+    <div className="p-4 md:p-8 animate-pgIn max-w-5xl mx-auto w-full relative space-y-6">
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display font-bold text-[32px] tracking-tight">{getRoleTitle()}</h1>
+        <p className="text-text-sub font-mono text-sm">Kelola data platform TutorKu.</p>
       </div>
 
       {isLoading ? (
@@ -266,6 +252,30 @@ export function AdminPanel() {
             </div>
           ))}
           {sessions.length === 0 && <p className="text-sm text-text-sub text-center py-10">Belum ada sesi belajar.</p>}
+        </div>
+      ) : activeSubTab === "packages" ? (
+        <div className="space-y-3">
+          {packages.map((pkg) => (
+            <div key={pkg.id} className="bg-bg-0 p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+              <div>
+                 <h3 className="font-semibold text-text-main text-lg uppercase tracking-wider">
+                    {pkg.name}
+                 </h3>
+                 <p className="text-sm text-text-sub mt-1">
+                   {pkg.description || "Paket langganan"}
+                 </p>
+              </div>
+              <div className="flex gap-2 flex-col items-end">
+                 <span className="text-lg font-bold text-lime">
+                    Rp {pkg.price?.toLocaleString()}
+                 </span>
+                 <span className="px-2 py-1 bg-lime-dim text-lime text-[10px] font-bold rounded uppercase">
+                    {pkg.session_count} Sesi
+                 </span>
+              </div>
+            </div>
+          ))}
+          {packages.length === 0 && <p className="text-sm text-text-sub text-center py-10">Belum ada package tersedia.</p>}
         </div>
       ) : null}
 

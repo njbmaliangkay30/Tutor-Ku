@@ -142,7 +142,7 @@ export function AdminDashboard() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 md:px-8 w-full animate-pgIn space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="font-display font-bold text-[32px] tracking-tight">Admin Dashboard</h1>
+        <h1 className="font-display font-bold text-[32px] tracking-tight">Data Verifikasi</h1>
         <p className="text-text-sub font-mono text-sm">Kelola pendaftaran dan verifikasi tutor.</p>
       </div>
 
