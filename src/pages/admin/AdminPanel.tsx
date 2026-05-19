@@ -23,34 +23,34 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
     try {
       if (activeSubTab === "tutors") {
         const { data, error } = await supabase
-          .from("profiles")
+          .from("tutor_profiles")
           .select(`
             *,
-            tutor_profiles(is_verified, bio, hourly_rate, gender)
-          `)
-          .eq("role", "tutor");
+            profiles(*)
+          `);
         
         if (!error && data) {
-          const formattedTutors = data.map(t => ({
-            ...t,
-            is_verified: t.tutor_profiles?.[0]?.is_verified || t.tutor_profiles?.is_verified || false,
-            tutor_details: Array.isArray(t.tutor_profiles) ? t.tutor_profiles[0] : t.tutor_profiles
+          const formattedTutors = data.filter((t: any) => t.profiles?.role === 'tutor' || t.profiles).map((t: any) => ({
+            ...t.profiles,
+            tutor_profile_id: t.id,
+            is_verified: t.is_verified || false,
+            tutor_details: t
           }));
           setTutors(formattedTutors);
         }
       } else if (activeSubTab === "students") {
         const { data, error } = await supabase
-          .from("profiles")
+          .from("student_profiles")
           .select(`
             *,
-            student_profiles(school_name, education_level, bio)
-          `)
-          .eq("role", "student");
+            profiles(*)
+          `);
         
         if (!error && data) {
-          const formatedStudents = data.map(s => ({
-            ...s,
-            student_details: Array.isArray(s.student_profiles) ? s.student_profiles[0] : s.student_profiles
+          const formatedStudents = data.filter((s: any) => s.profiles?.role === 'student' || s.profiles).map((s: any) => ({
+            ...s.profiles,
+            student_profile_id: s.id,
+            student_details: s
           }));
           setStudents(formatedStudents);
         }

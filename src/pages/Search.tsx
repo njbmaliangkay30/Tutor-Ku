@@ -20,9 +20,14 @@ export function Search() {
   const allSubjects = ["Semua", ...SUBJECTS];
 
   const filteredTutors = tutors.filter((t:any) => {
-    const q = search.toLowerCase();
-    const mq = !q || t.name.toLowerCase().includes(q) || t.tags.some((s:string) => s.toLowerCase().includes(q)) || t.major.toLowerCase().includes(q);
-    const ms = subjectFilter === "" || subjectFilter === "Semua" || t.tags.includes(subjectFilter);
+    const q = (search || "").toLowerCase();
+    const tName = t.name || "";
+    const tMajor = t.major || "";
+    const mq = !q || 
+               tName.toLowerCase().includes(q) || 
+               (t.tags || []).some((s:any) => s && s.toLowerCase().includes(q)) || 
+               tMajor.toLowerCase().includes(q);
+    const ms = subjectFilter === "" || subjectFilter === "Semua" || (t.tags || []).includes(subjectFilter);
     const mg = genderFilter === 'all' || t.genderCode === genderFilter;
     return mq && ms && mg;
   });
