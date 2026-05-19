@@ -210,12 +210,17 @@ export function TutorSchedule() {
                     <div className="text-xs text-text-sub font-mono mb-1">
                       {req.subject}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-lime bg-lime-mid px-2 py-0.5 rounded w-max">
+                    <div className="flex items-center gap-2 text-xs text-lime bg-lime-mid px-2 py-0.5 rounded w-max mb-1.5">
                       <CalendarIcon size={12} />{" "}
                       {new Date(req.session_date).toLocaleDateString()} ·{" "}
                       {req.start_time.substring(0, 5)} -{" "}
                       {req.end_time.substring(0, 5)}
                     </div>
+                    {req.meeting_type && (
+                      <div className="text-[10px] bg-bg-2 border border-border px-2 py-0.5 rounded text-text-sub font-mono inline-block">
+                        {req.meeting_type === 'online' ? '🌐 Online' : `📍 Offline: ${req.location || '-'}`}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-2 self-end md:self-auto w-full md:w-auto">
@@ -293,11 +298,19 @@ export function TutorSchedule() {
                   <CalendarIcon size={16} />{" "}
                   {new Date(bookingModal.session_date).toLocaleDateString()}
                 </div>
-                <div className="flex items-center gap-2 text-sm font-bold">
+                <div className="flex items-center gap-2 text-sm font-bold mt-1">
                   <Clock size={16} className="text-text-sub" />{" "}
                   {bookingModal.start_time.substring(0, 5)} -{" "}
                   {bookingModal.end_time.substring(0, 5)}
                 </div>
+                {bookingModal.meeting_type && (
+                   <div className="mt-3 bg-bg-2 p-2 rounded-lg border border-border">
+                     <span className="text-[11px] font-mono text-text-sub uppercase mb-1 block">Metode Pertemuan</span>
+                     <div className="text-[13px] font-bold text-text-main">
+                        {bookingModal.meeting_type === 'online' ? '🌐 Online (Video Call)' : `📍 Offline (${bookingModal.location || 'Lokasi tidak disebutkan'})`}
+                     </div>
+                   </div>
+                )}
               </div>
 
               <div className="mb-6">

@@ -219,9 +219,26 @@ export function TutorSessions() {
                       </div>
 
                       <div className="flex gap-2">
-                        <button className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">
-                          <Video size={16} /> Buka Google Meet
-                        </button>
+                        {session.meeting_type === 'offline' ? (
+                          <div className="flex-1 bg-bg-2 border border-border text-center text-text-main font-bold py-2.5 rounded-lg text-sm flex items-center justify-center gap-2">
+                            <span>📍 Lokasi: {session.location || 'Menunggu Info'}</span>
+                          </div>
+                        ) : (
+                          session.meeting_link ? (
+                            <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">
+                              <Video size={16} /> Buka Link Meeting
+                            </a>
+                          ) : (
+                            <button onClick={() => {
+                              const link = prompt('Masukkan Link Meeting (Zoom/GMeet):');
+                              if (link) {
+                                supabase.from('sessions').update({ meeting_link: link }).eq('id', session.id).then(() => fetchSessions());
+                              }
+                            }} className="flex-1 bg-bg-2 border border-lime text-lime font-bold py-2.5 rounded-lg text-sm hover:bg-lime/10 transition-colors flex items-center justify-center gap-2">
+                              <Video size={16} /> Tambah Link Meeting
+                            </button>
+                          )
+                        )}
                       </div>
                     </div>
                   ))}

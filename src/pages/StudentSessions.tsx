@@ -149,13 +149,22 @@ export function StudentSessions() {
                </div>
 
                {type === 'upcoming' ? (
-                  <div className="flex gap-2">
-                    <button className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">
-                      <Video size={16} /> Masuk Google Meet
-                    </button>
-                    <button className="px-4 border-[1.5px] border-border text-text-sub font-bold rounded-lg text-sm hover:bg-bg-3 hover:text-text-main transition-colors">
-                      Batalkan
-                    </button>
+                  <div className="flex gap-2 w-full">
+                    {session.meeting_type === 'offline' ? (
+                       <div className="flex-1 bg-bg-2 border border-border text-center text-text-main font-bold py-2.5 rounded-lg text-[13px] flex items-center justify-center gap-2 px-2">
+                         <span className="truncate">📍 Lokasi: {session.location || 'Menunggu Info'}</span>
+                       </div>
+                    ) : (
+                       session.meeting_link ? (
+                         <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">
+                           <Video size={16} /> Buka Link Meeting
+                         </a>
+                       ) : (
+                         <div className="flex-1 bg-bg-2 border border-dashed border-border text-center text-text-sub font-mono font-bold py-2.5 rounded-lg text-[12px] flex items-center justify-center gap-2">
+                           Link belum tersedia
+                         </div>
+                       )
+                    )}
                   </div>
                ) : (
                   <div className="flex gap-2">

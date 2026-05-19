@@ -22,6 +22,8 @@ export function TutorDetail() {
   // Scheduling states
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [meetingType, setMeetingType] = useState<'online' | 'offline'>('online');
+  const [location, setLocation] = useState("");
 
   const tutor = tutors.find((t:any) => t.id === selectedTutorId);
 
@@ -80,7 +82,9 @@ export function TutorDetail() {
            start_time: selectedTime,
            end_time: endDateStr,
            material_notes: i === 0 ? notes : "Sesi " + (i+1) + " dari paket (Terjadwal Otomatis)",
-           status: 'pending'
+           status: 'pending',
+           meeting_type: meetingType,
+           location: meetingType === 'offline' ? location : null
          });
        }
 
@@ -378,6 +382,41 @@ export function TutorDetail() {
             </div>
           )}
         </div>
+
+        <div className="flex flex-col gap-[5px] mb-4">
+          <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
+            Metode Pertemuan
+          </label>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setMeetingType('online')}
+              className={`flex-1 py-2.5 rounded-lg border-[1.5px] font-bold text-sm transition-colors ${meetingType === 'online' ? 'border-lime bg-lime-dim text-lime' : 'border-border bg-bg-2 text-text-sub hover:border-lime/50'}`}
+            >
+              Online (Video Call)
+            </button>
+            <button
+              onClick={() => setMeetingType('offline')}
+              className={`flex-1 py-2.5 rounded-lg border-[1.5px] font-bold text-sm transition-colors ${meetingType === 'offline' ? 'border-lime bg-lime-dim text-lime' : 'border-border bg-bg-2 text-text-sub hover:border-lime/50'}`}
+            >
+              Offline (Tatap Muka)
+            </button>
+          </div>
+        </div>
+
+        {meetingType === 'offline' && (
+          <div className="flex flex-col gap-[5px] mb-3 animate-pgIn">
+            <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
+              Lokasi Pertemuan
+            </label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Contoh: Rumah saya, Cafe X, Perpustakaan..."
+              className="px-3 py-2.5 rounded-lg bg-bg-2 border border-border focus:border-lime focus:outline-none text-[13px] text-text-main"
+            />
+          </div>
+        )}
 
         <div className="flex flex-col gap-[5px] mb-3">
           <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
