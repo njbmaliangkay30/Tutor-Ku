@@ -10,6 +10,12 @@ export function StudentSessions() {
   const [isLoading, setIsLoading] = useState(false);
   const { userProfile, tutors, userRole, setActiveTab } = useAppContext();
 
+  // Review Modal State
+  const [reviewModal, setReviewModal] = useState<any>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
   useEffect(() => {
     const fetchSessions = async () => {
        if (!userProfile) return;
@@ -19,13 +25,20 @@ export function StudentSessions() {
            .from('sessions')
            .select(`
              *,
-             tutor_profiles(id, profiles(full_name))
+             tutor_profiles(id, profiles(full_name)),
+             reviews (rating)
            `)
            .eq('student_id', userProfile.id)
            .order('session_date', { ascending: false });
            
          if (error) throw error;
-         setSessions(data || []);
+         
+         const formattedData = data?.map((session: any) => ({
+           ...session,
+           rating: session.reviews?.[0]?.rating || null
+         })) || [];
+         
+         setSessions(formattedData);
        } catch (e) {
          console.error(e);
        } finally {
@@ -62,6 +75,71 @@ export function StudentSessions() {
   });
 
   const displayList = type === 'upcoming' ? upcoming : past;
+
+  const handleSubmitReview = async () => {
+    if (!reviewModal || !userProfile) return;
+    setIsSubmittingReview(true);
+    try {
+      if (reviewModal.status !== 'completed') {
+        const { error: sessionError } = await supabase
+          .from('sessions')
+          .update({ status: 'completed' })
+          .eq('id', reviewModal.id);
+        if (sessionError) throw sessionError;
+      }
+
+      const { error: reviewError } = await supabase
+        .from('reviews')
+        .insert({
+          session_id: reviewModal.id,
+          student_id: userProfile.id,
+          tutor_id: reviewModal.tutor_id,
+          rating: reviewRating,
+          review_text: reviewText
+        });
+      if (reviewError) throw reviewError;
+
+      // Update tutor stats incrementally
+      try {
+        const { data: tutorProfile } = await supabase
+          .from('tutor_profiles')
+          .select('rating, total_reviews')
+          .eq('id', reviewModal.tutor_id)
+          .single();
+
+        if (tutorProfile) {
+          const newTotal = (tutorProfile.total_reviews || 0) + 1;
+          const newRating = (((tutorProfile.rating || 0) * (tutorProfile.total_reviews || 0)) + reviewRating) / newTotal;
+          await supabase.from('tutor_profiles').update({
+            rating: newRating,
+            total_reviews: newTotal
+          }).eq('id', reviewModal.tutor_id);
+        }
+      } catch (e) {
+        console.warn("Could not update tutor average rating", e);
+      }
+
+      setReviewModal(null);
+      setReviewText("");
+      setReviewRating(5);
+      
+      // refresh Data 
+      // We can just rely on fetchSessions
+      // But we have to trigger useEffect manually? Or just call fetchSessions() but it's local to useEffect.
+      // Easiest is to just reload window or update local state manually, but actually we can just find it in 'sessions' state.
+      setSessions(prev => prev.map(s => {
+        if (s.id === reviewModal.id) {
+          return { ...s, status: 'completed', rating: reviewRating };
+        }
+        return s;
+      }));
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      alert('Gagal mengirim ulasan.');
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   if (userRole === 'guest' || !userProfile) {
     return (
@@ -182,22 +260,17 @@ export function StudentSessions() {
                   <div className="flex gap-2">
                     {session.status === 'waiting_for_student' && (
                       <button 
-                        onClick={() => {
-                          const confirmDone = window.confirm("Apakah Anda yakin ingin menyelesaikan pertemuan ini?");
-                          if (confirmDone) {
-                            supabase.from('sessions').update({status: 'completed'}).eq('id', session.id).then(() => {
-                              alert("Pertemuan berhasil diselesaikan. Silakan beri ulasan agar tutor mendapatkan laporan yang utuh.");
-                              fetchSessions();
-                            });
-                          }
-                        }}
+                        onClick={() => setReviewModal(session)}
                         className="flex-1 border-[1.5px] border-lime bg-lime text-black font-bold py-2 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2"
                       >
                         <Star size={16} /> Tandai Selesai & Beri Ulasan
                       </button>
                     )}
                     {session.status === 'completed' && !session.rating && (
-                      <button className="flex-1 border-[1.5px] border-lime/50 text-lime font-bold py-2 rounded-lg text-sm hover:bg-lime-mid transition-colors flex items-center justify-center gap-2">
+                      <button 
+                        onClick={() => setReviewModal(session)}
+                        className="flex-1 border-[1.5px] border-lime/50 text-lime font-bold py-2 rounded-lg text-sm hover:bg-lime-mid transition-colors flex items-center justify-center gap-2"
+                      >
                         <Star size={16} /> Beri Ulasan
                       </button>
                     )}
@@ -208,6 +281,56 @@ export function StudentSessions() {
           })
         )}
       </div>
+
+      {reviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-bg-1 border border-border w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl animate-slideUp">
+            <div className="p-6">
+              <h2 className="text-xl font-bold font-display text-text-main mb-2">Selesaikan Sesi & Beri Ulasan</h2>
+              <p className="text-sm text-text-sub mb-6">Bagaimana pengalaman belajar kamu dengan {reviewModal.tutor_profiles?.profiles?.full_name || 'Tutor'}?</p>
+              
+              <div className="flex justify-center gap-4 mb-6">
+                {[1, 2, 3, 4, 5].map(star => (
+                   <button 
+                     key={star} 
+                     onClick={() => setReviewRating(star)}
+                     className="transition-transform hover:scale-110 focus:outline-none"
+                   >
+                     <Star size={32} className={star <= reviewRating ? "fill-warning text-warning" : "text-border"} />
+                   </button>
+                ))}
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-xs font-bold text-text-sub uppercase font-mono tracking-wider mb-2">Ulasan (Opsional)</label>
+                <textarea
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder="Ceritakan pengalaman belajar kamu..."
+                  className="w-full bg-bg-2 border border-border rounded-lg p-3 text-sm text-text-main focus:outline-none focus:border-lime transition-colors h-24 resize-none"
+                />
+              </div>
+            </div>
+            
+            <div className="bg-bg-2 p-4 flex gap-3 border-t border-border">
+              <button
+                onClick={() => setReviewModal(null)}
+                className="flex-1 font-bold py-2.5 rounded-lg text-sm text-text-main hover:bg-bg-3 transition-colors"
+                disabled={isSubmittingReview}
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleSubmitReview}
+                className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors disabled:opacity-50"
+                disabled={isSubmittingReview}
+              >
+                {isSubmittingReview ? 'Menyimpan...' : (reviewModal.status === 'completed' ? 'Kirim Ulasan' : 'Selesai & Kirim')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
