@@ -40,6 +40,7 @@ import { OnboardingForm } from "./components/OnboardingForm";
 import { UnverifiedTutorView } from "./components/UnverifiedTutorView";
 import { VerificationForm } from "./components/VerificationForm";
 import { useAppContext } from "./AppContext";
+import { NotificationBell } from "./components/NotificationBell";
 
 export default function App() {
   const {
@@ -163,18 +164,21 @@ export default function App() {
                 tutorku
               </div>
             </div>
-            <div
-              onClick={toggleTheme}
-              className={`relative cursor-pointer w-[44px] h-[24px] rounded-[12px] bg-border-2 border-[1.5px] border-border transition-all duration-300 shrink-0 flex items-center p-[2px] ${showDesktopSidebar ? "opacity-100" : "opacity-0 translate-x-4 pointer-events-none"}`}
-            >
+            <div className={`flex items-center gap-3 transition-opacity duration-300 ${showDesktopSidebar ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+              <NotificationBell />
               <div
-                className={`w-[18px] h-[18px] rounded-full bg-lime transition-transform ${theme === "light" ? "translate-x-[20px]" : "translate-x-0"}`}
-              />
-              <span
-                className={`absolute text-[11px] top-1/2 -translate-y-1/2 pointer-events-none text-black ${theme === "light" ? "left-[5px]" : "right-[5px]"}`}
+                onClick={toggleTheme}
+                className="relative cursor-pointer w-[44px] h-[24px] rounded-[12px] bg-border-2 border-[1.5px] border-border shrink-0 flex items-center p-[2px]"
               >
-                {theme === "light" ? "☀️" : "🌙"}
-              </span>
+                <div
+                  className={`w-[18px] h-[18px] rounded-full bg-lime transition-transform ${theme === "light" ? "translate-x-[20px]" : "translate-x-0"}`}
+                />
+                <span
+                  className={`absolute text-[11px] top-1/2 -translate-y-1/2 pointer-events-none text-black ${theme === "light" ? "left-[5px]" : "right-[5px]"}`}
+                >
+                  {theme === "light" ? "☀️" : "🌙"}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -472,6 +476,7 @@ export default function App() {
               tutorku
             </div>
             <div className="flex gap-2 items-center">
+              <NotificationBell />
               <button
                 className="w-[34px] h-[34px] bg-bg-3/80 rounded-lg border-[1.5px] border-border/60 flex items-center justify-center text-[16px] text-text-sub transition-all hover:border-lime hover:text-lime"
                 onClick={toggleTheme}

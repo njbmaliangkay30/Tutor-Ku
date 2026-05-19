@@ -284,49 +284,75 @@ export function StudentSessions() {
       </div>
 
       {reviewModal && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn" style={{overscrollBehavior: 'none'}}>
-          <div className="bg-bg-1 border border-border w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl animate-slideUp">
-            <div className="p-6">
-              <h2 className="text-xl font-bold font-display text-text-main mb-2">Selesaikan Sesi & Beri Ulasan</h2>
-              <p className="text-sm text-text-sub mb-6">Bagaimana pengalaman belajar kamu dengan {reviewModal.tutor_profiles?.profiles?.full_name || 'Tutor'}?</p>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>
+          <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center p-4 border-b-[1.5px] border-border bg-bg-2">
+              <div className="font-display font-bold text-[16px]">
+                Selesaikan Sesi & Beri Ulasan
+              </div>
+              <button
+                onClick={() => setReviewModal(null)}
+                className="text-text-sub hover:text-text-main"
+                disabled={isSubmittingReview}
+              >
+                <AlertOctagon size={20} className="hidden" />
+                <span className="text-xl leading-none">&times;</span>
+              </button>
+            </div>
+            
+            <div className="p-5 overflow-y-auto">
+              <div className="mb-4">
+                <div className="text-xs text-text-sub font-mono uppercase tracking-wider mb-1">
+                  Tutor
+                </div>
+                <div className="font-bold font-display text-lg">
+                  {reviewModal.tutor_profiles?.profiles?.full_name || 'Tutor'}
+                </div>
+                <div className="text-sm text-lime font-mono">
+                  {reviewModal.subject || 'Mapel'} · {new Date(reviewModal.session_date).toLocaleDateString()}
+                </div>
+              </div>
               
-              <div className="flex justify-center gap-4 mb-6">
-                {[1, 2, 3, 4, 5].map(star => (
-                   <button 
-                     key={star} 
-                     onClick={() => setReviewRating(star)}
-                     className="transition-transform hover:scale-110 focus:outline-none"
-                   >
-                     <Star size={32} className={star <= reviewRating ? "fill-warning text-warning" : "text-border"} />
-                   </button>
-                ))}
+              <div className="mb-6">
+                <label className="block text-xs font-bold text-text-sub uppercase font-mono tracking-wider mb-3 text-center">Beri Rating</label>
+                <div className="flex justify-center gap-3">
+                  {[1, 2, 3, 4, 5].map(star => (
+                     <button 
+                       key={star} 
+                       onClick={() => setReviewRating(star)}
+                       className="transition-transform hover:scale-110 focus:outline-none"
+                     >
+                       <Star size={32} className={star <= reviewRating ? "fill-warning text-warning drop-shadow-sm" : "text-border"} />
+                     </button>
+                  ))}
+                </div>
               </div>
 
-              <div className="mb-6">
-                <label className="block text-xs font-bold text-text-sub uppercase font-mono tracking-wider mb-2">Ulasan (Opsional)</label>
+              <div className="mb-2">
+                <label className="block text-xs font-bold text-text-sub uppercase font-mono tracking-wider mb-1.5">Ulasan (Opsional)</label>
                 <textarea
                   value={reviewText}
                   onChange={(e) => setReviewText(e.target.value)}
-                  placeholder="Ceritakan pengalaman belajar kamu..."
+                  placeholder="Ceritakan pengalaman belajar kamu, metode mengajar tutor, dll..."
                   className="w-full bg-bg-2 border border-border rounded-lg p-3 text-sm text-text-main focus:outline-none focus:border-lime transition-colors h-24 resize-none"
                 />
               </div>
             </div>
             
-            <div className="bg-bg-2 p-4 flex gap-3 border-t border-border">
+            <div className="bg-bg-2 p-4 flex gap-3 border-t-[1.5px] border-border">
               <button
                 onClick={() => setReviewModal(null)}
-                className="flex-1 font-bold py-2.5 rounded-lg text-sm text-text-main hover:bg-bg-3 transition-colors"
+                className="flex-1 font-bold py-2.5 rounded-lg text-sm text-text-main hover:bg-bg-3 border border-transparent transition-colors"
                 disabled={isSubmittingReview}
               >
                 Batal
               </button>
               <button
                 onClick={handleSubmitReview}
-                className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors disabled:opacity-50"
+                className="flex-[2] bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors disabled:opacity-50"
                 disabled={isSubmittingReview}
               >
-                {isSubmittingReview ? 'Menyimpan...' : (reviewModal.status === 'completed' ? 'Kirim Ulasan' : 'Selesai & Kirim')}
+                {isSubmittingReview ? 'Menyimpan...' : (reviewModal.status === 'completed' ? 'Kirim Ulasan' : 'Selesai & Kirim Ulasan')}
               </button>
             </div>
           </div>

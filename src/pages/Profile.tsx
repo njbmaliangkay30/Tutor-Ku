@@ -27,6 +27,12 @@ export function Profile() {
   const [phoneNumber, setPhoneNumber] = useState(userProfile?.phone || "");
   const [address, setAddress] = useState(tutorProfileData?.address || "");
   const [university, setUniversity] = useState(tutorProfileData?.university || "");
+  const [gender, setGender] = useState(userProfile?.gender || tutorProfileData?.gender || "");
+  const [birthDate, setBirthDate] = useState(userProfile?.birth_date || "");
+  const [avatarObjUrl, setAvatarObjUrl] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
   const [targetSubjects, setTargetSubjects] = useState<string[]>(tutorProfileData?.target_subjects || []);
   const [learningStyles, setLearningStyles] = useState<string[]>(tutorProfileData?.learning_styles || []);
   const [schedule, setSchedule] = useState<Record<number, string[]>>(
@@ -86,13 +92,42 @@ export function Profile() {
     setErrorMsg("");
 
     try {
-      const updates = {
+      let finalAvatarUrl = userProfile?.avatar_url || user?.user_metadata?.avatar_url;
+
+      if (avatarFile) {
+        setIsUploadingAvatar(true);
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+        const { error: uploadError, data } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, avatarFile);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(fileName);
+
+        finalAvatarUrl = publicUrl;
+        setIsUploadingAvatar(false);
+      }
+
+      const updates: any = {
         id: user.id,
         full_name: fullName,
         phone: phoneNumber || null,
+        gender: gender || null,
+        birth_date: birthDate || null,
       };
 
+      if (finalAvatarUrl) {
+        updates.avatar_url = finalAvatarUrl;
+      }
+
       const { error } = await supabase.from('profiles').upsert(updates);
+
       if (error) throw error;
       
       // Update bio and extra info if it's a tutor
@@ -356,6 +391,33 @@ export function Profile() {
                   </div>
                 )}
                 
+                <div className="flex flex-col items-center gap-3 w-full">
+                  <div className="relative">
+                    <img 
+                      src={avatarObjUrl || avatarUrl || "https://ui-avatars.com/api/?name=" + encodeURIComponent(displayFullName)} 
+                      alt="Avatar" 
+                      className="w-20 h-20 rounded-full object-cover border-[3px] border-lime/30"
+                    />
+                    <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-lime text-black rounded-full p-1.5 cursor-pointer shadow-md hover:bg-lime-hover transition-colors">
+                      <Camera size={14} />
+                    </label>
+                    <input 
+                      type="file" 
+                      id="avatar-upload" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setAvatarFile(file);
+                          setAvatarObjUrl(URL.createObjectURL(file));
+                        }
+                      }}
+                    />
+                  </div>
+                  <span className="text-xs text-text-sub">Ubah Foto Profil</span>
+                </div>
+
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Nama Lengkap</label>
                   <input 
@@ -376,6 +438,29 @@ export function Profile() {
                     className="w-full bg-bg-2 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all"
                     placeholder="Contoh: 081234567890"
                   />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Tanggal Lahir</label>
+                  <input 
+                    type="date" 
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    className="w-full bg-bg-2 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Jenis Kelamin</label>
+                  <select 
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    className="w-full bg-bg-2 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all appearance-none"
+                  >
+                    <option value="">Pilih Jenis Kelamin</option>
+                    <option value="L">Laki-laki</option>
+                    <option value="P">Perempuan</option>
+                  </select>
                 </div>
 
                 {isTutor && (
