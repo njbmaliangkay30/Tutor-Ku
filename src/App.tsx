@@ -106,20 +106,22 @@ export default function App() {
           {/* Brand */}
           <div className="h-[72px] px-5 border-b-[2px] border-border/60 shrink-0 flex items-center justify-between overflow-hidden relative">
             <div
-              className="flex items-center w-full relative cursor-pointer hover:opacity-80 transition-opacity"
+              className="flex items-center w-full relative cursor-pointer group hover:opacity-90 transition-opacity"
               onClick={() => setActiveTab("home")}
+              title="Dashboard"
             >
               <div
-                className={`absolute left-0 font-display text-[26px] font-extrabold text-lime tracking-[-1px] leading-none transition-all duration-300 origin-left ${showDesktopSidebar ? "opacity-0 scale-75" : "opacity-100 scale-100"}`}
-                style={{ textShadow: "2px 2px 0 rgba(0,0,0,0.5)" }}
+                className={`flex items-center absolute left-0 transition-transform duration-300 origin-left ${showDesktopSidebar ? "translate-x-0" : "translate-x-[2px]"}`}
               >
-                tk
-              </div>
-              <div
-                className={`absolute left-0 font-display text-[26px] font-extrabold text-lime tracking-[-1px] leading-none transition-all duration-300 origin-left ${showDesktopSidebar ? "opacity-100 scale-100" : "opacity-0 scale-75"}`}
-                style={{ textShadow: "2px 2px 0 rgba(0,0,0,0.5)" }}
-              >
-                tutorku
+                <div className="relative font-display font-black text-[28px] tracking-[-2px] leading-none z-10 select-none">
+                  <span className="absolute top-[3px] left-[3px] text-zinc-400 dark:text-zinc-700 transition-colors">tk</span>
+                  <span className="relative text-green-600 dark:text-lime transition-colors">tk</span>
+                </div>
+                <div
+                  className={`ml-3 font-display font-bold text-2xl text-text-main transition-all duration-300 origin-left select-none whitespace-nowrap overflow-hidden ${showDesktopSidebar ? "opacity-100 scale-100 w-auto" : "opacity-0 scale-75 w-0"}`}
+                >
+                  TutorKu
+                </div>
               </div>
             </div>
             <div
@@ -295,11 +297,16 @@ export default function App() {
           {/* Topbar (Mobile Only) */}
           <div className="flex md:hidden h-[56px] py-1 bg-bg-2/80 backdrop-blur-xl items-center justify-between px-4 shrink-0 border-b border-border/60 relative z-50">
             <div
-              className="font-display text-[22px] font-extrabold text-lime tracking-[-1px] select-none cursor-pointer"
-              onClick={() => setActiveTab("home")}
-              style={{ textShadow: "2px 2px 0 rgba(0,0,0,0.3)" }}
+               className="flex items-center gap-2 cursor-pointer group"
+               onClick={() => setActiveTab("home")}
             >
-              tutorku
+               <div className="relative font-display font-black text-[24px] tracking-[-2px] leading-none z-10 select-none">
+                 <span className="absolute top-[3px] left-[3px] text-zinc-400 dark:text-zinc-700 transition-colors">tk</span>
+                 <span className="relative text-green-600 dark:text-lime transition-colors">tk</span>
+               </div>
+               <div className="font-display font-bold text-xl text-text-main select-none mt-0.5">
+                 TutorKu
+               </div>
             </div>
             <div className="flex gap-2 items-center">
               <button

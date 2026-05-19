@@ -42,7 +42,7 @@ export function Settings() {
       </button>
 
       <div className="text-center mt-8 text-xs text-text-secondary dark:text-slate-500">
-        <p>tutorku v1.0.0</p>
+        <p>TutorKu v5.0</p>
       </div>
     </div>
   );

@@ -31,7 +31,7 @@ export function PageHome() {
         <div className="absolute w-[200px] h-[200px] -top-[60px] -right-[40px] rounded-full pointer-events-none" style={{background: 'radial-gradient(circle, var(--color-lime-mid) 0%, transparent 70%)'}}></div>
         
         <div className="absolute top-[14px] right-[14px] font-mono text-[9px] font-bold text-white/20 tracking-[0.12em] uppercase whitespace-pre pointer-events-none select-none text-right">
-          tutorku{'\n'}v5.0
+          TUTORKU{'\n'}V5.0
         </div>
 
         <div className="text-[9px] font-bold text-lime tracking-[0.15em] uppercase mb-2.5 flex items-center gap-2 relative z-10 font-mono">
