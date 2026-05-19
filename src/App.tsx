@@ -428,15 +428,15 @@ export default function App() {
           </div>
 
           <div
-            className={`px-3 py-3 border-t-[1.5px] border-border/60 transition-all duration-300 shrink-0 flex items-center gap-2`}
+            className={`px-3 py-3 border-t-[1.5px] border-border/60 transition-all duration-300 shrink-0 flex ${showDesktopSidebar ? "flex-row items-center gap-2" : "flex-col items-center gap-3"}`}
           >
-            <div className="flex flex-col gap-2 items-center">
-              <NotificationBell />
+            <div className="shrink-0">
+              <NotificationBell id="sidebar" />
             </div>
             <button
               onClick={() => setActiveTab("login")}
               title={userRole === "guest" ? "Masuk / Daftar" : "Profil"}
-              className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative ${showDesktopSidebar ? "overflow-hidden" : ""} ${activeTab === "login" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
+              className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] min-w-0 flex-1 text-left text-xs tracking-[0.01em] relative ${showDesktopSidebar ? "overflow-hidden" : "w-[44px]"} ${activeTab === "login" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
             >
               <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
                 {userRole === "guest" ? (
@@ -477,15 +477,15 @@ export default function App() {
             >
               tutorku
             </div>
-            <div className="flex gap-3 items-center">
-              <NotificationBell />
-              <div className="w-px h-6 bg-border mx-1" />
+            <div className="flex gap-2 items-center">
               <button
                 className="w-[34px] h-[34px] bg-bg-3/80 rounded-lg border-[1.5px] border-border/60 flex items-center justify-center text-[16px] text-text-sub transition-all hover:border-lime hover:text-lime"
                 onClick={toggleTheme}
               >
                 {theme === "light" ? "🌙" : "☀️"}
               </button>
+              <div className="w-px h-6 bg-border mx-0.5" />
+              <NotificationBell id="mobile" />
             </div>
           </div>
 

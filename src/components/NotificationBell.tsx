@@ -1,14 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Bell } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
 
-export function NotificationBell() {
+interface NotificationBellProps {
+  id?: string;
+}
+
+export function NotificationBell({ id = 'default' }: NotificationBellProps) {
   const { userProfile, userRole } = useAppContext();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
 
   useEffect(() => {
     if (!userProfile) return;
@@ -70,13 +76,22 @@ export function NotificationBell() {
     } catch(e) { console.error(e); }
   };
 
+  const toggleOpen = () => {
+    if (!isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const right = window.innerWidth - rect.right;
+      setPopupPos({ top: rect.top + 45, right });
+    }
+    setIsOpen(!isOpen);
+  };
+
   if (userRole === 'guest') return null;
 
   return (
     <div className="relative">
       <button 
-        id="notification-bell-btn"
-        onClick={() => setIsOpen(!isOpen)}
+        ref={buttonRef}
+        onClick={toggleOpen}
         className="w-10 h-10 rounded-full bg-bg-2 border border-border flex items-center justify-center hover:bg-bg-3 transition-colors text-text-sub relative"
       >
         <Bell size={18} />
@@ -94,19 +109,8 @@ export function NotificationBell() {
           <div 
             className="fixed z-[9999] w-80 max-h-[400px] bg-card border-[2px] border-border rounded-2xl shadow-sh3 overflow-hidden flex flex-col animate-pgIn"
             style={{
-              top: (() => {
-                const btn = document.getElementById('notification-bell-btn');
-                if (!btn) return '60px';
-                const rect = btn.getBoundingClientRect();
-                return rect.top + 45;
-              })(),
-              right: (() => {
-                const btn = document.getElementById('notification-bell-btn');
-                if (!btn) return '20px';
-                const rect = btn.getBoundingClientRect();
-                // Ensure it doesn't go off screen
-                return Math.max(20, window.innerWidth - rect.right);
-              })()
+              top: popupPos.top,
+              right: Math.max(20, popupPos.right)
             }}
           >
             <div className="flex justify-between items-center p-4 border-b border-border bg-bg-2">
