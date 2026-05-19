@@ -24,6 +24,7 @@ import { TutorSchedule } from "./pages/TutorSchedule";
 import { TutorSessions } from "./pages/TutorSessions";
 import { StudentSessions } from "./pages/StudentSessions";
 import { StudentProgress } from "./pages/StudentProgress";
+import { AdminDashboard } from "./pages/AdminDashboard";
 import { OnboardingForm } from "./components/OnboardingForm";
 import { UnverifiedTutorView } from "./components/UnverifiedTutorView";
 import { VerificationForm } from "./components/VerificationForm";
@@ -336,15 +337,7 @@ export default function App() {
                 {activeTab === "login" && userRole !== "guest" && <PageProfile />}
 
                 {userRole === "admin" && activeTab === "admin" && (
-                  <div className="p-6 text-center text-text-sub mt-20 animate-pgIn font-mono">
-                    <h2 className="text-xl font-bold text-red-500 mb-2">
-                      ADMIN PANEL
-                    </h2>
-                    <p>
-                      User Management · Tutor Verification · Escrow & Payments ·
-                      Session Reports · Analytics
-                    </p>
-                  </div>
+                  <AdminDashboard />
                 )}
               </>
             )}

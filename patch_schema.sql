@@ -1,0 +1,4 @@
+ALTER TABLE tutor_verifications 
+ADD COLUMN IF NOT EXISTS nama TEXT,
+ADD COLUMN IF NOT EXISTS universitas_asal TEXT,
+ADD COLUMN IF NOT EXISTS no_wa TEXT;

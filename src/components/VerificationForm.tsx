@@ -9,6 +9,7 @@ export function VerificationForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [ktpFileName, setKtpFileName] = useState("");
   const [ijazahFileName, setIjazahFileName] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -25,20 +26,23 @@ export function VerificationForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMsg("");
 
     const form = e.currentTarget;
     const ktpInput = form.elements.namedItem('attachment_ktp') as HTMLInputElement;
     const ijazahInput = form.elements.namedItem('attachment_ijazah') as HTMLInputElement;
     const pengalamanInput = form.elements.namedItem('pengalaman_mengajar') as HTMLTextAreaElement;
     const universitasInput = form.elements.namedItem('universitas_asal') as HTMLInputElement;
+    const waInput = form.elements.namedItem('no_wa') as HTMLInputElement;
 
     const ktpFile = ktpInput?.files?.[0];
     const ijazahFile = ijazahInput?.files?.[0];
     const pengalaman = pengalamanInput?.value || "";
     const universitas = universitasInput?.value || "";
+    const noWa = waInput?.value || "";
 
     if (!ktpFile || !ijazahFile || !user) {
-        alert("Mohon lengkapi dokumen yang diwajibkan.");
+        setErrorMsg("Mohon lengkapi dokumen yang diwajibkan.");
         setIsSubmitting(false);
         return;
     }
@@ -75,6 +79,7 @@ export function VerificationForm() {
           tutor_id: user.id,
           nama: tutorName,
           universitas_asal: universitas,
+          no_wa: noWa,
           ktp_url: ktpUrlRes.data.publicUrl,
           ijazah_url: ijazahUrlRes.data.publicUrl,
           pengalaman_mengajar: pengalaman,
@@ -88,7 +93,7 @@ export function VerificationForm() {
       
     } catch (error: any) {
       console.error(error);
-      alert(error.message || "Gagal mengirim dokumen. Periksa koneksi internet Anda.");
+      setErrorMsg(error.message || "Gagal mengirim dokumen. Periksa koneksi internet Anda.");
     } finally {
       setIsSubmitting(false);
     }
@@ -132,6 +137,12 @@ export function VerificationForm() {
           Untuk mulai mengajar dan dilihat oleh siswa di TutorKu, kami perlu memverifikasi identitas dan kualifikasi Anda.
         </p>
 
+        {errorMsg && (
+          <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 text-red-500 text-sm mb-6">
+            {errorMsg}
+          </div>
+        )}
+
         <form 
           onSubmit={handleSubmit}
           className="bg-bg-2 border border-border shadow-sm rounded-2xl p-6 md:p-8 flex flex-col gap-6"
@@ -148,6 +159,17 @@ export function VerificationForm() {
                   required
                   className="w-full bg-bg-base border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime"
                   placeholder="Misal: Universitas Indonesia"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-bold text-text-sub" htmlFor="no_wa">Nomor WhatsApp Aktif (Wajib)</label>
+                <input 
+                  id="no_wa"
+                  name="no_wa"
+                  type="tel"
+                  required
+                  className="w-full bg-bg-base border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime"
+                  placeholder="Misal: 081234567890"
                 />
               </div>
             </div>
