@@ -303,12 +303,12 @@ export function TutorSessions() {
                         )}
                       </div>
                       
-                      {import.meta.env.DEV && (
+                      {session.status === 'confirmed' && (
                          <button 
                            onClick={() => setReportModal(session)}
-                           className="w-full mt-2 bg-warning/10 border border-warning/30 text-warning font-bold py-2 rounded-lg text-xs hover:bg-warning/20 transition-colors flex items-center justify-center"
+                           className="w-full mt-2 bg-warning/10 border border-warning/30 text-warning font-bold py-2 rounded-lg text-xs hover:bg-warning/20 transition-colors flex items-center justify-center p-2"
                          >
-                           ⚙️ Trik Dev: Paksa Isi Laporan
+                           ⚙️ Trik Dev: Paksa Isi Laporan (Utk Testing)
                          </button>
                       )}
                     </div>
