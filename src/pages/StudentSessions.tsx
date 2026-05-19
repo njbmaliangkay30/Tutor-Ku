@@ -46,7 +46,7 @@ export function StudentSessions() {
     return sDate >= now;
   });
   const past = sessions.filter(s => {
-    if (s.status === 'completed' || s.status === 'rejected') return true;
+    if (s.status === 'completed' || s.status === 'rejected' || s.status === 'waiting_for_student') return true;
     if (s.status === 'pending') return false;
     const sDate = s.session_date && s.end_time ? new Date(`${s.session_date}T${s.end_time}`) : new Date(0);
     return sDate < now;
@@ -109,6 +109,9 @@ export function StudentSessions() {
             } else if (session.status === 'completed') {
               statusText = 'Selesai';
               statusColor = "bg-bg-2 border border-border text-text-sub";
+            } else if (session.status === 'waiting_for_student') {
+              statusText = 'Tunggu Konfirmasi Selesai';
+              statusColor = "bg-warning/20 text-warning border border-warning/30";
             } else if (session.status === 'cancelled' || session.status === 'rejected') {
               statusText = 'Dibatalkan';
               statusColor = "bg-red-500/10 text-red-500 border border-red-500/30";
@@ -168,9 +171,27 @@ export function StudentSessions() {
                   </div>
                ) : (
                   <div className="flex gap-2">
-                    <button className="flex-1 border-[1.5px] border-lime/50 text-lime font-bold py-2 rounded-lg text-sm hover:bg-lime-mid transition-colors flex items-center justify-center gap-2">
-                      <Star size={16} /> Beri Ulasan
-                    </button>
+                    {session.status === 'waiting_for_student' && (
+                      <button 
+                        onClick={() => {
+                          const confirmDone = window.confirm("Apakah Anda yakin ingin menyelesaikan pertemuan ini?");
+                          if (confirmDone) {
+                            supabase.from('sessions').update({status: 'completed'}).eq('id', session.id).then(() => {
+                              alert("Pertemuan berhasil diselesaikan. Silakan beri ulasan agar tutor mendapatkan laporan yang utuh.");
+                              fetchSessions();
+                            });
+                          }
+                        }}
+                        className="flex-1 border-[1.5px] border-lime bg-lime text-black font-bold py-2 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Star size={16} /> Tandai Selesai & Beri Ulasan
+                      </button>
+                    )}
+                    {session.status === 'completed' && !session.rating && (
+                      <button className="flex-1 border-[1.5px] border-lime/50 text-lime font-bold py-2 rounded-lg text-sm hover:bg-lime-mid transition-colors flex items-center justify-center gap-2">
+                        <Star size={16} /> Beri Ulasan
+                      </button>
+                    )}
                   </div>
                )}
             </div>
