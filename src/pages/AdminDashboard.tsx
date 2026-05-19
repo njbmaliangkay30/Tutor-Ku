@@ -33,10 +33,11 @@ const DocumentPreview = ({ url, title }: { url: string; title: string }) => {
       >
         {isPdf ? (
           <iframe 
-            src={`${url}#toolbar=0&navpanes=0&scrollbar=0&view=Fit`}
+            src={`${url}#page=1&toolbar=0&navpanes=0&scrollbar=0&view=Fit`}
             className="w-full h-full overflow-hidden pointer-events-none opacity-90 group-hover:opacity-100 transition-opacity duration-300 bg-white" 
             title={title}
             tabIndex={-1}
+            scrolling="no"
           />
         ) : (
           <img 
