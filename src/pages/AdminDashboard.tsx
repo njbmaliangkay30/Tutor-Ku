@@ -17,6 +17,45 @@ interface VerificationStatus {
   created_at: string;
 }
 
+const DocumentPreview = ({ url, title }: { url: string; title: string }) => {
+  if (!url) return <span className="text-text-muted text-xs">{title} -</span>;
+  
+  const isPdf = url.toLowerCase().includes('.pdf');
+
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-[11px] text-text-sub font-bold uppercase tracking-wider">{title}</span>
+      <a 
+        href={url} 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className="block w-28 h-20 rounded-md border border-border overflow-hidden bg-bg-3/50 hover:border-lime transition-colors group relative shadow-sm"
+      >
+        {isPdf ? (
+          <iframe 
+            src={`${url}#toolbar=0&navpanes=0&scrollbar=0&view=Fit`}
+            className="w-full h-full overflow-hidden pointer-events-none opacity-90 group-hover:opacity-100 transition-opacity duration-300 bg-white" 
+            title={title}
+            tabIndex={-1}
+          />
+        ) : (
+          <img 
+            src={url} 
+            alt={title} 
+            className="w-full h-full object-cover group-hover:opacity-80 transition-opacity duration-300"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              if (e.currentTarget.parentElement) {
+                 e.currentTarget.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-[10px] font-bold text-text-sub bg-bg-base/50">FILE</div>';
+              }
+            }}
+          />
+        )}
+      </a>
+    </div>
+  );
+};
+
 export function AdminDashboard() {
   const [verifications, setVerifications] = useState<VerificationStatus[]>([]);
   const [loading, setLoading] = useState(true);
@@ -139,13 +178,9 @@ export function AdminDashboard() {
                       {item.status === 'approved' && <span className="inline-flex items-center gap-1.5 bg-lime/10 text-lime text-xs font-bold px-2 py-1 rounded-md"><CheckCircle size={14}/> Disetujui</span>}
                       {item.status === 'rejected' && <span className="inline-flex items-center gap-1.5 bg-red-500/10 text-red-500 text-xs font-bold px-2 py-1 rounded-md"><XCircle size={14}/> Ditolak</span>}
                     </td>
-                    <td className="p-4 text-sm font-mono space-y-2">
-                      <div>
-                        {item.ktp_url ? <a href={item.ktp_url} target="_blank" rel="noopener noreferrer" className="text-lime hover:underline flex items-center gap-1"><ChevronRight size={14}/> Cek KTP</a> : <span className="text-text-muted">KTP -</span>}
-                      </div>
-                      <div>
-                        {item.ijazah_url ? <a href={item.ijazah_url} target="_blank" rel="noopener noreferrer" className="text-lime hover:underline flex items-center gap-1"><ChevronRight size={14}/> Cek Ijazah</a> : <span className="text-text-muted">Ijazah -</span>}
-                      </div>
+                    <td className="p-4 text-sm font-mono flex flex-col gap-3">
+                      <DocumentPreview url={item.ktp_url} title="KTP" />
+                      <DocumentPreview url={item.ijazah_url} title="Ijazah" />
                     </td>
                     <td className="p-4">
                       {item.status === 'pending' && (
