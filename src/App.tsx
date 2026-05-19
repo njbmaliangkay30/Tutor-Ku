@@ -471,11 +471,10 @@ export default function App() {
           {/* Topbar (Mobile Only) */}
           <div className="flex md:hidden h-[60px] py-2 bg-bg-2/80 backdrop-blur-xl items-center justify-between px-4 shrink-0 border-b border-border/60 relative z-50">
             <div
-              className="font-display text-[22px] font-extrabold text-lime tracking-[-1px] select-none cursor-pointer flex items-center gap-1"
+              className="font-display text-[22px] font-extrabold text-lime tracking-[-1px] select-none cursor-pointer"
               onClick={() => setActiveTab("home")}
               style={{ textShadow: "2px 2px 0 rgba(0,0,0,0.3)" }}
             >
-              <div className="w-8 h-8 rounded-lg bg-lime flex items-center justify-center text-black text-sm tracking-tighter" style={{ textShadow: 'none' }}>tk</div>
               tutorku
             </div>
             <div className="flex gap-2.5 items-center">
