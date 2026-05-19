@@ -38,12 +38,12 @@
 
 [data-theme="light"] {
   --bg-base: #F2F7F4;
-  --bg-2: rgba(255, 255, 255, 0.65);
-  --bg-3: rgba(255, 255, 255, 0.35);
-  --card: rgba(255, 255, 255, 0.65);
-  --card-2: rgba(255, 255, 255, 0.45);
-  --border: rgba(186, 207, 195, 0.5);
-  --border-2: rgba(144, 168, 154, 0.5);
+  --bg-2: #FFFFFF;
+  --bg-3: #F9FBF9;
+  --card: #FFFFFF;
+  --card-2: #FDFEFE;
+  --border: rgba(186, 207, 195, 0.6);
+  --border-2: rgba(144, 168, 154, 0.6);
 
   --text-main: #111C15;
   --text-sub: #384F41;

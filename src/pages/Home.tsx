@@ -64,7 +64,7 @@ export function PageHome() {
             <div 
               key={idx} 
               onClick={() => handleCategoryClick(cat.keyword)}
-              className="flex flex-col items-center gap-[5px] bg-card/80 backdrop-blur-md border-[1.5px] border-border py-[11px] px-1.5 rounded-lg cursor-pointer transition-all hover:border-lime hover:bg-lime-dim group"
+              className="flex flex-col items-center gap-[5px] bg-card border-[1.5px] border-border py-[11px] px-1.5 rounded-lg cursor-pointer transition-all hover:border-lime hover:bg-lime-dim group"
             >
               <cat.icon size={20} className="text-lime" strokeWidth={2.5}/>
               <span className="text-[10px] font-semibold text-text-sub font-mono group-hover:text-lime group-hover:font-bold">{cat.label}</span>
@@ -89,7 +89,7 @@ export function PageHome() {
              <div 
                key={t.id} 
                onClick={() => setSelectedTutorId(t.id)}
-               className="bg-card/80 backdrop-blur-md rounded-xl p-3.5 border-[1.5px] border-border cursor-pointer transition-all relative overflow-hidden hover:border-lime hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-lime group shadow-sm"
+               className="bg-card rounded-xl p-3.5 border-[1.5px] border-border cursor-pointer transition-all relative overflow-hidden hover:border-lime hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-lime group shadow-sm"
              >
                 <div className="flex gap-[11px] items-start">
                   <div className="relative shrink-0">
@@ -144,15 +144,15 @@ export function PageHome() {
       {/* Stats */}
       <div className="px-3.5 py-4">
         <div className="grid grid-cols-3 gap-2">
-          <div className="bg-card/80 backdrop-blur-md rounded-xl p-3 border-[1.5px] border-border text-center transition-colors hover:border-border-2 shadow-sm">
+          <div className="bg-card rounded-xl p-3 border-[1.5px] border-border text-center transition-colors hover:border-border-2 shadow-sm">
             <div className="font-mono text-[22px] font-bold text-lime leading-none">12</div>
             <div className="text-[9px] text-text-sub mt-2 font-mono uppercase font-semibold">TUTOR</div>
           </div>
-          <div className="bg-card/80 backdrop-blur-md rounded-xl p-3 border-[1.5px] border-border text-center transition-colors hover:border-border-2 shadow-sm">
+          <div className="bg-card rounded-xl p-3 border-[1.5px] border-border text-center transition-colors hover:border-border-2 shadow-sm">
             <div className="font-mono text-[22px] font-bold text-lime leading-none">47</div>
             <div className="text-[9px] text-text-sub mt-2 font-mono uppercase font-semibold">SESI</div>
           </div>
-          <div className="bg-card/80 backdrop-blur-md rounded-xl p-3 border-[1.5px] border-border text-center transition-colors hover:border-border-2 shadow-sm">
+          <div className="bg-card rounded-xl p-3 border-[1.5px] border-border text-center transition-colors hover:border-border-2 shadow-sm">
             <div className="font-mono text-[22px] font-bold text-lime leading-none">4.9</div>
             <div className="text-[9px] text-text-sub mt-2 font-mono uppercase font-semibold">RATING</div>
           </div>

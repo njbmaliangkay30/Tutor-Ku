@@ -304,9 +304,9 @@ export function Profile() {
         </button>
       </div>
 
-      {isEditing && createPortal(
+      {isEditing && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-pgIn">
-           <div className="bg-bg-0 border border-border shadow-2xl rounded-2xl w-full max-w-[500px] flex flex-col max-h-[85vh] overflow-hidden">
+           <div className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-[500px] flex flex-col max-h-[85vh] overflow-hidden">
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <h3 className="font-display font-bold text-lg">Edit Profil</h3>
                 <button onClick={() => setIsEditing(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-bg-2 transition-colors">
@@ -357,7 +357,7 @@ export function Profile() {
                     </div>
                     
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Target Mapel</label>
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Mapel yang Dikuasai</label>
                       <div className="flex flex-wrap gap-2">
                         {["Matematika", "Fisika", "Kimia", "Biologi", "Bahasa Inggris", "Bahasa Indonesia", "Sejarah"].map(sub => (
                           <span 
@@ -450,7 +450,7 @@ export function Profile() {
               </div>
            </div>
         </div>
-      , document.body)}
+      )}
     </div>
   );
 }

@@ -177,7 +177,7 @@ export function Login() {
           </div>
 
           <div
-            className="bg-bg-2/80 backdrop-blur-md border-[1.5px] border-border/60 rounded-xl p-3.5 cursor-pointer transition-all w-full text-left mb-2 flex items-center gap-2.5 hover:border-lime hover:bg-lime-dim shadow-sm"
+            className="bg-bg-2 border-[1.5px] border-border/60 rounded-xl p-3.5 cursor-pointer transition-all w-full text-left mb-2 flex items-center gap-2.5 hover:border-lime hover:bg-lime-dim shadow-sm"
             onClick={() => handleRoleSelect("siswa")}
           >
             <span className="text-[28px]">📚</span>
@@ -192,7 +192,7 @@ export function Login() {
           </div>
 
           <div
-            className="bg-bg-2/80 backdrop-blur-md border-[1.5px] border-border/60 rounded-xl p-3.5 cursor-pointer transition-all w-full text-left mb-2 flex items-center gap-2.5 hover:border-lime hover:bg-lime-dim shadow-sm"
+            className="bg-bg-2 border-[1.5px] border-border/60 rounded-xl p-3.5 cursor-pointer transition-all w-full text-left mb-2 flex items-center gap-2.5 hover:border-lime hover:bg-lime-dim shadow-sm"
             onClick={() => handleRoleSelect("tutor")}
           >
             <span className="text-[28px]">🎓</span>
@@ -214,7 +214,7 @@ export function Login() {
             </div>
             <button
               onClick={handleGoogleAuth}
-              className="w-full flex items-center justify-center gap-2.5 px-[18px] py-[11px] rounded-lg border-[2px] border-border-2 bg-bg-2/80 backdrop-blur-md text-text-main text-[13px] font-bold cursor-pointer transition-all font-display hover:border-lime hover:shadow-sh1"
+              className="w-full flex items-center justify-center gap-2.5 px-[18px] py-[11px] rounded-lg border-[2px] border-border-2 bg-bg-2 text-text-main text-[13px] font-bold cursor-pointer transition-all font-display hover:border-lime hover:shadow-sh1"
             >
               <svg viewBox="0 0 24 24" className="w-[18px] h-[18px] shrink-0">
                 <path
@@ -249,7 +249,7 @@ export function Login() {
 
           <button
             onClick={handleGoogleAuth}
-            className="w-full flex items-center justify-center gap-2.5 px-[18px] py-[11px] rounded-lg border-[2px] border-border-2 bg-bg-2/80 backdrop-blur-md text-text-main text-[13px] font-bold cursor-pointer transition-all font-display hover:border-lime hover:shadow-sh1 mb-4"
+            className="w-full flex items-center justify-center gap-2.5 px-[18px] py-[11px] rounded-lg border-[2px] border-border-2 bg-bg-2 text-text-main text-[13px] font-bold cursor-pointer transition-all font-display hover:border-lime hover:shadow-sh1 mb-4"
           >
             <svg viewBox="0 0 24 24" className="w-[18px] h-[18px] shrink-0">
               <path
@@ -309,7 +309,7 @@ export function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="kamu@email.com"
-                  className="border-[1.5px] border-border/60 rounded-lg px-[13px] py-2.5 text-[14px] bg-bg-2/70 focus:bg-bg-2 text-text-main font-body focus:outline-none focus:border-lime focus:shadow-[0_0_0_2px_var(--color-lime-dim)] transition-all backdrop-blur-sm"
+                  className="border-[1.5px] border-border/60 rounded-lg px-[13px] py-2.5 text-[14px] bg-bg-2 text-text-main font-body focus:outline-none focus:border-lime focus:shadow-[0_0_0_2px_var(--color-lime-dim)] transition-all "
                 />
               </div>
               <div className="flex flex-col gap-[5px] mb-5">
@@ -321,7 +321,7 @@ export function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="border-[1.5px] border-border/60 rounded-lg px-[13px] py-2.5 text-[14px] bg-bg-2/70 focus:bg-bg-2 text-text-main font-body focus:outline-none focus:border-lime focus:shadow-[0_0_0_2px_var(--color-lime-dim)] transition-all backdrop-blur-sm"
+                  className="border-[1.5px] border-border/60 rounded-lg px-[13px] py-2.5 text-[14px] bg-bg-2 text-text-main font-body focus:outline-none focus:border-lime focus:shadow-[0_0_0_2px_var(--color-lime-dim)] transition-all"
                 />
               </div>
               <button
@@ -348,7 +348,7 @@ export function Login() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Ahmad Rizki"
-                  className="border-[1.5px] border-border/60 rounded-lg px-[13px] py-2.5 text-[14px] bg-bg-2/70 focus:bg-bg-2 text-text-main font-body focus:outline-none focus:border-lime focus:shadow-[0_0_0_2px_var(--color-lime-dim)] transition-all backdrop-blur-sm"
+                  className="border-[1.5px] border-border/60 rounded-lg px-[13px] py-2.5 text-[14px] bg-bg-2 text-text-main font-body focus:outline-none focus:border-lime focus:shadow-[0_0_0_2px_var(--color-lime-dim)] transition-all"
                 />
               </div>
               <div className="flex flex-col gap-[5px] mb-3">
@@ -372,7 +372,7 @@ export function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min. 6 karakter"
-                  className="border-[1.5px] border-border/60 rounded-lg px-[13px] py-2.5 text-[14px] bg-bg-2/70 focus:bg-bg-2 text-text-main font-body focus:outline-none focus:border-lime focus:shadow-[0_0_0_2px_var(--color-lime-dim)] transition-all backdrop-blur-sm"
+                  className="border-[1.5px] border-border/60 rounded-lg px-[13px] py-2.5 text-[14px] bg-bg-2 text-text-main font-body focus:outline-none focus:border-lime focus:shadow-[0_0_0_2px_var(--color-lime-dim)] transition-all"
                 />
               </div>
               <button

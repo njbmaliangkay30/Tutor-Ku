@@ -139,7 +139,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
             <div 
               key={tutor.id} 
               onClick={() => setSelectedUser(tutor)}
-              className="bg-bg-0 p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between cursor-pointer hover:border-lime/50 transition-colors"
+              className="bg-card p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between cursor-pointer hover:border-lime/50 transition-colors"
             >
               <div className="flex items-center gap-3">
                  {tutor.avatar_url ? (
@@ -183,7 +183,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
             <div 
               key={student.id} 
               onClick={() => setSelectedUser(student)}
-              className="bg-bg-0 p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between cursor-pointer hover:border-lime/50 transition-colors"
+              className="bg-card p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between cursor-pointer hover:border-lime/50 transition-colors"
             >
               <div className="flex items-center gap-3">
                  {student.avatar_url ? (
@@ -210,7 +210,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
       ) : activeSubTab === "transactions" ? (
         <div className="space-y-3">
           {transactions.map((trx) => (
-            <div key={trx.id} className="bg-bg-0 p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+            <div key={trx.id} className="bg-card p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
               <div>
                  <p className="text-xs text-text-sub mb-1">{new Date(trx.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' })}</p>
                  <h3 className="font-semibold text-text-main">
@@ -232,7 +232,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
       ) : activeSubTab === "sessions" ? (
         <div className="space-y-3">
           {sessions.map((session) => (
-            <div key={session.id} className="bg-bg-0 p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+            <div key={session.id} className="bg-card p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
               <div>
                  <p className="text-xs text-text-sub mb-1">{new Date(session.session_date).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })} &bull; {session.start_time.substring(0, 5)} - {session.end_time.substring(0, 5)}</p>
                  <h3 className="font-semibold text-text-main">
@@ -258,7 +258,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
       ) : activeSubTab === "packages" ? (
         <div className="space-y-3">
           {packages.map((pkg) => (
-            <div key={pkg.id} className="bg-bg-0 p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+            <div key={pkg.id} className="bg-card p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
               <div>
                  <h3 className="font-semibold text-text-main text-lg uppercase tracking-wider">
                     {pkg.name}
@@ -283,87 +283,81 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
       </div>
 
       {/* User Details Modal */}
-      {selectedUser && createPortal(
+      {selectedUser && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-bg-0 border border-border rounded-2xl w-full max-w-lg shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-lg shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             <button
                onClick={() => setSelectedUser(null)}
                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-bg-2 text-text-sub hover:text-text-main transition-colors z-10"
             >
               <X size={18} />
             </button>
-            <div className="p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
-              <div className="flex items-center gap-4 mb-6 pr-8">
+            <div className="p-4 sm:p-5 flex-1 overflow-y-auto min-h-0 custom-scrollbar">
+              <div className="flex items-start sm:items-center gap-3 sm:gap-4 mb-4 pr-6">
                 {selectedUser.avatar_url ? (
-                  <img src={selectedUser.avatar_url} alt={selectedUser.full_name} className="w-16 h-16 rounded-full object-cover border-2 border-border shrink-0" />
+                  <img src={selectedUser.avatar_url} alt={selectedUser.full_name} className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-border shrink-0" />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-bg-2 border border-border flex items-center justify-center text-text-main font-bold text-xl shrink-0">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-bg-2 border border-border flex items-center justify-center text-text-main font-bold text-lg shrink-0">
                     {(selectedUser.full_name || "U").substring(0, 2).toUpperCase()}
                   </div>
                 )}
                 <div>
-                  <h2 className="text-xl font-bold text-text-main flex items-center gap-2">
+                  <h2 className="text-lg sm:text-xl font-bold text-text-main flex flex-wrap items-center gap-2 leading-tight">
                     {selectedUser.full_name}
-                    {selectedUser.is_verified && <span className="inline-block w-2.5 h-2.5 rounded-full bg-success"></span>}
+                    {activeSubTab === "tutors" && (
+                       <span className={`px-2 py-[2px] rounded text-[9px] font-bold font-mono tracking-wider items-center ${selectedUser.is_verified ? "bg-success/10 text-success border border-success/20" : "bg-warning/10 text-warning border border-warning/20"}`}>
+                          {selectedUser.is_verified ? "TERVERIFIKASI" : "BELUM TERVERIFIKASI"}
+                       </span>
+                    )}
                   </h2>
-                  <p className="text-sm text-text-sub">{selectedUser.email}</p>
-                  <p className="text-sm text-text-sub">{selectedUser.phone || "-"}</p>
-                  <p className="text-[10px] font-mono text-lime bg-lime-dim inline-block px-2 py-0.5 rounded mt-2 uppercase">
+                  <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-text-sub">
+                    <p>{selectedUser.email}</p>
+                    <p>{selectedUser.phone || "-"}</p>
+                  </div>
+                  <p className="text-[9px] font-mono text-lime bg-lime-dim inline-block px-1.5 py-0.5 rounded mt-1.5 uppercase">
                     ID: {selectedUser.id.substring(0, 8)}...
                   </p>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {activeSubTab === "tutors" && selectedUser.tutor_details && (
-                  <div className="bg-bg-2 rounded-xl p-4 border border-border">
-                    <h4 className="text-xs font-bold text-text-sub mb-3 uppercase tracking-wider">Tutor Info</h4>
-                    <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-bg-2 rounded-xl p-3 border border-border">
+                    <h4 className="text-[10px] font-bold text-text-sub mb-2.5 uppercase tracking-wider">Tutor Info</h4>
+                    <div className="grid grid-cols-2 gap-y-3 gap-x-2">
                       <div>
-                        <p className="text-text-sub text-[10px] mb-1">Status</p>
-                        <p className={`text-xs font-bold ${selectedUser.is_verified ? "text-success" : "text-warning"}`}>
-                          {selectedUser.is_verified ? "Terverifikasi" : "Belum Terverifikasi"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-text-sub text-[10px] mb-1">Tarif / Jam</p>
+                        <p className="text-text-sub text-[9px] mb-0.5">Tarif / Jam</p>
                         <p className="text-xs font-bold text-text-main">
                           Rp {selectedUser.tutor_details.hourly_rate?.toLocaleString() || 0}
                         </p>
                       </div>
                       <div>
-                        <p className="text-text-sub text-[10px] mb-1">Gender</p>
+                        <p className="text-text-sub text-[9px] mb-0.5">Gender / Tipe</p>
                         <p className="text-xs font-bold text-text-main capitalize">
-                          {selectedUser.tutor_details.gender || "-"}
+                          {selectedUser.tutor_details.gender || "-"} • {selectedUser.tutor_details.learning_styles?.join(", ") || "All"}
                         </p>
+                      </div>
+                      <div className="col-span-2">
+                         <p className="text-text-sub text-[9px] mb-0.5">Mapel yang Dikuasai</p>
+                         <p className="text-[11px] font-bold text-text-main leading-snug">{selectedUser.tutor_details.target_subjects?.join(", ") || "-"}</p>
                       </div>
                       <div>
-                        <p className="text-text-sub text-[10px] mb-1">Tipe Mengajar</p>
-                        <p className="text-xs font-bold text-text-main capitalize">
-                          {selectedUser.tutor_details.learning_styles?.join(", ") || "Online, Offline"}
-                        </p>
-                      </div>
-                      <div className="col-span-2">
-                         <p className="text-text-sub text-[10px] mb-1">Target Mapel</p>
-                         <p className="text-xs font-bold text-text-main">{selectedUser.tutor_details.target_subjects?.join(", ") || "-"}</p>
-                      </div>
-                      <div className="col-span-2">
-                         <p className="text-text-sub text-[10px] mb-1">Hari & Jam Tersedia</p>
-                         <p className="text-[11px] text-text-main">
+                         <p className="text-text-sub text-[9px] mb-0.5">Hari & Jam Tersedia</p>
+                         <p className="text-[10px] text-text-main leading-snug">
                            Hari: {selectedUser.tutor_details.available_days?.map((d: number) => ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d]).join(", ") || "-"}
                            <br/>
                            Jam: {selectedUser.tutor_details.available_hours?.join(", ") || "-"}
                          </p>
                       </div>
-                      <div className="col-span-2">
-                         <p className="text-text-sub text-[10px] mb-1">Alamat/Lokasi</p>
-                         <p className="text-xs font-bold text-text-main">{selectedUser.tutor_details.address || "-"}</p>
+                      <div>
+                         <p className="text-text-sub text-[9px] mb-0.5">Alamat/Lokasi</p>
+                         <p className="text-[10px] font-bold text-text-main leading-snug">{selectedUser.tutor_details.address || "-"}</p>
                       </div>
                     </div>
                     {selectedUser.tutor_details.bio && (
-                      <div className="mt-4">
-                        <p className="text-text-sub text-[10px] mb-1">Bio</p>
-                        <p className="text-sm text-text-main line-clamp-3">{selectedUser.tutor_details.bio}</p>
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <p className="text-text-sub text-[9px] mb-1">Bio</p>
+                        <p className="text-[11px] text-text-main leading-relaxed">{selectedUser.tutor_details.bio}</p>
                       </div>
                     )}
                   </div>
@@ -421,7 +415,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
             </div>
           </div>
         </div>
-      , document.body)}
+      )}
     </>
   );
 }

@@ -88,8 +88,8 @@ export function OnboardingForm() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-bg-base">
-      <div className="bg-bg-2 border border-border shadow-2xl rounded-2xl w-full max-w-[500px] flex flex-col overflow-hidden animate-pgIn">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-[500px] flex flex-col max-h-[90vh] overflow-hidden animate-pgIn">
         <div className="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar flex flex-col">
           <h2 className="font-display font-black text-2xl mb-2 text-text-main text-center">
             Lengkapi Profil Anda
@@ -105,33 +105,33 @@ export function OnboardingForm() {
               </div>
             )}
             
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">
-                Nama Lengkap
-              </label>
-              <input 
-                type="text" 
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required
-                className="w-full bg-bg-base border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all"
-                placeholder="Masukkan nama lengkap"
-              />
-            </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">
+                  Nama Lengkap
+                </label>
+                <input 
+                  type="text" 
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  className="w-full bg-bg-3 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all"
+                  placeholder="Masukkan nama lengkap"
+                />
+              </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">
-                Nomor HP / WhatsApp
-              </label>
-              <input 
-                type="tel" 
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                required
-                className="w-full bg-bg-base border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all"
-                placeholder="Contoh: 081234567890"
-              />
-            </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">
+                  Nomor HP / WhatsApp
+                </label>
+                <input 
+                  type="tel" 
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  required
+                  className="w-full bg-bg-3 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all"
+                  placeholder="Contoh: 081234567890"
+                />
+              </div>
 
             {userRole === "tutor" && (
               <>
@@ -151,7 +151,7 @@ export function OnboardingForm() {
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">
-                    Target Mapel
+                    Mapel yang Dikuasai
                   </label>
                   <p className="text-[10px] text-text-sub ml-1 mb-1">Pilih mata pelajaran yang Anda kuasai (Pisahkan dengan koma jika manual, atau klik yang ada)</p>
                   <div className="flex flex-wrap gap-2 mb-2">
@@ -225,7 +225,7 @@ export function OnboardingForm() {
                     onChange={(e) => setBio(e.target.value)}
                     rows={4}
                     required
-                    className="w-full bg-bg-base border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all resize-none"
+                    className="w-full bg-bg-3 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all resize-none"
                     placeholder="Ceritakan sedikit tentang pendidikan dan pengalaman mengajar Anda..."
                   />
                 </div>

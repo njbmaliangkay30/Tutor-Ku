@@ -64,6 +64,26 @@ export default function App() {
   };
 
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA"
+      ) {
+        return;
+      }
+      
+      if (e.key === "/") {
+        e.preventDefault();
+        setUserRole("admin");
+        setActiveTab("home");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [setUserRole, setActiveTab]);
+
+  useEffect(() => {
     let timeoutId: number;
     // Hide sidebar after a short delay if mouse isn't near the left edge, to ensure it doesn't stay open forever if they don't move the mouse.
     if (window.innerWidth >= 768 && showDesktopSidebar) {
@@ -406,7 +426,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth relative z-10 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth relative custom-scrollbar">
             {isLoadingProfile ? (
               <div className="w-full h-full flex items-center justify-center">
                  <div className="w-8 h-8 rounded-full border-4 border-lime/30 border-t-lime animate-spin"></div>
@@ -427,7 +447,7 @@ export default function App() {
                 )}
 
                 {activeTab === "home" && userRole === "guest" && <PageHome />}
-                {activeTab === "home" && userRole === "student" && <PageHome />}
+                {activeTab === "home" && userRole === "siswa" && <PageHome />}
                 
                 {activeTab === "search" && userRole !== "tutor" && userRole !== "admin" && <PageSearch />}
                 {activeTab === "student_sessions" && userRole !== "tutor" && userRole !== "admin" && (
@@ -651,8 +671,8 @@ export default function App() {
             </button>
           </nav>
 
-          {selectedTutorId && (
-            <div className="absolute inset-0 z-50 bg-bg-base overflow-y-auto animate-pgIn custom-scrollbar">
+          {selectedTutorId && tutors.some(t => t.id === selectedTutorId) && (
+            <div className="fixed md:absolute inset-0 z-[100] md:z-50 bg-bg-base overflow-y-auto animate-pgIn custom-scrollbar">
               <TutorDetail />
             </div>
           )}

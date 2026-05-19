@@ -78,7 +78,7 @@ export function AdminOverview() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-        <div className="bg-bg-0 p-6 rounded-2xl border border-border flex flex-col gap-4 relative overflow-hidden group hover:border-lime/50 transition-colors">
+        <div className="bg-card p-6 rounded-2xl border border-border flex flex-col gap-4 relative overflow-hidden group hover:border-lime/50 transition-colors">
           <div className="flex items-start justify-between">
             <div className="w-10 h-10 rounded-xl bg-lime-mid text-lime flex items-center justify-center">
               <Users size={20} />
@@ -93,7 +93,7 @@ export function AdminOverview() {
           </div>
         </div>
 
-        <div className="bg-bg-0 p-6 rounded-2xl border border-border flex flex-col gap-4 relative overflow-hidden group hover:border-lime/50 transition-colors">
+        <div className="bg-card p-6 rounded-2xl border border-border flex flex-col gap-4 relative overflow-hidden group hover:border-lime/50 transition-colors">
           <div className="flex items-start justify-between">
             <div className="w-10 h-10 rounded-xl bg-primary-dim text-primary flex items-center justify-center">
               <BookOpen size={20} />
@@ -108,7 +108,7 @@ export function AdminOverview() {
           </div>
         </div>
 
-        <div className="bg-bg-0 p-6 rounded-2xl border border-border flex flex-col gap-4 relative overflow-hidden group hover:border-lime/50 transition-colors">
+        <div className="bg-card p-6 rounded-2xl border border-border flex flex-col gap-4 relative overflow-hidden group hover:border-lime/50 transition-colors">
           <div className="flex items-start justify-between">
             <div className="w-10 h-10 rounded-xl bg-warning/10 text-warning flex items-center justify-center">
               <Clock size={20} />
@@ -125,7 +125,7 @@ export function AdminOverview() {
           </div>
         </div>
 
-        <div className="bg-bg-0 p-6 rounded-2xl border border-border flex flex-col gap-4 relative overflow-hidden group hover:border-lime/50 transition-colors">
+        <div className="bg-card p-6 rounded-2xl border border-border flex flex-col gap-4 relative overflow-hidden group hover:border-lime/50 transition-colors">
           <div className="flex items-start justify-between">
             <div className="w-10 h-10 rounded-xl bg-success/10 text-success flex items-center justify-center">
               <CreditCard size={20} />

@@ -311,6 +311,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         tutorProfileData,
         tutors,
         isLoadingTutors,
+        isLoadingProfile,
       }}
     >
       {children}
