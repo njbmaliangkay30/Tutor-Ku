@@ -1,4 +1,4 @@
-import { Calendar, Video, FileText, Star, Clock } from 'lucide-react';
+import { Calendar, Video, FileText, Star, Clock, AlertOctagon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';

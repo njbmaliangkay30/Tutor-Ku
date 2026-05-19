@@ -30,7 +30,7 @@ export function NotificationBell() {
 
     // Subscribe to new notifications
     const subscription = supabase
-      .channel('notifications_channel')
+      .channel(`notifications_${userProfile.id}`)
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
