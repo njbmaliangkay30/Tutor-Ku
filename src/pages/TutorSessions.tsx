@@ -101,8 +101,8 @@ export function TutorSessions() {
 
   const now = new Date();
   
-  const upcoming = sessions.filter(s => getSessionEndDateTime(s) >= now);
-  const pendingReviews = sessions.filter(s => getSessionEndDateTime(s) < now && !sessionReports.has(s.id));
+  const upcoming = sessions.filter(s => s.status === 'confirmed' && getSessionEndDateTime(s) >= now);
+  const pendingReviews = sessions.filter(s => s.status === 'confirmed' && getSessionEndDateTime(s) < now && !sessionReports.has(s.id));
   const waitingForStudent = sessions.filter(s => s.status === 'waiting_for_student');
 
   return (
@@ -302,6 +302,15 @@ export function TutorSessions() {
                           )
                         )}
                       </div>
+                      
+                      {import.meta.env.DEV && (
+                         <button 
+                           onClick={() => setReportModal(session)}
+                           className="w-full mt-2 bg-warning/10 border border-warning/30 text-warning font-bold py-2 rounded-lg text-xs hover:bg-warning/20 transition-colors flex items-center justify-center"
+                         >
+                           ⚙️ Trik Dev: Paksa Isi Laporan
+                         </button>
+                      )}
                     </div>
                   ))}
                 </div>
