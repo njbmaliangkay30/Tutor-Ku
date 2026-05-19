@@ -35,6 +35,16 @@ type AppContextType = {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const updateFavicon = (theme: string) => {
+  const favicon = document.getElementById("app-favicon") as HTMLLinkElement;
+  if (!favicon) return;
+  const bgColor = theme === "dark" ? "%230D0D0D" : "%23F2F7F4";
+  const shadowColor = theme === "dark" ? "%233f3f46" : "%239ca3af";
+  const textColor = theme === "dark" ? "%23C8FF00" : "%2316a34a"; // green-600 vs lime
+  
+  favicon.href = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='${bgColor}'/%3E%3Ctext x='47' y='72' font-family='sans-serif' font-weight='900' font-size='65' fill='${shadowColor}' text-anchor='middle' letter-spacing='-5'%3Etk%3C/text%3E%3Ctext x='43' y='68' font-family='sans-serif' font-weight='900' font-size='65' fill='${textColor}' text-anchor='middle' letter-spacing='-5'%3Etk%3C/text%3E%3C/svg%3E`;
+};
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [activeTab, setActiveTab] = useState("home");
   const [searchQuery, setSearchQuery] = useState("");
@@ -215,6 +225,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const savedTheme = localStorage.getItem("tutorku_theme") || "light";
     setTheme(savedTheme);
     document.documentElement.setAttribute("data-theme", savedTheme);
+    updateFavicon(savedTheme);
 
     fetchTutors();
 
@@ -275,6 +286,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTheme(newTheme);
     localStorage.setItem("tutorku_theme", newTheme);
     document.documentElement.setAttribute("data-theme", newTheme);
+    updateFavicon(newTheme);
   };
 
   return (
