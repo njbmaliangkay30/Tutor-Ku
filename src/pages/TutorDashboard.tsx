@@ -23,39 +23,6 @@ export function TutorDashboard() {
   const [requestReason, setRequestReason] = useState("");
   const [isSubmittingRate, setIsSubmittingRate] = useState(false);
 
-  const [reviewModalTarget, setReviewModalTarget] = useState<{sessionId: string, studentName: string} | null>(null);
-
-  const [reportText, setReportText] = useState("");
-  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
-
-  const submitReport = async () => {
-    if (!reviewModalTarget || !reportText.trim() || !user) return;
-    setIsSubmittingReport(true);
-    
-    try {
-      const { error } = await supabase.from('session_reports').insert({
-        session_id: reviewModalTarget.sessionId,
-        tutor_id: user.id,
-        summary: reportText,
-        student_understanding_level: 4 // default
-      });
-      
-      if (error) throw error;
-      
-      await supabase.from('sessions').update({status: 'completed'}).eq('id', reviewModalTarget.sessionId);
-      
-      setReviewModalTarget(null);
-      setReportText("");
-      
-      // Update local state instead of reload to be smoother, but easiest is to re-render using a toggle trigger or reload
-      window.location.reload();
-    } catch (err) {
-      console.error(err);
-      alert('Gagal mengirim laporan');
-      setIsSubmittingReport(false);
-    }
-  };
-
   const submitRateRequest = async () => {
     if (!user || !requestedRate) return;
     
@@ -178,47 +145,7 @@ export function TutorDashboard() {
   const pastSessions = sessions.filter(s => new Date(`${s.session_date}T${s.end_time}`) < new Date());
   
   const pendingReviews = pastSessions
-    .filter(s => !reportSessionIds.has(s.id))
-    .map(s => {
-      const start = new Date(`1970-01-01T${s.start_time}`);
-      const end = new Date(`1970-01-01T${s.end_time}`);
-      const duration = (end.getTime() - start.getTime()) / 60000;
-      const studentName = s.student?.profiles?.full_name || 'Student';
-      
-      return {
-        id: s.id,
-        studentId: s.student_id,
-        session_id: s.id,
-        student: studentName,
-        subject: s.subject,
-        date: new Date(s.session_date).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }),
-        topic: s.material_notes || 'Review Sesi',
-        duration: duration || 60,
-      };
-    });
-
-  // Teaching history (completed/past sessions)
-  const teachingHistory = pastSessions.map(s => {
-      const start = new Date(`1970-01-01T${s.start_time}`);
-      const end = new Date(`1970-01-01T${s.end_time}`);
-      const duration = (end.getTime() - start.getTime()) / 60000;
-      const studentName = s.student?.profiles?.full_name || 'Student';
-      
-      const isReviewed = reportSessionIds.has(s.id);
-
-      return {
-        id: s.id,
-        session_id: s.id,
-        student: studentName,
-        subject: s.subject,
-        date: new Date(s.session_date).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }),
-        topic: s.material_notes || 'Selesai',
-        dur: duration || 60,
-        xp: 100,
-        rating: tutorStats.rating || 5.0, // simplified for now
-        reviewed: isReviewed,
-      };
-  });
+    .filter(s => !reportSessionIds.has(s.id));
 
   // Active students
   const studentMap = new Map();
@@ -379,11 +306,11 @@ export function TutorDashboard() {
 
         {/* Warning Reviews */}
         {pendingReviews.length > 0 && (
-          <div className="bg-warning/10 border-[1.5px] border-warning/35 rounded-xl p-3 mb-3.5 flex items-center gap-2.5 cursor-pointer hover:bg-warning/20 transition-colors">
+          <div onClick={() => setActiveTab('sessions')} className="bg-warning/10 border-[1.5px] border-warning/35 rounded-xl p-3 mb-3.5 flex items-center gap-2.5 cursor-pointer hover:bg-warning/20 transition-colors">
              <WarningCircle className="text-[22px] text-warning shrink-0" fill="currentColor" stroke="none" />
              <div className="flex-1">
                 <div className="text-[13px] font-bold text-warning font-display">{pendingReviews.length} Laporan Sesi Belum Diisi</div>
-                <div className="text-[11px] text-text-sub font-mono">Scroll ke bawah untuk mengisi ↓</div>
+                <div className="text-[11px] text-text-sub font-mono">Klik di sini untuk diarahkan ke tab Sesi →</div>
              </div>
           </div>
         )}
@@ -523,59 +450,6 @@ export function TutorDashboard() {
            ))}
         </div>
 
-        {/* Pending Reviews */}
-        <div className="mb-3.5">
-           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono mb-2.5">REVIEW PERLU DILAKUKAN ({pendingReviews.length})</div>
-           {pendingReviews.map(r => (
-             <div key={r.id} onClick={() => setReviewModalTarget({sessionId: r.session_id, studentName: r.student})} className="bg-card border-[1.5px] border-warning rounded-[12px] p-3 mb-2 cursor-pointer hover:shadow-[3px_3px_0_#F59E0B] hover:-translate-y-[1px] hover:-translate-x-[1px] transition-all">
-                <div className="flex justify-between items-start">
-                   <div className="flex gap-2.5 items-center">
-                      <div className="w-[38px] h-[38px] rounded-lg flex items-center justify-center font-display font-extrabold text-white/90 text-[14px] shrink-0" style={{ background: '#1A3A28' }}>
-                        {r.student.split(' ').map(w=>w[0]).join('').substring(0,2)}
-                      </div>
-                      <div>
-                         <div className="font-display text-[13px] font-bold">{r.student}</div>
-                         <div className="text-[11px] text-text-sub font-mono">{r.subject} · {r.date}</div>
-                         <div className="text-[11px] text-text-main mt-1">📖 {r.topic}</div>
-                      </div>
-                   </div>
-                   <div className="text-right shrink-0 ml-2">
-                       <div className="text-[10px] text-text-sub font-mono mb-1">{r.duration} mnt</div>
-                       <div className="bg-warning/20 text-warning border border-warning/35 text-[10px] font-bold py-[3px] px-[9px] rounded-[4px] font-mono">Isi Review</div>
-                   </div>
-                </div>
-             </div>
-           ))}
-        </div>
-
-        {/* RIWAYAT MENGAJAR */}
-        <div className="mb-2">
-           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono mb-2.5">RIWAYAT MENGAJAR</div>
-           {teachingHistory.map(h => (
-              <div key={h.id} className={`bg-card rounded-xl p-3 mb-2 border-[1.5px] border-border border-l-[3.5px] ${h.reviewed ? 'border-l-lime' : 'border-l-warning'}`}>
-                 <div className="flex justify-between items-start">
-                    <div>
-                       <div className="font-display text-[13px] font-bold">
-                         {h.student} <span className="text-text-sub font-normal text-[11px]">· {h.subject}</span>
-                       </div>
-                       <div className="text-[11px] text-text-sub font-mono mt-[2px]">{h.date} · {h.dur} mnt · {h.topic}</div>
-                    </div>
-                    <div className="text-right shrink-0 ml-2">
-                       <div className="font-mono text-[12px] font-bold text-lime bg-lime-dim border border-lime/25 px-2 py-0.5 rounded-[4px] inline-block mb-0.5">+{h.xp} XP</div>
-                       <div className="text-[10px] font-bold text-warning font-mono">★ {h.rating.toFixed(1)}</div>
-                    </div>
-                 </div>
-                 {!h.reviewed ? (
-                   <button onClick={() => setReviewModalTarget({sessionId: h.session_id, studentName: h.student})} className="mt-2 bg-warning/10 text-warning border border-warning/30 rounded-[4px] px-3 py-[5px] text-[11px] font-bold font-mono cursor-pointer flex items-center gap-1 hover:bg-warning/20 transition-colors">
-                     <PencilSimple strokeWidth={2.5} size={14} /> Isi Review Siswa
-                   </button>
-                 ) : (
-                   <div className="mt-1.5 text-[10px] font-semibold text-lime font-mono">✓ Review terisi</div>
-                 )}
-              </div>
-           ))}
-        </div>
-
         <div className="h-8"></div>
         <button onClick={handleLogout} className="btn danger flex items-center justify-center gap-2 w-full max-w-[200px] mx-auto mt-4 py-3 bg-red-500/10 text-red-500 font-bold border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-colors">
           <LogOut size={18} /> Keluar
@@ -583,44 +457,6 @@ export function TutorDashboard() {
         <div className="h-14"></div>
       </div>
 
-      {/* Review Modal */}
-      {reviewModalTarget && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>
-          <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden">
-            <div className="flex justify-between items-center p-4 border-b-[1.5px] border-border bg-bg-2">
-              <div className="font-display font-bold text-[16px]">Isi Laporan Sesi</div>
-              <button 
-                onClick={() => setReviewModalTarget(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-bg-3 text-text-sub transition-colors"
-              >
-                <XIcon size={18} />
-              </button>
-            </div>
-            <div className="p-5">
-              <div className="text-[13px] text-text-sub mb-4">
-                 Siswa: <strong className="text-text-main">{reviewModalTarget.studentName}</strong>
-              </div>
-              <div className="flex flex-col gap-1.5 mb-4">
-                 <label className="text-[11px] font-bold font-mono text-text-sub uppercase">Topik & Catatan Belajar</label>
-                 <textarea 
-                   className="w-full bg-bg-2 border-[1.5px] border-border rounded-lg p-3 text-[13px] focus:outline-none focus:border-lime min-h-[100px] resize-none"
-                   placeholder="Materi yang dibahas dan progres siswa..."
-                   value={reportText}
-                   onChange={(e) => setReportText(e.target.value)}
-                 ></textarea>
-              </div>
-              <button 
-                onClick={submitReport}
-                disabled={isSubmittingReport || !reportText.trim()}
-                className="w-full flex items-center justify-center gap-2 bg-lime border-[2px] border-lime text-black font-bold font-display px-4 py-3 rounded-lg mt-2 cursor-pointer shadow-sh1 hover:shadow-sh2 hover:-translate-y-[1px] hover:-translate-x-[1px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmittingReport ? <Loader2 size={16} className="animate-spin" /> : null}
-                {isSubmittingReport ? 'Mengirim...' : 'Kirim Laporan'}
-              </button>
-            </div>
-          </div>
-        </div>, document.body
-      )}
       {/* Rate Request Modal */}
       {isRateModalOpen && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>

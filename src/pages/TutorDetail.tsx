@@ -19,9 +19,30 @@ export function TutorDetail() {
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Scheduling states
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
   const tutor = tutors.find((t:any) => t.id === selectedTutorId);
 
   if (!tutor) return null;
+
+  const getAvailableDates = () => {
+    if (!tutor.activeDays || tutor.activeDays.length === 0) return [];
+    const dates = [];
+    let d = new Date();
+    d.setDate(d.getDate() + 1); // Start from tomorrow
+    while (dates.length < 14) {
+      if (tutor.activeDays.includes(d.getDay())) {
+        dates.push(new Date(d));
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    return dates;
+  };
+
+  const availableDates = getAvailableDates();
+  const availableHours = (selectedDate && tutor.schedule) ? (tutor.schedule[selectedDate.getDay()] || []) : [];
 
   const handleBook = async () => {
     if (userRole === "guest" || !userProfile) {
@@ -30,22 +51,40 @@ export function TutorDetail() {
       return;
     } 
 
+    if (!selectedDate || !selectedTime) {
+      alert("Silakan pilih tanggal dan jam sesi pertama terlebih dahulu.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-       const today = new Date();
-       const tomorrow = new Date(today);
-       tomorrow.setDate(tomorrow.getDate() + 1);
+       const pkgInfo = PKG_SUBSCRIPTIONS.find(p => p.id === selectedPkg);
+       const sessionsCount = pkgInfo ? pkgInfo.sessions : 1;
+       
+       // Calculate end time (assuming 1h 30m duration)
+       const baseDate = new Date(selectedDate);
+       const [h, m] = selectedTime.split(':').map(Number);
+       baseDate.setHours(h + 1, m + 30);
+       const endDateStr = baseDate.toTimeString().substring(0, 5);
 
-       const { data, error } = await supabase.from('sessions').insert({
-         student_id: userProfile.id,
-         tutor_id: tutor.id,
-         subject: tutor.major,
-         session_date: tomorrow.toISOString().split('T')[0],
-         start_time: '14:00',
-         end_time: '15:30',
-         material_notes: notes,
-         status: 'pending'
-       });
+       const inserts = [];
+       for (let i = 0; i < sessionsCount; i++) {
+         const sDate = new Date(selectedDate);
+         sDate.setDate(sDate.getDate() + (i * 7)); // Add 7 days per subsequent session
+         
+         inserts.push({
+           student_id: userProfile.id,
+           tutor_id: tutor.id,
+           subject: tutor.major,
+           session_date: sDate.toISOString().split('T')[0],
+           start_time: selectedTime,
+           end_time: endDateStr,
+           material_notes: i === 0 ? notes : "Sesi " + (i+1) + " dari paket (Terjadwal Otomatis)",
+           status: 'pending'
+         });
+       }
+
+       const { error } = await supabase.from('sessions').insert(inserts);
 
        if (error) throw error;
 
@@ -295,6 +334,49 @@ export function TutorDetail() {
               );
             })}
           </div>
+        </div>
+
+        <div className="mb-3.5">
+          <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">
+            JADWAL SESI PERTAMA
+          </div>
+          
+          <div className="flex overflow-x-auto gap-2 pb-2 custom-scrollbar mb-2">
+            {availableDates.length > 0 ? availableDates.map(d => {
+              const isSelected = selectedDate?.toISOString() === d.toISOString();
+              return (
+                <div 
+                  key={d.toISOString()} 
+                  onClick={() => { setSelectedDate(d); setSelectedTime(null); }}
+                  className={`flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl border-[1.5px] cursor-pointer transition-all ${isSelected ? "border-lime bg-lime-dim shadow-lime" : "border-border bg-card-2 hover:border-lime/50"}`}
+                >
+                  <span className={`text-[10px] font-bold font-mono ${isSelected ? 'text-lime' : 'text-text-sub'}`}>{DAYS[d.getDay()]}</span>
+                  <span className={`text-[16px] font-display font-bold ${isSelected ? 'text-white' : 'text-text-main'}`}>{d.getDate()}</span>
+                </div>
+              );
+            }) : (
+              <div className="text-[12px] text-text-sub">Tutor ini belum mengatur jadwal aktif.</div>
+            )}
+          </div>
+
+          {selectedDate && (
+            <div className="grid grid-cols-4 gap-2 animate-pgIn">
+              {availableHours.length > 0 ? availableHours.map((h: string) => {
+                const isHSelected = selectedTime === h;
+                return (
+                  <div
+                    key={h}
+                    onClick={() => setSelectedTime(h)}
+                    className={`flex items-center justify-center py-2 rounded-lg border-[1.5px] text-[12px] font-bold font-mono cursor-pointer transition-all ${isHSelected ? "border-lime bg-lime text-black" : "border-border bg-card-2 text-text-main hover:border-lime"}`}
+                  >
+                    {h}
+                  </div>
+                );
+              }) : (
+                <div className="col-span-4 text-[12px] text-text-sub">Tidak ada jam tersedia di hari ini.</div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-[5px] mb-3">

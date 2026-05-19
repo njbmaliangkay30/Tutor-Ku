@@ -39,8 +39,18 @@ export function StudentSessions() {
 
   const now = new Date();
   
-  const upcoming = sessions.filter(s => new Date(`${s.session_date}T${s.end_time}`) >= now);
-  const past = sessions.filter(s => new Date(`${s.session_date}T${s.end_time}`) < now);
+  const upcoming = sessions.filter(s => {
+    if (s.status === 'pending') return true;
+    if (s.status === 'completed' || s.status === 'rejected') return false;
+    const sDate = s.session_date && s.end_time ? new Date(`${s.session_date}T${s.end_time}`) : new Date(0);
+    return sDate >= now;
+  });
+  const past = sessions.filter(s => {
+    if (s.status === 'completed' || s.status === 'rejected') return true;
+    if (s.status === 'pending') return false;
+    const sDate = s.session_date && s.end_time ? new Date(`${s.session_date}T${s.end_time}`) : new Date(0);
+    return sDate < now;
+  });
 
   const displayList = type === 'upcoming' ? upcoming : past;
 
@@ -87,22 +97,39 @@ export function StudentSessions() {
         ) : displayList.length === 0 ? (
            <div className="text-center py-8 text-text-sub border border-dashed border-border rounded-xl">Tidak ada sesi {type === 'upcoming' ? 'akan datang' : 'sebelumnya'}.</div>
         ) : (
-          displayList.map(session => (
-            <div key={session.id} className="bg-card border-[1.5px] border-border rounded-xl p-4">
-               <div className="flex justify-between items-start mb-4">
-                 <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 rounded-full text-white flex items-center justify-center font-bold font-display" style={{backgroundColor: getAvatarColor(session.tutor_profiles?.profiles?.full_name || 'Tutor')}}>
-                     {(session.tutor_profiles?.profiles?.full_name || 'T').substring(0, 2).toUpperCase()}
+          displayList.map(session => {
+            let statusText = session.status;
+            let statusColor = "bg-bg-3 text-text-sub";
+            if (session.status === 'pending') {
+              statusText = 'Menunggu Konfirmasi';
+              statusColor = "bg-warning/20 text-warning";
+            } else if (session.status === 'confirmed') {
+              statusText = 'Terkonfirmasi';
+              statusColor = "bg-lime-dim text-lime border border-lime/30";
+            } else if (session.status === 'completed') {
+              statusText = 'Selesai';
+              statusColor = "bg-bg-2 border border-border text-text-sub";
+            } else if (session.status === 'cancelled' || session.status === 'rejected') {
+              statusText = 'Dibatalkan';
+              statusColor = "bg-red-500/10 text-red-500 border border-red-500/30";
+            }
+
+            return (
+              <div key={session.id} className={`bg-card border-[1.5px] border-border rounded-xl p-4 ${session.status === 'pending' ? 'border-warning/30' : ''}`}>
+                 <div className="flex justify-between items-start mb-4">
+                   <div className="flex items-center gap-3">
+                     <div className="w-10 h-10 rounded-full text-white flex items-center justify-center font-bold font-display" style={{backgroundColor: getAvatarColor(session.tutor_profiles?.profiles?.full_name || 'Tutor')}}>
+                       {(session.tutor_profiles?.profiles?.full_name || 'T').substring(0, 2).toUpperCase()}
+                     </div>
+                     <div>
+                       <div className="font-bold text-text-main font-display">{session.tutor_profiles?.profiles?.full_name || 'Tutor'}</div>
+                       <div className="text-xs text-text-sub font-mono">{session.subject}</div>
+                     </div>
                    </div>
-                   <div>
-                     <div className="font-bold text-text-main font-display">{session.tutor_profiles?.profiles?.full_name || 'Tutor'}</div>
-                     <div className="text-xs text-text-sub font-mono">{session.subject}</div>
+                   <div className={`text-[10px] font-bold px-2.5 py-1.5 rounded font-mono uppercase tracking-wider ${statusColor}`}>
+                     {statusText}
                    </div>
                  </div>
-                 <div className="bg-lime-mid text-lime text-[10px] font-bold px-2 py-1 rounded font-mono uppercase tracking-wider">
-                   {session.status}
-                 </div>
-               </div>
 
                <div className="bg-bg-2 rounded-lg p-3 mb-4 space-y-2 border border-border/50">
                  <div className="flex items-center gap-2 text-sm text-text-main">
@@ -138,7 +165,8 @@ export function StudentSessions() {
                   </div>
                )}
             </div>
-          ))
+           );
+          })
         )}
       </div>
 

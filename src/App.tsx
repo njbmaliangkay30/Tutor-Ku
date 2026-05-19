@@ -16,7 +16,8 @@ import {
   ShieldCheck,
   CreditCard,
   Package,
-  DollarSign
+  DollarSign,
+  Clock
 } from "lucide-react";
 import { PageHome } from "./pages/Home";
 import { Search as PageSearch } from "./pages/Search";
@@ -27,6 +28,7 @@ import { TutorDetail } from "./pages/TutorDetail";
 import { TutorDashboard } from "./pages/TutorDashboard";
 import { TutorSchedule } from "./pages/TutorSchedule";
 import { TutorSessions } from "./pages/TutorSessions";
+import { TutorHistory } from "./pages/TutorHistory";
 import { StudentSessions } from "./pages/StudentSessions";
 import { StudentProgress } from "./pages/StudentProgress";
 import { AdminDashboard } from "./pages/AdminDashboard";
@@ -226,6 +228,20 @@ export default function App() {
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
                     Sessions
+                  </span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("history")}
+                  title="History"
+                  className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "history" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
+                >
+                  <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
+                    <Clock size={22} />
+                  </span>
+                  <span
+                    className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
+                  >
+                    History
                   </span>
                 </button>
               </>
@@ -460,13 +476,14 @@ export default function App() {
                 {userRole === "tutor" && tutorProfileData?.is_verified !== true ? (
                   <>
                     {activeTab === "home" && <VerificationForm />}
-                    {["schedule", "sessions"].includes(activeTab) && <UnverifiedTutorView />}
+                    {["schedule", "sessions", "history"].includes(activeTab) && <UnverifiedTutorView />}
                   </>
                 ) : (
                   <>
                     {activeTab === "home" && userRole === "tutor" && <TutorDashboard />}
                     {activeTab === "schedule" && userRole === "tutor" && <TutorSchedule />}
                     {activeTab === "sessions" && userRole === "tutor" && <TutorSessions />}
+                    {activeTab === "history" && userRole === "tutor" && <TutorHistory />}
                   </>
                 )}
 
@@ -548,6 +565,17 @@ export default function App() {
                     <BookOpen size={18} />
                   </span>
                   <span className="text-[10px] font-mono">Sessions</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("history")}
+                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all min-w-[60px] ${activeTab === "history" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                >
+                  <span
+                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "history" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                  >
+                    <Clock size={18} />
+                  </span>
+                  <span className="text-[10px] font-mono">History</span>
                 </button>
               </>
             ) : userRole === "admin" ? (

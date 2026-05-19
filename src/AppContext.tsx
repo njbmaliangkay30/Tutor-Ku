@@ -99,6 +99,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           tags: tags,
           badges: [],
           bio: t.bio,
+          schedule: t.schedule,
           activeDays: t.available_days || [],
         };
       });
