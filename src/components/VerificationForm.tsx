@@ -30,10 +30,12 @@ export function VerificationForm() {
     const ktpInput = form.elements.namedItem('attachment_ktp') as HTMLInputElement;
     const ijazahInput = form.elements.namedItem('attachment_ijazah') as HTMLInputElement;
     const pengalamanInput = form.elements.namedItem('pengalaman_mengajar') as HTMLTextAreaElement;
+    const universitasInput = form.elements.namedItem('universitas_asal') as HTMLInputElement;
 
     const ktpFile = ktpInput?.files?.[0];
     const ijazahFile = ijazahInput?.files?.[0];
     const pengalaman = pengalamanInput?.value || "";
+    const universitas = universitasInput?.value || "";
 
     if (!ktpFile || !ijazahFile || !user) {
         alert("Mohon lengkapi dokumen yang diwajibkan.");
@@ -42,14 +44,18 @@ export function VerificationForm() {
     }
 
     try {
-      const ktpPath = `ktp_${user.id}_${Date.now()}_${ktpFile.name}`;
+      const tutorName = userProfile?.full_name || 'Tutor_Tanpa_Nama';
+      // Membuat nama folder dari nama tutor (hanya alphanumeric)
+      const folderName = tutorName.replace(/[^a-zA-Z0-9]/g, '_') + '_' + user.id.substring(0,6);
+
+      const ktpPath = `${folderName}/KTP_${ktpFile.name}`;
       const { error: ktpError } = await supabase.storage
         .from('Data Verifikasi Tutor')
         .upload(ktpPath, ktpFile);
 
       if (ktpError) throw new Error("Gagal mengunggah KTP: " + ktpError.message);
 
-      const ijazahPath = `ijazah_${user.id}_${Date.now()}_${ijazahFile.name}`;
+      const ijazahPath = `${folderName}/Ijazah_${ijazahFile.name}`;
       const { error: ijazahError } = await supabase.storage
         .from('Data Verifikasi Tutor')
         .upload(ijazahPath, ijazahFile);
@@ -60,13 +66,15 @@ export function VerificationForm() {
       const ijazahUrlRes = supabase.storage.from('Data Verifikasi Tutor').getPublicUrl(ijazahPath);
 
       // Pastikan tutor profile exist 
-      await supabase.from('profiles').upsert({ id: user.id, full_name: userProfile?.full_name || 'Tutor', role: 'tutor' }, { onConflict: 'id' }).select();
+      await supabase.from('profiles').upsert({ id: user.id, full_name: tutorName, role: 'tutor' }, { onConflict: 'id' }).select();
       await supabase.from('tutor_profiles').upsert({ id: user.id }, { onConflict: 'id' }).select();
 
       const { error: dbError } = await supabase
         .from('tutor_verifications')
         .insert({
           tutor_id: user.id,
+          nama: tutorName,
+          universitas_asal: universitas,
           ktp_url: ktpUrlRes.data.publicUrl,
           ijazah_url: ijazahUrlRes.data.publicUrl,
           pengalaman_mengajar: pengalaman,
@@ -129,7 +137,26 @@ export function VerificationForm() {
           className="bg-bg-2 border border-border shadow-sm rounded-2xl p-6 md:p-8 flex flex-col gap-6"
         >
           <div>
-            <h3 className="font-bold text-lg mb-4 text-text-main">1. Dokumen Identitas</h3>
+            <h3 className="font-bold text-lg mb-4 text-text-main">1. Informasi Dasar</h3>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-bold text-text-sub" htmlFor="universitas">Universitas Asal (Wajib)</label>
+                <input 
+                  id="universitas"
+                  name="universitas_asal"
+                  type="text"
+                  required
+                  className="w-full bg-bg-base border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime"
+                  placeholder="Misal: Universitas Indonesia"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <hr className="border-border border-b-0 my-2" />
+
+          <div>
+            <h3 className="font-bold text-lg mb-4 text-text-main">2. Dokumen Identitas</h3>
             <div className="flex flex-col gap-2 relative">
               <label className="text-[13px] font-bold text-text-sub" htmlFor="ktp-upload">Kartu Tanda Penduduk (KTP/KTM) *</label>
               
@@ -166,7 +193,7 @@ export function VerificationForm() {
           <hr className="border-border border-b-0 my-2" />
 
           <div>
-            <h3 className="font-bold text-lg mb-4 text-text-main">2. Kualifikasi Pendidikan</h3>
+            <h3 className="font-bold text-lg mb-4 text-text-main">3. Kualifikasi Pendidikan</h3>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2 relative">
                 <label className="text-[13px] font-bold text-text-sub" htmlFor="ijazah-upload">Ijazah / Transkrip Nilai Terakhir *</label>
