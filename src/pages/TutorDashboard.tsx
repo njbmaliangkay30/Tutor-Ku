@@ -11,12 +11,9 @@ export function TutorDashboard() {
   const [sessionReports, setSessionReports] = useState<any[]>([]);
   const [tutorStats, setTutorStats] = useState({ rating: 0, total_reviews: 0 });  
   const [isEditingDays, setIsEditingDays] = useState(false);
-  const [editedDays, setEditedDays] = useState<{[key: number]: string}>({
-    1: '08:00 - 12:00', 
-    3: '13:00 - 17:00', 
-    5: '08:00 - 15:00', 
-    6: '10:00 - 14:00'
-  });
+  const [tutorSchedule, setTutorSchedule] = useState<{[key: number]: string[]}>({});
+  const [selectedDayToEdit, setSelectedDayToEdit] = useState<number | null>(null);
+  const [isSavingSchedule, setIsSavingSchedule] = useState(false);
   
   const [reviewModalTarget, setReviewModalTarget] = useState<{sessionId: string, studentName: string} | null>(null);
   const [reportText, setReportText] = useState("");
@@ -71,6 +68,9 @@ export function TutorDashboard() {
         
         if (tutorProfile) {
           setTutorStats({ rating: tutorProfile.rating || 0, total_reviews: tutorProfile.total_reviews || 0 });
+          if (tutorProfile.schedule) {
+            setTutorSchedule(tutorProfile.schedule);
+          }
         }
 
         // Fetch all sessions for this tutor
@@ -192,27 +192,67 @@ export function TutorDashboard() {
     </span>
   };
 
-  const DAYS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+  const toggleEditDay = (dayId: number) => {
+    setSelectedDayToEdit(selectedDayToEdit === dayId ? null : dayId);
+  };
 
-  const toggleEditDay = (dayIndex: number) => {
-    if (!isEditingDays) return;
-    setEditedDays(prev => {
+  const toggleScheduleHour = (dayId: number, hour: string) => {
+    setTutorSchedule(prev => {
       const next = { ...prev };
-      if (next[dayIndex]) {
-        delete next[dayIndex];
+      const hours = next[dayId] || [];
+      if (hours.includes(hour)) {
+        next[dayId] = hours.filter(h => h !== hour);
+        // We do NOT delete next[dayId] here immediately if it's 0 length
+        // to allow them to pick another time without losing selection.
       } else {
-        next[dayIndex] = '08:00 - 17:00';
+        next[dayId] = [...hours, hour].sort();
       }
       return next;
     });
   };
 
-  const updateDayTime = (dayIndex: number, timeStr: string) => {
-    setEditedDays(prev => ({
-      ...prev,
-      [dayIndex]: timeStr
-    }));
+  const saveSchedule = async () => {
+    if (!user) return;
+    setIsSavingSchedule(true);
+    try {
+      // Clean up empty arrays before saving
+      const cleanedSchedule = { ...tutorSchedule };
+      for (const [key, val] of Object.entries(cleanedSchedule)) {
+         if (!val || val.length === 0) {
+            delete cleanedSchedule[Number(key)];
+         }
+      }
+
+      const availableDaysList = Object.keys(cleanedSchedule).map(Number);
+      const allHoursSet = new Set<string>();
+      Object.values(cleanedSchedule).forEach(hours => hours.forEach(h => allHoursSet.add(h)));
+      const availableHoursList = Array.from(allHoursSet).sort();
+
+      const { error } = await supabase.from('tutor_profiles').update({
+        schedule: cleanedSchedule,
+        available_days: availableDaysList,
+        available_hours: availableHoursList
+      }).eq('id', user.id);
+
+      if (error) throw error;
+      setTutorSchedule(cleanedSchedule);
+      setIsEditingDays(false);
+      setSelectedDayToEdit(null);
+    } catch (err) {
+      console.error(err);
+      alert('Gagal menyimpan jadwal');
+    } finally {
+      setIsSavingSchedule(false);
+    }
   };
+
+  const DAYS_MAP = [
+    {id: 1, name: 'Sen'}, {id: 2, name: 'Sel'}, {id: 3, name: 'Rab'}, 
+    {id: 4, name: 'Kam'}, {id: 5, name: 'Jum'}, {id: 6, name: 'Sab'}, 
+    {id: 0, name: 'Min'}
+  ];
+  const AVAILABLE_HOURS = ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "18:00", "19:00", "20:00"];
+
 
   if (isLoading) {
     return (
@@ -295,52 +335,85 @@ export function TutorDashboard() {
              {!isEditingDays ? (
                <button onClick={() => setIsEditingDays(true)} className="bg-transparent border-none text-[11px] font-bold text-lime font-mono cursor-pointer hover:text-lime-dim">Atur Jadwal →</button>
              ) : (
-               <button onClick={() => setIsEditingDays(false)} className="bg-lime text-black border-none text-[10px] font-bold py-1 px-3 rounded font-mono cursor-pointer hover:bg-lime-dim">Simpan Jadwal</button>
+               <button 
+                 onClick={saveSchedule} 
+                 disabled={isSavingSchedule}
+                 className="bg-lime text-black border-none text-[10px] font-bold py-1 px-3 rounded font-mono cursor-pointer hover:bg-lime-dim disabled:opacity-50"
+               >
+                 {isSavingSchedule ? "Menyimpan..." : "Simpan Jadwal"}
+               </button>
              )}
            </div>
            
            <div className="flex flex-col gap-3">
               <div className="grid grid-cols-7 gap-1.5 min-w-0">
-                {DAYS.map((d, i) => {
-                  const isActive = !!editedDays[i];
+                {DAYS_MAP.map((day) => {
+                  const isActive = tutorSchedule[day.id] && tutorSchedule[day.id].length > 0;
                   return (
                     <div 
-                      key={d} 
-                      onClick={() => toggleEditDay(i)}
-                      className={`aspect-square rounded-[4px] border-[1.5px] flex items-center justify-center text-[10px] font-bold font-mono transition-colors ${isActive ? 'border-lime bg-lime-mid text-lime' : 'border-border bg-bg-2 text-text-light'} ${isEditingDays ? 'cursor-pointer hover:border-lime/50' : ''}`}
+                      key={day.id} 
+                      onClick={() => {
+                        if (!isEditingDays) return;
+                        toggleEditDay(day.id);
+                      }}
+                      className={`relative aspect-square rounded-[4px] border-[1.5px] flex items-center justify-center text-[10px] font-bold font-mono transition-colors ${isActive ? 'border-lime bg-lime-mid text-lime' : 'border-border bg-bg-2 text-text-light'} ${isEditingDays || isActive ? 'cursor-pointer hover:border-lime/50' : ''} ${selectedDayToEdit === day.id ? 'ring-2 ring-lime/30' : ''}`}
                     >
-                      {d}
+                      {day.name} {isActive && <span className="absolute bottom-[4px] w-1.5 h-1.5 bg-lime rounded-full"></span>}
                     </div>
                   )
                 })}
               </div>
 
               {/* Time Slots List */}
-              <div className="mt-2 space-y-2">
-                 {DAYS.map((d, i) => {
-                    if (!editedDays[i]) return null;
-                    return (
-                      <div key={`time-${i}`} className="flex items-center justify-between bg-bg-2/50 p-2.5 rounded-lg border border-border/40 animate-pgIn">
-                         <div className="flex items-center gap-2">
-                            <span className="w-8 font-mono text-[11px] font-bold text-lime">{d}</span>
-                            <span className="text-[11px] text-text-sub font-mono">{!isEditingDays ? editedDays[i] : ''}</span>
-                         </div>
-                         {isEditingDays && (
-                           <input 
-                             type="text" 
-                             value={editedDays[i]} 
-                             onChange={(e) => updateDayTime(i, e.target.value)}
-                             className="bg-bg-3 border border-border rounded px-2 py-1 text-[11px] font-mono text-lime focus:outline-none focus:border-lime w-[120px] text-right"
-                             placeholder="00:00 - 00:00"
-                           />
-                         )}
-                         {!isEditingDays && (
-                            <Clock size={14} className="text-text-muted" />
-                         )}
+              {isEditingDays ? (
+                <div className="mt-2">
+                  {selectedDayToEdit !== null ? (
+                    <div className="animate-pgIn border border-border p-3 rounded-lg bg-bg-2">
+                      <p className="text-[11px] text-text-sub font-mono mb-2">Pilih jam pada hari <strong>{DAYS_MAP.find(d => d.id === selectedDayToEdit)?.name}</strong></p>
+                      <div className="flex flex-wrap gap-2">
+                        {AVAILABLE_HOURS.map(hour => (
+                          <span 
+                            key={hour}
+                            onClick={() => toggleScheduleHour(selectedDayToEdit, hour)}
+                            className={`text-[11px] px-2 py-1 rounded-[4px] cursor-pointer transition-colors border font-mono ${tutorSchedule[selectedDayToEdit]?.includes(hour) ? "bg-lime-dim text-lime border-lime font-bold" : "bg-bg-1 text-text-sub border-border hover:border-lime/50"}`}
+                          >
+                            {hour}
+                          </span>
+                        ))}
                       </div>
-                    )
-                 })}
-              </div>
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-center text-text-sub py-3 bg-bg-2/50 rounded-lg border border-border/40 font-mono">
+                      Klik hari di atas untuk mengatur jam.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="mt-2 space-y-2">
+                   {DAYS_MAP.map((day) => {
+                      if (!tutorSchedule[day.id] || tutorSchedule[day.id].length === 0) return null;
+                      
+                      // Display array of hours compactly
+                      const hours = tutorSchedule[day.id];
+                      let displayHours = "";
+                      if (hours.length > 3) {
+                          displayHours = `${hours[0]}, ${hours[1]} ... +${hours.length - 2} jam`;
+                      } else {
+                          displayHours = hours.join(", ");
+                      }
+
+                      return (
+                        <div key={`time-${day.id}`} className="flex items-center justify-between bg-bg-2/50 p-2.5 rounded-lg border border-border/40 animate-pgIn">
+                           <div className="flex items-center gap-3">
+                              <span className="w-8 font-mono text-[11px] font-bold text-lime">{day.name}</span>
+                              <span className="text-[11px] text-text-sub font-mono tracking-wider">{displayHours}</span>
+                           </div>
+                           <Clock size={14} className="text-text-muted" />
+                        </div>
+                      )
+                   })}
+                </div>
+              )}
            </div>
         </div>
 

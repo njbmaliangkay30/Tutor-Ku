@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
 import { CheckCircle, XCircle, Clock, Search, ChevronRight, MessageCircle } from 'lucide-react';
 
-interface VerificationStatus {
+export interface VerificationStatus {
   id: string;
   tutor_id: string;
   status: 'pending' | 'interview' | 'approved' | 'rejected';
@@ -14,6 +14,9 @@ interface VerificationStatus {
   achievements?: string;
   pengalaman_mengajar: string;
   created_at: string;
+  user_profiles?: {
+    phone: string;
+  };
 }
 
 const DocumentPreview = ({ url, title }: { url: string; title: string }) => {
@@ -77,7 +80,29 @@ export function AdminDashboard() {
       if (error) {
         throw error;
       }
-      setVerifications(data || []);
+      
+      let mergedData = data || [];
+      if (mergedData.length > 0) {
+        const tutorIds = mergedData.map(item => item.tutor_id);
+        const { data: usersData } = await supabase
+          .from('profiles')
+          .select('id, phone')
+          .in('id', tutorIds);
+
+        if (usersData) {
+          mergedData = mergedData.map(item => {
+            const profile = usersData.find(u => u.id === item.tutor_id);
+            return {
+              ...item,
+              user_profiles: {
+                phone: profile?.phone || ''
+              }
+            };
+          });
+        }
+      }
+
+      setVerifications(mergedData as any);
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'Gagal mengambil data verifikasi');
@@ -121,6 +146,15 @@ export function AdminDashboard() {
     }
   };
 
+  const getWhatsAppUrl = (noWa?: string) => {
+    if (!noWa) return '#';
+    let formatted = noWa.replace(/\D/g, '');
+    if (formatted.startsWith('0')) {
+        formatted = '62' + formatted.substring(1);
+    }
+    return `https://wa.me/${formatted}?text=Halo, kami dari tim TutorKu ingin menjadwalkan interview verifikasi tutor Anda.`;
+  };
+
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center p-8">
@@ -159,6 +193,9 @@ export function AdminDashboard() {
                       <td className="p-4">
                         <div className="font-bold text-text-main">{item.nama || 'Tanpa Nama'}</div>
                         <div className="text-xs text-text-muted mt-1 font-mono break-all">{item.tutor_id}</div>
+                        {item.user_profiles?.phone && (
+                           <div className="text-xs text-text-muted mt-1 font-mono break-all">WA: {item.user_profiles.phone}</div>
+                        )}
                       </td>
                       <td className="p-4 text-sm text-text-sub">
                         {item.pengalaman_mengajar && <p className="text-xs line-clamp-2" title={item.pengalaman_mengajar}>{item.pengalaman_mengajar}</p>}
@@ -195,6 +232,18 @@ export function AdminDashboard() {
 
                         {item.status === 'interview' && (
                           <div className="flex flex-col gap-2 w-max">
+                            {item.user_profiles?.phone ? (
+                              <a 
+                                href={getWhatsAppUrl(item.user_profiles.phone)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-green-500 text-white font-bold text-xs px-3 py-1.5 rounded-md hover:bg-green-600 transition-colors flex items-center gap-1 justify-center"
+                              >
+                                 <MessageCircle size={12}/> Hubungi WA
+                              </a>
+                            ) : (
+                              <span className="text-xs text-red-500">No WA tidak ada</span>
+                            )}
                             <button 
                               onClick={() => handleUpdateStatus(item.id, 'approved', item.tutor_id)}
                               className="bg-lime text-black font-bold text-xs px-3 py-1.5 rounded-md hover:bg-lime-mid transition-colors mt-2"
