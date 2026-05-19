@@ -29,8 +29,10 @@ export function NotificationBell() {
     fetchNotifications();
 
     // Subscribe to new notifications
-    const subscription = supabase
-      .channel(`notifications_${userProfile.id}`)
+    const channelName = `notifications_${userProfile.id}`;
+    const channel = supabase.channel(channelName);
+    
+    channel
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
@@ -43,7 +45,7 @@ export function NotificationBell() {
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [userProfile]);
 

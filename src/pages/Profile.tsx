@@ -190,7 +190,10 @@ export function Profile() {
                 {initials}
               </div>
             )}
-             <button className="absolute bottom-4 right-0 w-8 h-8 bg-bg-2 border border-border rounded-full flex items-center justify-center text-text-main shadow-md hover:border-lime transition-all">
+             <button 
+               onClick={() => setIsEditing(true)}
+               className="absolute bottom-4 right-0 w-8 h-8 bg-bg-2 border border-border rounded-full flex items-center justify-center text-text-main shadow-md hover:border-lime transition-all"
+             >
                 <Camera size={14} />
              </button>
           </div>
@@ -223,13 +226,32 @@ export function Profile() {
               <UserIcon className="text-text-sub" size={20} />
               <div className="flex-1">
                 <div className="text-[14px] font-bold font-display">
-                  Data Diri
+                  Data Diri & Biodata
                 </div>
-                <div className="text-[11px] text-text-sub">
-                  Ubah foto, nama, dan detail pribadi
+                <div className="text-[11px] text-text-sub line-clamp-1">
+                  Ubah foto, nama, gender, dan biodata pribadi
                 </div>
               </div>
             </div>
+
+            <div className="grid grid-cols-2 border-b border-border/60 bg-bg-2/30">
+               <div className="p-4 border-r border-border/60">
+                  <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-1">Gender</div>
+                  <div className="text-sm font-bold text-text-main">{userProfile?.gender === 'L' ? 'Laki-laki' : (userProfile?.gender === 'P' ? 'Perempuan' : '-')}</div>
+               </div>
+               <div className="p-4">
+                  <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-1">Tgl Lahir</div>
+                  <div className="text-sm font-bold text-text-main">{userProfile?.birth_date ? new Date(userProfile.birth_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-'}</div>
+               </div>
+            </div>
+
+            <div className="p-4 border-b border-border/60">
+              <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-2">Biodata</div>
+              <p className="text-[12px] text-text-main leading-relaxed italic opacity-80">
+                "{isTutor ? (tutorProfileData?.bio || "Belum ada biodata tutor.") : (userProfile?.bio || "Belum ada biodata.")}"
+              </p>
+            </div>
+
             <div className="flex items-center gap-3 p-4 cursor-pointer hover:bg-bg-3/50 transition-colors border-b border-border/60">
               <Mail className="text-text-sub" size={20} />
               <div className="flex-1">
