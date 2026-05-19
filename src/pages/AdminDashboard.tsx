@@ -32,13 +32,14 @@ const DocumentPreview = ({ url, title }: { url: string; title: string }) => {
         className="block w-28 h-20 rounded-md border border-border overflow-hidden bg-bg-3/50 hover:border-lime transition-colors group relative shadow-sm"
       >
         {isPdf ? (
-          <iframe 
-            src={`${url}#page=1&toolbar=0&navpanes=0&scrollbar=0&view=Fit`}
-            className="w-full h-full overflow-hidden pointer-events-none opacity-90 group-hover:opacity-100 transition-opacity duration-300 bg-white" 
-            title={title}
-            tabIndex={-1}
-            scrolling="no"
-          />
+          <div className="w-full h-full overflow-hidden relative">
+            <iframe 
+              src={`${url}#page=1&toolbar=0&navpanes=0&scrollbar=0&view=Fit`}
+              className="absolute top-0 left-0 w-[125%] h-[125%] pointer-events-none opacity-90 group-hover:opacity-100 transition-opacity duration-300 bg-white" 
+              title={title}
+              tabIndex={-1}
+            />
+          </div>
         ) : (
           <img 
             src={url} 

@@ -108,10 +108,6 @@ export default function App() {
             <div
               className="flex items-center w-full relative cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => setActiveTab("home")}
-              onDoubleClick={() => {
-                setUserRole("admin");
-                setActiveTab("admin");
-              }}
             >
               <div
                 className={`absolute left-0 font-display text-[26px] font-extrabold text-lime tracking-[-1px] leading-none transition-all duration-300 origin-left ${showDesktopSidebar ? "opacity-0 scale-75" : "opacity-100 scale-100"}`}
@@ -239,6 +235,22 @@ export default function App() {
                     Progress
                   </span>
                 </button>
+                {userRole === "admin" && (
+                  <button
+                    onClick={() => setActiveTab("admin")}
+                    title="Admin Dashboard"
+                    className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
+                  >
+                    <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
+                      <CheckSquare size={22} />
+                    </span>
+                    <span
+                      className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
+                    >
+                      Admin Panel
+                    </span>
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -285,10 +297,6 @@ export default function App() {
             <div
               className="font-display text-[22px] font-extrabold text-lime tracking-[-1px] select-none cursor-pointer"
               onClick={() => setActiveTab("home")}
-              onDoubleClick={() => {
-                setUserRole("admin");
-                setActiveTab("admin");
-              }}
               style={{ textShadow: "2px 2px 0 rgba(0,0,0,0.3)" }}
             >
               tutorku
@@ -416,6 +424,19 @@ export default function App() {
                   </span>
                   <span className="text-[10px] font-mono">Progress</span>
                 </button>
+                {userRole === "admin" && (
+                  <button
+                    onClick={() => setActiveTab("admin")}
+                    className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all flex-1 ${activeTab === "admin" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                  >
+                    <span
+                      className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "admin" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    >
+                      <CheckSquare size={18} />
+                    </span>
+                    <span className="text-[10px] font-mono">Admin</span>
+                  </button>
+                )}
               </>
             )}
             <button
