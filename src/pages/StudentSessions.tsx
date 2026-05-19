@@ -197,6 +197,9 @@ export function StudentSessions() {
             } else if (session.status === 'completed') {
               statusText = 'Selesai';
               statusColor = "bg-bg-2 border border-border text-text-sub";
+            } else if (session.status === 'rejected') {
+              statusText = 'Ditolak';
+              statusColor = "bg-red-500/10 text-red-400 border border-red-500/20";
             } else if (session.status === 'waiting_for_student') {
               statusText = 'Tunggu Konfirmasi Selesai';
               statusColor = "bg-warning/20 text-warning border border-warning/30";

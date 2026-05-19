@@ -101,9 +101,36 @@ export function TutorSessions() {
 
   const now = new Date();
   
+  const pendingRequests = sessions.filter(s => s.status === 'pending');
   const upcoming = sessions.filter(s => s.status === 'confirmed' && getSessionEndDateTime(s) >= now);
   const pendingReviews = sessions.filter(s => s.status === 'confirmed' && getSessionEndDateTime(s) < now && !sessionReports.has(s.id));
   const waitingForStudent = sessions.filter(s => s.status === 'waiting_for_student');
+
+  const updateSessionStatus = async (sessionId: string, newStatus: string, studentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('sessions')
+        .update({ status: newStatus, status_updated_at: new Date().toISOString() })
+        .eq('id', sessionId);
+        
+      if (error) throw error;
+      
+      // Notify Student
+      await supabase.from('notifications').insert({
+        user_id: studentId,
+        title: newStatus === 'confirmed' ? "Sesi Dikonfirmasi!" : "Sesi Ditolak",
+        message: newStatus === 'confirmed' 
+          ? "Tutor telah menyetujui jadwal sesi kamu. Sampai jumpa di kelas!"
+          : "Maaf, tutor tidak dapat memenuhi permintaan sesi kamu pada waktu tersebut.",
+        link: "sessions"
+      });
+      
+      fetchSessions();
+    } catch (e) {
+      console.error(e);
+      alert('Gagal memperbarui status sesi');
+    }
+  };
 
   return (
     <div className="p-4 md:p-8 animate-pgIn max-w-4xl mx-auto w-full">
@@ -121,6 +148,73 @@ export function TutorSessions() {
           <div className="text-center py-8">Memuat sesi...</div>
         ) : (
           <>
+            {pendingRequests.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-sm font-bold text-lime uppercase font-mono tracking-wider mb-3">Permintaan Baru ({pendingRequests.length})</h2>
+                <div className="flex flex-col gap-4">
+                  {pendingRequests.map((session: any) => (
+                    <div
+                      key={session.id}
+                      className="bg-lime/5 border-[1.5px] border-lime/30 rounded-xl p-4 transition-all hover:border-lime/50"
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-10 h-10 rounded-full flex items-center justify-center font-bold font-display text-white opacity-80"
+                            style={{ background: getAvatarColor(session.student_profiles?.profiles?.full_name || 'Siswa') }}
+                          >
+                            {(session.student_profiles?.profiles?.full_name || 'S').substring(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="font-bold text-text-main font-display">
+                              {session.student_profiles?.profiles?.full_name || 'Siswa'}
+                            </div>
+                            <div className="text-xs text-text-sub font-mono">
+                              {session.subject}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-lime text-black text-[10px] font-bold px-2 py-1 rounded font-mono uppercase tracking-wider">
+                          Pending
+                        </div>
+                      </div>
+
+                      <div className="bg-bg-2 rounded-lg p-3 mb-4 space-y-2 border border-border/50">
+                        <div className="flex items-center gap-2 text-sm text-text-main font-bold">
+                          <Calendar size={16} className="text-text-sub" />
+                          <span>{new Date(session.session_date).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-text-main">
+                          <Clock size={16} className="text-text-sub" />
+                          <span>{formatTime(session.start_time)} - {formatTime(session.end_time)}</span>
+                        </div>
+                        {session.material_notes && (
+                           <p className="text-[11px] text-text-sub italic mt-2 border-t border-border/30 pt-2 line-clamp-2">
+                             "{session.material_notes}"
+                           </p>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => updateSessionStatus(session.id, 'confirmed', session.student_id)}
+                          className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:opacity-90 transition-colors"
+                        >
+                          Terima Sesi
+                        </button>
+                        <button
+                          onClick={() => updateSessionStatus(session.id, 'rejected', session.student_id)}
+                          className="flex-1 bg-bg-3 border border-border text-text-main font-bold py-2.5 rounded-lg text-sm hover:bg-bg-2 transition-colors"
+                        >
+                          Tolak
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {pendingReviews.length > 0 && (
               <div className="mb-6">
                 <h2 className="text-sm font-bold text-warning uppercase font-mono tracking-wider mb-3">Butuh Review ({pendingReviews.length})</h2>

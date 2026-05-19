@@ -29,7 +29,8 @@ export function NotificationBell() {
     fetchNotifications();
 
     // Subscribe to new notifications
-    const channelName = `notifications_${userProfile.id}`;
+    const channelId = Math.random().toString(36).substring(7);
+    const channelName = `notifications_${userProfile.id}_${channelId}`;
     const channel = supabase.channel(channelName);
     
     channel

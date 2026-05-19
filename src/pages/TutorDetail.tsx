@@ -97,6 +97,14 @@ export function TutorDetail() {
 
        if (error) throw error;
 
+       // Notify Tutor
+       await supabase.from('notifications').insert({
+         user_id: tutor.id,
+         title: "Sesi Baru Dipesan!",
+         message: `${userProfile.full_name} memesan ${sessionsCount} sesi untuk subjek ${inserts[0].subject}.`,
+         link: "sessions"
+       });
+
        setBookingSuccess(true);
        setTimeout(() => {
          setBookingSuccess(false);

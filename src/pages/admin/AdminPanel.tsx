@@ -109,6 +109,16 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
         .eq("id", tutorId);
       
       if (!error) {
+        // Send notification
+        await supabase.from("notifications").insert({
+          user_id: tutorId,
+          title: !currentStatus ? "Akun Terverifikasi!" : "Status Verifikasi Dicabut",
+          message: !currentStatus 
+            ? "Selamat! Akun tutor kamu telah terverifikasi oleh admin. Kamu sekarang bisa menerima booking dari siswa."
+            : "Status verifikasi akun tutor kamu telah dicabut oleh admin. Silakan hubungi admin untuk informasi lebih lanjut.",
+          link: "home"
+        });
+
         setTutors(tutors.map(t => t.id === tutorId ? { ...t, is_verified: !currentStatus } : t));
         if (selectedUser && selectedUser.id === tutorId) {
           setSelectedUser({ ...selectedUser, is_verified: !currentStatus });
