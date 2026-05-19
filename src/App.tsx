@@ -76,6 +76,14 @@ export default function App() {
         e.preventDefault();
         setUserRole("admin");
         setActiveTab("home");
+      } else if (e.key === "1") {
+        e.preventDefault();
+        setUserRole("tutor");
+        setActiveTab("home");
+      } else if (e.key === "2") {
+        e.preventDefault();
+        setUserRole("siswa");
+        setActiveTab("home");
       }
     };
 
@@ -459,7 +467,6 @@ export default function App() {
 
                 {activeTab === "daftar-tutor" && <PageDaftarTutor />}
                 {activeTab === "login" && userRole === "guest" && <PageLogin />}
-                {activeTab === "login" && userRole !== "guest" && <PageProfile />}
 
                 {activeTab === "home" && userRole === "admin" && (
                   <AdminOverview />
@@ -674,6 +681,12 @@ export default function App() {
           {selectedTutorId && tutors.some(t => t.id === selectedTutorId) && (
             <div className="fixed md:absolute inset-0 z-[100] md:z-50 bg-bg-base overflow-y-auto animate-pgIn custom-scrollbar">
               <TutorDetail />
+            </div>
+          )}
+
+          {activeTab === "login" && userRole !== "guest" && (
+            <div className="fixed md:absolute inset-0 z-[100] md:z-50 bg-bg-base overflow-y-auto animate-pgIn custom-scrollbar">
+              <PageProfile />
             </div>
           )}
           

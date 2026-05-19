@@ -8,11 +8,10 @@ interface VerificationStatus {
   tutor_id: string;
   status: 'pending' | 'interview' | 'approved' | 'rejected';
   nama: string;
-  universitas_asal: string;
-  no_wa?: string;
   ktp_url: string;
   ijazah_url: string;
-  bidang_mengajar: string;
+  supporting_docs_url?: string[];
+  achievements?: string;
   pengalaman_mengajar: string;
   created_at: string;
 }
@@ -122,15 +121,6 @@ export function AdminDashboard() {
     }
   };
 
-  const getWhatsAppUrl = (noWa?: string) => {
-    if (!noWa) return '#';
-    let formatted = noWa.replace(/\D/g, '');
-    if (formatted.startsWith('0')) {
-        formatted = '62' + formatted.substring(1);
-    }
-    return `https://wa.me/${formatted}?text=Halo, kami dari tim TutorKu ingin menjadwalkan interview verifikasi tutor Anda.`;
-  };
-
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center p-8">
@@ -157,7 +147,7 @@ export function AdminDashboard() {
               <thead>
                 <tr className="border-b border-border bg-bg-3/50 text-xs text-text-sub font-bold uppercase tracking-wider">
                   <th className="p-4 font-mono">Tutor</th>
-                  <th className="p-4 font-mono">Universitas</th>
+                  <th className="p-4 font-mono">Pengalaman & Prestasi</th>
                   <th className="p-4 font-mono">Status</th>
                   <th className="p-4 font-mono">Dokumen</th>
                   <th className="p-4 font-mono">Aksi</th>
@@ -166,70 +156,59 @@ export function AdminDashboard() {
               <tbody className="divide-y divide-border">
                 {verifications.map((item) => (
                   <tr key={item.id} className="hover:bg-bg-3/30 transition-colors">
-                    <td className="p-4">
-                      <div className="font-bold text-text-main">{item.nama || 'Tanpa Nama'}</div>
-                      <div className="text-xs text-text-muted mt-1 font-mono break-all">{item.tutor_id}</div>
-                      {item.no_wa && (
-                         <div className="text-xs text-text-muted mt-1 font-mono break-all">WA: {item.no_wa}</div>
-                      )}
-                    </td>
-                    <td className="p-4 text-sm text-text-sub">{item.universitas_asal || '-'}</td>
-                    <td className="p-4">
-                      {item.status === 'pending' && <span className="inline-flex items-center gap-1.5 bg-yellow-500/10 text-yellow-500 text-xs font-bold px-2 py-1 rounded-md"><Clock size={14}/> Menunggu Review</span>}
-                      {item.status === 'interview' && <span className="inline-flex items-center gap-1.5 bg-blue-500/10 text-blue-500 text-xs font-bold px-2 py-1 rounded-md"><MessageCircle size={14}/> Tahap Interview</span>}
-                      {item.status === 'approved' && <span className="inline-flex items-center gap-1.5 bg-lime/10 text-lime text-xs font-bold px-2 py-1 rounded-md"><CheckCircle size={14}/> Disetujui</span>}
-                      {item.status === 'rejected' && <span className="inline-flex items-center gap-1.5 bg-red-500/10 text-red-500 text-xs font-bold px-2 py-1 rounded-md"><XCircle size={14}/> Ditolak</span>}
-                    </td>
-                    <td className="p-4 text-sm font-mono flex flex-col gap-3">
-                      <DocumentPreview url={item.ktp_url} title="KTP" />
-                      <DocumentPreview url={item.ijazah_url} title="Ijazah" />
-                    </td>
-                    <td className="p-4">
-                      {item.status === 'pending' && (
-                        <div className="flex flex-col gap-2 w-max">
-                          <button 
-                            onClick={() => handleUpdateStatus(item.id, 'interview', item.tutor_id)}
-                            className="bg-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-md hover:bg-blue-600 transition-colors"
-                          >
-                            Jadwalkan Interview
-                          </button>
-                          <button 
-                            onClick={() => handleUpdateStatus(item.id, 'rejected', item.tutor_id)}
-                            className="bg-transparent border border-red-500/50 text-red-500 font-bold text-xs px-3 py-1.5 rounded-md hover:bg-red-500/10 transition-colors"
-                          >
-                            Tolak Langsung
-                          </button>
-                        </div>
-                      )}
-
-                      {item.status === 'interview' && (
-                        <div className="flex flex-col gap-2 w-max">
-                          {item.no_wa ? (
-                            <a 
-                              href={getWhatsAppUrl(item.no_wa)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="bg-green-500 text-white font-bold text-xs px-3 py-1.5 rounded-md hover:bg-green-600 transition-colors flex items-center gap-1 justify-center"
+                      <td className="p-4">
+                        <div className="font-bold text-text-main">{item.nama || 'Tanpa Nama'}</div>
+                        <div className="text-xs text-text-muted mt-1 font-mono break-all">{item.tutor_id}</div>
+                      </td>
+                      <td className="p-4 text-sm text-text-sub">
+                        {item.pengalaman_mengajar && <p className="text-xs line-clamp-2" title={item.pengalaman_mengajar}>{item.pengalaman_mengajar}</p>}
+                        {item.achievements && <p className="text-xs text-lime mt-1 line-clamp-1" title={item.achievements}>🏆 {item.achievements}</p>}
+                      </td>
+                      <td className="p-4">
+                        {item.status === 'pending' && <span className="inline-flex items-center gap-1.5 bg-yellow-500/10 text-yellow-500 text-xs font-bold px-2 py-1 rounded-md"><Clock size={14}/> Menunggu Review</span>}
+                        {item.status === 'interview' && <span className="inline-flex items-center gap-1.5 bg-blue-500/10 text-blue-500 text-xs font-bold px-2 py-1 rounded-md"><MessageCircle size={14}/> Tahap Interview</span>}
+                        {item.status === 'approved' && <span className="inline-flex items-center gap-1.5 bg-lime/10 text-lime text-xs font-bold px-2 py-1 rounded-md"><CheckCircle size={14}/> Disetujui</span>}
+                        {item.status === 'rejected' && <span className="inline-flex items-center gap-1.5 bg-red-500/10 text-red-500 text-xs font-bold px-2 py-1 rounded-md"><XCircle size={14}/> Ditolak</span>}
+                      </td>
+                      <td className="p-4 text-sm font-mono flex flex-wrap gap-3">
+                        <DocumentPreview url={item.ktp_url} title="KTP" />
+                        <DocumentPreview url={item.ijazah_url} title="Ijazah" />
+                        {item.supporting_docs_url?.[0] && <DocumentPreview url={item.supporting_docs_url[0]} title="Pendukung" />}
+                      </td>
+                      <td className="p-4">
+                        {item.status === 'pending' && (
+                          <div className="flex flex-col gap-2 w-max">
+                            <button 
+                              onClick={() => handleUpdateStatus(item.id, 'interview', item.tutor_id)}
+                              className="bg-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-md hover:bg-blue-600 transition-colors"
                             >
-                               <MessageCircle size={12}/> Hubungi WA
-                            </a>
-                          ) : (
-                            <span className="text-xs text-red-500">No WA tidak ada</span>
-                          )}
-                          <button 
-                            onClick={() => handleUpdateStatus(item.id, 'approved', item.tutor_id)}
-                            className="bg-lime text-black font-bold text-xs px-3 py-1.5 rounded-md hover:bg-lime-mid transition-colors mt-2"
-                          >
-                            Lulus & Setujui
-                          </button>
-                          <button 
-                            onClick={() => handleUpdateStatus(item.id, 'rejected', item.tutor_id)}
-                            className="bg-transparent border border-red-500/50 text-red-500 font-bold text-xs px-3 py-1.5 rounded-md hover:bg-red-500/10 transition-colors"
-                          >
-                            Tolak
-                          </button>
-                        </div>
-                      )}
+                              Jadwalkan Interview
+                            </button>
+                            <button 
+                              onClick={() => handleUpdateStatus(item.id, 'rejected', item.tutor_id)}
+                              className="bg-transparent border border-red-500/50 text-red-500 font-bold text-xs px-3 py-1.5 rounded-md hover:bg-red-500/10 transition-colors"
+                            >
+                              Tolak Langsung
+                            </button>
+                          </div>
+                        )}
+
+                        {item.status === 'interview' && (
+                          <div className="flex flex-col gap-2 w-max">
+                            <button 
+                              onClick={() => handleUpdateStatus(item.id, 'approved', item.tutor_id)}
+                              className="bg-lime text-black font-bold text-xs px-3 py-1.5 rounded-md hover:bg-lime-mid transition-colors mt-2"
+                            >
+                              Lulus & Setujui
+                            </button>
+                            <button 
+                              onClick={() => handleUpdateStatus(item.id, 'rejected', item.tutor_id)}
+                              className="bg-transparent border border-red-500/50 text-red-500 font-bold text-xs px-3 py-1.5 rounded-md hover:bg-red-500/10 transition-colors"
+                            >
+                              Tolak
+                            </button>
+                          </div>
+                        )}
 
                       {(item.status === 'approved' || item.status === 'rejected') && (
                         <span className="text-text-muted text-xs font-mono">-</span>

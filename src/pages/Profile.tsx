@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useAppContext } from "../AppContext";
 import { supabase } from "../lib/supabase";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 
 export function Profile() {
@@ -26,10 +26,15 @@ export function Profile() {
   const [bio, setBio] = useState(tutorProfileData?.bio || "");
   const [phoneNumber, setPhoneNumber] = useState(userProfile?.phone || "");
   const [address, setAddress] = useState(tutorProfileData?.address || "");
+  const [university, setUniversity] = useState(tutorProfileData?.university || "");
   const [targetSubjects, setTargetSubjects] = useState<string[]>(tutorProfileData?.target_subjects || []);
   const [learningStyles, setLearningStyles] = useState<string[]>(tutorProfileData?.learning_styles || []);
-  const [availableDays, setAvailableDays] = useState<number[]>(tutorProfileData?.available_days || []);
-  const [availableHoursList, setAvailableHoursList] = useState<string[]>(tutorProfileData?.available_hours || []);
+  const [schedule, setSchedule] = useState<Record<number, string[]>>(
+    tutorProfileData?.schedule && typeof tutorProfileData.schedule === 'object' 
+    ? tutorProfileData.schedule as Record<number, string[]>
+    : {}
+  );
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   const toggleTargetSubject = (subject: string) => {
     setTargetSubjects(prev => prev.includes(subject) ? prev.filter(s => s !== subject) : [...prev, subject]);
@@ -39,16 +44,35 @@ export function Profile() {
     setLearningStyles(prev => prev.includes(style) ? prev.filter(s => s !== style) : [...prev, style]);
   };
 
-  const toggleAvailableDay = (day: number) => {
-    setAvailableDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
-  };
-
-  const toggleAvailableHour = (hourStr: string) => {
-    setAvailableHoursList(prev => prev.includes(hourStr) ? prev.filter(h => h !== hourStr) : [...prev, hourStr]);
+  const toggleScheduleHour = (day: number, hour: string) => {
+    setSchedule(prev => {
+      const currentHours = prev[day] || [];
+      const newHours = currentHours.includes(hour)
+        ? currentHours.filter(h => h !== hour)
+        : [...currentHours, hour].sort();
+      const newSchedule = { ...prev };
+      if (newHours.length > 0) {
+        newSchedule[day] = newHours;
+      } else {
+        delete newSchedule[day];
+      }
+      return newSchedule;
+    });
   };
 
   const [isSaving, setIsSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    if (isEditing) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isEditing]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -73,14 +97,21 @@ export function Profile() {
       
       // Update bio and extra info if it's a tutor
       if (userRole === "tutor") {
+        const availableDaysList = Object.keys(schedule).map(Number);
+        const allHoursSet = new Set<string>();
+        Object.values(schedule).forEach(hours => hours.forEach(h => allHoursSet.add(h)));
+        const availableHoursList = Array.from(allHoursSet).sort();
+        
         const { error: tutorError } = await supabase.from('tutor_profiles').upsert({
           id: user.id,
           bio: bio || null,
           address: address || null,
+          university: university || null,
           target_subjects: targetSubjects,
           learning_styles: learningStyles,
-          available_days: availableDays,
+          available_days: availableDaysList,
           available_hours: availableHoursList,
+          schedule: schedule
         });
         if (tutorError) throw tutorError;
       }
@@ -304,9 +335,9 @@ export function Profile() {
         </button>
       </div>
 
-      {isEditing && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-pgIn">
-           <div className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-[500px] flex flex-col max-h-[85vh] overflow-hidden">
+      {isEditing && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>
+           <div className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-[500px] flex flex-col max-h-[85vh] overflow-hidden relative">
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <h3 className="font-display font-bold text-lg">Edit Profil</h3>
                 <button onClick={() => setIsEditing(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-bg-2 transition-colors">
@@ -357,6 +388,18 @@ export function Profile() {
                     </div>
                     
                     <div className="flex flex-col gap-1.5">
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Asal Universitas <span className="text-warning">*</span></label>
+                      <input 
+                        type="text" 
+                        required
+                        value={university}
+                        onChange={(e) => setUniversity(e.target.value)}
+                        className="w-full bg-bg-2 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all"
+                        placeholder="Contoh: Universitas Indonesia"
+                      />
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5">
                       <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Mapel yang Dikuasai</label>
                       <div className="flex flex-wrap gap-2">
                         {["Matematika", "Fisika", "Kimia", "Biologi", "Bahasa Inggris", "Bahasa Indonesia", "Sejarah"].map(sub => (
@@ -391,30 +434,34 @@ export function Profile() {
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Hari & Jam Tersedia</label>
                       <div className="border border-border p-3 rounded-xl bg-bg-2">
-                        <p className="text-[10px] text-text-sub mb-2">Pilih hari</p>
+                        <p className="text-[10px] text-text-sub mb-2">Pilih hari mengajar</p>
                         <div className="flex flex-wrap gap-2 mb-4">
                            {[{id: 1, name: "Sen"}, {id: 2, name: "Sel"}, {id: 3, name: "Rab"}, {id: 4, name: "Kam"}, {id: 5, name: "Jum"}, {id: 6, name: "Sab"}, {id: 0, name: "Min"}].map(day => (
                              <span 
                                key={day.id}
-                               onClick={() => toggleAvailableDay(day.id)}
-                               className={`text-[11px] px-2.5 py-1 rounded-md cursor-pointer transition-colors border ${availableDays.includes(day.id) ? "bg-lime-dim text-lime border-lime font-bold" : "bg-bg-1 text-text-sub border-border hover:border-lime/50"}`}
+                               onClick={() => setSelectedDay(selectedDay === day.id ? null : day.id)}
+                               className={`text-[11px] px-2.5 py-1 rounded-md cursor-pointer transition-colors border ${selectedDay === day.id ? "bg-lime text-black font-bold" : (schedule[day.id]?.length > 0 ? "bg-lime-dim text-lime border-lime font-bold" : "bg-bg-1 text-text-sub border-border hover:border-lime/50")}`}
                              >
-                                {day.name}
+                                {day.name} {schedule[day.id]?.length > 0 && `(${schedule[day.id].length})`}
                              </span>
                            ))}
                         </div>
-                        <p className="text-[10px] text-text-sub mb-2">Pilih jam kosong</p>
-                        <div className="flex flex-wrap gap-2">
-                           {["08:00", "10:00", "13:00", "15:00", "18:00", "19:00", "20:00"].map(hour => (
-                             <span 
-                               key={hour}
-                               onClick={() => toggleAvailableHour(hour)}
-                               className={`text-[11px] px-2 py-1 rounded-md cursor-pointer transition-colors border font-mono ${availableHoursList.includes(hour) ? "bg-lime-dim text-lime border-lime font-bold" : "bg-bg-1 text-text-sub border-border hover:border-lime/50"}`}
-                             >
-                                {hour}
-                             </span>
-                           ))}
-                        </div>
+                        {selectedDay !== null && (
+                          <div className="animate-pgIn">
+                            <p className="text-[10px] text-text-sub mb-2">Pilih jam pada hari {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"][selectedDay]}</p>
+                            <div className="flex flex-wrap gap-2">
+                               {["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "18:00", "19:00", "20:00"].map(hour => (
+                                 <span 
+                                   key={hour}
+                                   onClick={() => toggleScheduleHour(selectedDay, hour)}
+                                   className={`text-[11px] px-2 py-1 rounded-md cursor-pointer transition-colors border font-mono ${schedule[selectedDay]?.includes(hour) ? "bg-lime-dim text-lime border-lime font-bold" : "bg-bg-1 text-text-sub border-border hover:border-lime/50"}`}
+                                 >
+                                    {hour}
+                                 </span>
+                               ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </>
@@ -432,7 +479,7 @@ export function Profile() {
                 </div>
               </div>
 
-              <div className="p-4 border-t border-border flex justify-end gap-3 bg-bg-2/50">
+              <div className="p-4 border-t border-border flex justify-end gap-3 bg-bg-2/50 relative z-20">
                 <button 
                   onClick={() => setIsEditing(false)}
                   className="px-5 py-2.5 rounded-lg border border-border bg-bg-3 font-bold text-[13px] hover:bg-bg-2 transition-colors"
@@ -449,7 +496,8 @@ export function Profile() {
                 </button>
               </div>
            </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

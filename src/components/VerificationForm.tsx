@@ -9,6 +9,7 @@ export function VerificationForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [ktpFileName, setKtpFileName] = useState("");
   const [ijazahFileName, setIjazahFileName] = useState("");
+  const [pendukungFileName, setPendukungFileName] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,14 +33,14 @@ export function VerificationForm() {
     const ktpInput = form.elements.namedItem('attachment_ktp') as HTMLInputElement;
     const ijazahInput = form.elements.namedItem('attachment_ijazah') as HTMLInputElement;
     const pengalamanInput = form.elements.namedItem('pengalaman_mengajar') as HTMLTextAreaElement;
-    const universitasInput = form.elements.namedItem('universitas_asal') as HTMLInputElement;
-    const waInput = form.elements.namedItem('no_wa') as HTMLInputElement;
+    const prestasiInput = form.elements.namedItem('achievements') as HTMLTextAreaElement;
+    const pendukungInput = form.elements.namedItem('attachment_pendukung') as HTMLInputElement;
 
     const ktpFile = ktpInput?.files?.[0];
     const ijazahFile = ijazahInput?.files?.[0];
+    const pendukungFile = pendukungInput?.files?.[0];
     const pengalaman = pengalamanInput?.value || "";
-    const universitas = universitasInput?.value || "";
-    const noWa = waInput?.value || "";
+    const prestasi = prestasiInput?.value || "";
 
     if (!ktpFile || !ijazahFile || !user) {
         setErrorMsg("Mohon lengkapi dokumen yang diwajibkan.");
@@ -65,6 +66,17 @@ export function VerificationForm() {
         .upload(ijazahPath, ijazahFile);
 
       if (ijazahError) throw new Error("Gagal mengunggah Ijazah: " + ijazahError.message);
+      
+      let pendukungUrl = null;
+      if (pendukungFile) {
+         const pendukungPath = `${folderName}/Pendukung_${pendukungFile.name}`;
+         const { error: pendukungError } = await supabase.storage
+            .from('Data Verifikasi Tutor')
+            .upload(pendukungPath, pendukungFile);
+         if (!pendukungError) {
+             pendukungUrl = supabase.storage.from('Data Verifikasi Tutor').getPublicUrl(pendukungPath).data.publicUrl;
+         }
+      }
 
       const ktpUrlRes = supabase.storage.from('Data Verifikasi Tutor').getPublicUrl(ktpPath);
       const ijazahUrlRes = supabase.storage.from('Data Verifikasi Tutor').getPublicUrl(ijazahPath);
@@ -78,11 +90,11 @@ export function VerificationForm() {
         .insert({
           tutor_id: user.id,
           nama: tutorName,
-          universitas_asal: universitas,
-          no_wa: noWa,
           ktp_url: ktpUrlRes.data.publicUrl,
           ijazah_url: ijazahUrlRes.data.publicUrl,
           pengalaman_mengajar: pengalaman,
+          achievements: prestasi,
+          supporting_docs_url: pendukungUrl ? [pendukungUrl] : null,
           status: 'pending'
         });
 
@@ -148,37 +160,7 @@ export function VerificationForm() {
           className="bg-bg-2 border border-border shadow-sm rounded-2xl p-6 md:p-8 flex flex-col gap-6"
         >
           <div>
-            <h3 className="font-bold text-lg mb-4 text-text-main">1. Informasi Dasar</h3>
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-bold text-text-sub" htmlFor="universitas">Universitas Asal (Wajib)</label>
-                <input 
-                  id="universitas"
-                  name="universitas_asal"
-                  type="text"
-                  required
-                  className="w-full bg-bg-base border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime"
-                  placeholder="Misal: Universitas Indonesia"
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-bold text-text-sub" htmlFor="no_wa">Nomor WhatsApp Aktif (Wajib)</label>
-                <input 
-                  id="no_wa"
-                  name="no_wa"
-                  type="tel"
-                  required
-                  className="w-full bg-bg-base border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime"
-                  placeholder="Misal: 081234567890"
-                />
-              </div>
-            </div>
-          </div>
-          
-          <hr className="border-border border-b-0 my-2" />
-
-          <div>
-            <h3 className="font-bold text-lg mb-4 text-text-main">2. Dokumen Identitas</h3>
+            <h3 className="font-bold text-lg mb-4 text-text-main">1. Dokumen Identitas</h3>
             <div className="flex flex-col gap-2 relative">
               <label className="text-[13px] font-bold text-text-sub" htmlFor="ktp-upload">Kartu Tanda Penduduk (KTP/KTM) *</label>
               
@@ -215,7 +197,7 @@ export function VerificationForm() {
           <hr className="border-border border-b-0 my-2" />
 
           <div>
-            <h3 className="font-bold text-lg mb-4 text-text-main">3. Kualifikasi Pendidikan</h3>
+            <h3 className="font-bold text-lg mb-4 text-text-main">2. Kualifikasi Pendidikan</h3>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2 relative">
                 <label className="text-[13px] font-bold text-text-sub" htmlFor="ijazah-upload">Ijazah / Transkrip Nilai Terakhir *</label>
@@ -255,7 +237,55 @@ export function VerificationForm() {
                   name="pengalaman_mengajar"
                   rows={4}
                   className="w-full bg-bg-base border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime"
-                  placeholder="Ceritakan pengalaman mengajar, pencapaian, dsb..."
+                  placeholder="Ceritakan pengalaman mengajar..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <hr className="border-border border-b-0 my-2" />
+
+          <div>
+            <h3 className="font-bold text-lg mb-4 text-text-main">3. Prestasi & Dokumen Pendukung (Opsional)</h3>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2 relative">
+                <label className="text-[13px] font-bold text-text-sub" htmlFor="pendukung-upload">Piagam, Sertifikat, atau Dokumen Pendukung Lainnya</label>
+                <input 
+                  type="file" 
+                  name="attachment_pendukung" 
+                  id="pendukung-upload" 
+                  className="hidden" 
+                  accept="image/png, image/jpeg, application/pdf"
+                  onChange={(e) => setPendukungFileName(e.target.files?.[0]?.name || "")}
+                />
+                <label 
+                  htmlFor="pendukung-upload"
+                  className="border border-dashed border-border-2 rounded-xl p-6 text-center hover:bg-bg-3 transition-colors cursor-pointer group flex flex-col items-center"
+                >
+                  {pendukungFileName ? (
+                    <>
+                      <CheckCircle size={24} className="mx-auto mb-2 text-lime transition-colors" />
+                      <p className="text-[13px] text-text-main font-bold">{pendukungFileName}</p>
+                      <p className="text-[11px] text-text-sub mt-1">Klik untuk mengubah file</p>
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={24} className="mx-auto mb-2 text-text-disabled group-hover:text-lime transition-colors" />
+                      <p className="text-[13px] text-text-sub">Silahkan upload dokumen pendukung</p>
+                      <p className="text-[11px] text-text-disabled mt-1">PDF, PNG, JPG (Max. 5MB)</p>
+                    </>
+                  )}
+                </label>
+              </div>
+
+              <div className="flex flex-col gap-2 mt-2">
+                <label className="text-[13px] font-bold text-text-sub" htmlFor="achievements">Tuliskan Pencapaian atau Prestasi Tertentu</label>
+                <textarea 
+                  id="achievements"
+                  name="achievements"
+                  rows={3}
+                  className="w-full bg-bg-base border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime"
+                  placeholder="Misal: Juara 1 Olimpiade Matematika, Penulis Terbaik..."
                 />
               </div>
             </div>
