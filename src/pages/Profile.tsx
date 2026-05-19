@@ -15,15 +15,38 @@ import {
 import { useAppContext } from "../AppContext";
 import { supabase } from "../lib/supabase";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 export function Profile() {
-  const { userRole, setUserRole, setActiveTab, user, userProfile } =
+  const { userRole, setUserRole, setActiveTab, user, userProfile, tutorProfileData } =
     useAppContext();
 
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState(userProfile?.full_name || user?.user_metadata?.full_name || "");
-  const [bio, setBio] = useState(userProfile?.bio || "");
+  const [bio, setBio] = useState(tutorProfileData?.bio || "");
   const [phoneNumber, setPhoneNumber] = useState(userProfile?.phone || "");
+  const [address, setAddress] = useState(tutorProfileData?.address || "");
+  const [targetSubjects, setTargetSubjects] = useState<string[]>(tutorProfileData?.target_subjects || []);
+  const [learningStyles, setLearningStyles] = useState<string[]>(tutorProfileData?.learning_styles || []);
+  const [availableDays, setAvailableDays] = useState<number[]>(tutorProfileData?.available_days || []);
+  const [availableHoursList, setAvailableHoursList] = useState<string[]>(tutorProfileData?.available_hours || []);
+
+  const toggleTargetSubject = (subject: string) => {
+    setTargetSubjects(prev => prev.includes(subject) ? prev.filter(s => s !== subject) : [...prev, subject]);
+  };
+
+  const toggleLearningStyle = (style: string) => {
+    setLearningStyles(prev => prev.includes(style) ? prev.filter(s => s !== style) : [...prev, style]);
+  };
+
+  const toggleAvailableDay = (day: number) => {
+    setAvailableDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
+  };
+
+  const toggleAvailableHour = (hourStr: string) => {
+    setAvailableHoursList(prev => prev.includes(hourStr) ? prev.filter(h => h !== hourStr) : [...prev, hourStr]);
+  };
+
   const [isSaving, setIsSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -48,11 +71,16 @@ export function Profile() {
       const { error } = await supabase.from('profiles').upsert(updates);
       if (error) throw error;
       
-      // Update bio if it's a tutor
+      // Update bio and extra info if it's a tutor
       if (userRole === "tutor") {
         const { error: tutorError } = await supabase.from('tutor_profiles').upsert({
           id: user.id,
           bio: bio || null,
+          address: address || null,
+          target_subjects: targetSubjects,
+          learning_styles: learningStyles,
+          available_days: availableDays,
+          available_hours: availableHoursList,
         });
         if (tutorError) throw tutorError;
       }
@@ -276,9 +304,9 @@ export function Profile() {
         </button>
       </div>
 
-      {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-pgIn">
-           <div className="bg-bg-base border border-border shadow-2xl rounded-2xl w-full max-w-[500px] flex flex-col max-h-[85vh] overflow-hidden">
+      {isEditing && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-pgIn">
+           <div className="bg-bg-0 border border-border shadow-2xl rounded-2xl w-full max-w-[500px] flex flex-col max-h-[85vh] overflow-hidden">
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <h3 className="font-display font-bold text-lg">Edit Profil</h3>
                 <button onClick={() => setIsEditing(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-bg-2 transition-colors">
@@ -315,6 +343,83 @@ export function Profile() {
                   />
                 </div>
 
+                {isTutor && (
+                  <>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Alamat Lengkap</label>
+                      <input 
+                        type="text" 
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="w-full bg-bg-2 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all"
+                        placeholder="Domisili kota/alamat..."
+                      />
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Target Mapel</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Matematika", "Fisika", "Kimia", "Biologi", "Bahasa Inggris", "Bahasa Indonesia", "Sejarah"].map(sub => (
+                          <span 
+                            key={sub}
+                            onClick={() => toggleTargetSubject(sub)}
+                            className={`text-[11px] px-3 py-1.5 rounded-lg cursor-pointer transition-colors border ${targetSubjects.includes(sub) ? "bg-lime-dim text-lime border-lime" : "bg-bg-3 text-text-sub border-border hover:border-lime/50"}`}
+                          >
+                             {sub}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Tipe Mengajar</label>
+                      <div className="flex gap-4">
+                        {["Online", "Offline"].map(type => (
+                          <label key={type} className="flex items-center gap-2 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={learningStyles.includes(type)}
+                              onChange={() => toggleLearningStyle(type)}
+                              className="w-4 h-4 accent-lime"
+                            />
+                            <span className="text-[13px]">{type}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Hari & Jam Tersedia</label>
+                      <div className="border border-border p-3 rounded-xl bg-bg-2">
+                        <p className="text-[10px] text-text-sub mb-2">Pilih hari</p>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                           {[{id: 1, name: "Sen"}, {id: 2, name: "Sel"}, {id: 3, name: "Rab"}, {id: 4, name: "Kam"}, {id: 5, name: "Jum"}, {id: 6, name: "Sab"}, {id: 0, name: "Min"}].map(day => (
+                             <span 
+                               key={day.id}
+                               onClick={() => toggleAvailableDay(day.id)}
+                               className={`text-[11px] px-2.5 py-1 rounded-md cursor-pointer transition-colors border ${availableDays.includes(day.id) ? "bg-lime-dim text-lime border-lime font-bold" : "bg-bg-1 text-text-sub border-border hover:border-lime/50"}`}
+                             >
+                                {day.name}
+                             </span>
+                           ))}
+                        </div>
+                        <p className="text-[10px] text-text-sub mb-2">Pilih jam kosong</p>
+                        <div className="flex flex-wrap gap-2">
+                           {["08:00", "10:00", "13:00", "15:00", "18:00", "19:00", "20:00"].map(hour => (
+                             <span 
+                               key={hour}
+                               onClick={() => toggleAvailableHour(hour)}
+                               className={`text-[11px] px-2 py-1 rounded-md cursor-pointer transition-colors border font-mono ${availableHoursList.includes(hour) ? "bg-lime-dim text-lime border-lime font-bold" : "bg-bg-1 text-text-sub border-border hover:border-lime/50"}`}
+                             >
+                                {hour}
+                             </span>
+                           ))}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Tentang Saya {isTutor ? "(Pengalaman mengajar)" : ""}</label>
                   <textarea 
@@ -345,7 +450,7 @@ export function Profile() {
               </div>
            </div>
         </div>
-      )}
+      , document.body)}
     </div>
   );
 }

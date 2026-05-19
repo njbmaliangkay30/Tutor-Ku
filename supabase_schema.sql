@@ -30,8 +30,11 @@ CREATE TABLE tutor_profiles (
   total_reviews INTEGER DEFAULT 0,
   gender TEXT,
   is_verified BOOLEAN DEFAULT FALSE,
+  address TEXT,
+  target_subjects TEXT[],
+  learning_styles TEXT[],
   available_days INTEGER[], -- e.g., [1,3,5] for Mon, Wed, Fri
-  available_hours JSONB -- e.g., {"1": ["08:00", "09:00"]}
+  available_hours TEXT[]
 );
 
 -- TUTOR SUBJECTS

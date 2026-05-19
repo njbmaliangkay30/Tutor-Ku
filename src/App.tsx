@@ -386,6 +386,7 @@ export default function App() {
 
         {/* Main */}
         <main className="flex-1 flex flex-col overflow-hidden relative min-w-0">
+          {/* Temporary Dev/Preview Admin Toggle Removed */}
           {/* Topbar (Mobile Only) */}
           <div className="flex md:hidden h-[56px] py-1 bg-bg-2/80 backdrop-blur-xl items-center justify-between px-4 shrink-0 border-b border-border/60 relative z-50">
             <div

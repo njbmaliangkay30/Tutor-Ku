@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Users, BookOpen, Search, ShieldCheck, Eye, ShieldAlert, X, AlertOctagon, CreditCard, Calendar } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
@@ -121,7 +122,8 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
   };
 
   return (
-    <div className="p-4 md:p-8 animate-pgIn max-w-5xl mx-auto w-full relative space-y-6">
+    <>
+      <div className="p-4 md:p-8 animate-pgIn max-w-5xl mx-auto w-full relative space-y-6">
       <div className="flex flex-col gap-2">
         <h1 className="font-display font-bold text-[32px] tracking-tight">{getRoleTitle()}</h1>
         <p className="text-text-sub font-mono text-sm">Kelola data platform TutorKu.</p>
@@ -278,23 +280,24 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
           {packages.length === 0 && <p className="text-sm text-text-sub text-center py-10">Belum ada package tersedia.</p>}
         </div>
       ) : null}
+      </div>
 
       {/* User Details Modal */}
-      {selectedUser && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-bg-0 border border-border rounded-2xl w-full max-w-lg shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+      {selectedUser && createPortal(
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-bg-0 border border-border rounded-2xl w-full max-w-lg shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             <button
                onClick={() => setSelectedUser(null)}
-               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-bg-2 text-text-sub hover:text-text-main transition-colors"
+               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-bg-2 text-text-sub hover:text-text-main transition-colors z-10"
             >
               <X size={18} />
             </button>
-            <div className="p-6">
-              <div className="flex items-center gap-4 mb-6">
+            <div className="p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+              <div className="flex items-center gap-4 mb-6 pr-8">
                 {selectedUser.avatar_url ? (
-                  <img src={selectedUser.avatar_url} alt={selectedUser.full_name} className="w-16 h-16 rounded-full object-cover border-2 border-border" />
+                  <img src={selectedUser.avatar_url} alt={selectedUser.full_name} className="w-16 h-16 rounded-full object-cover border-2 border-border shrink-0" />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-bg-2 border border-border flex items-center justify-center text-text-main font-bold text-xl">
+                  <div className="w-16 h-16 rounded-full bg-bg-2 border border-border flex items-center justify-center text-text-main font-bold text-xl shrink-0">
                     {(selectedUser.full_name || "U").substring(0, 2).toUpperCase()}
                   </div>
                 )}
@@ -304,6 +307,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                     {selectedUser.is_verified && <span className="inline-block w-2.5 h-2.5 rounded-full bg-success"></span>}
                   </h2>
                   <p className="text-sm text-text-sub">{selectedUser.email}</p>
+                  <p className="text-sm text-text-sub">{selectedUser.phone || "-"}</p>
                   <p className="text-[10px] font-mono text-lime bg-lime-dim inline-block px-2 py-0.5 rounded mt-2 uppercase">
                     ID: {selectedUser.id.substring(0, 8)}...
                   </p>
@@ -333,6 +337,28 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                           {selectedUser.tutor_details.gender || "-"}
                         </p>
                       </div>
+                      <div>
+                        <p className="text-text-sub text-[10px] mb-1">Tipe Mengajar</p>
+                        <p className="text-xs font-bold text-text-main capitalize">
+                          {selectedUser.tutor_details.learning_styles?.join(", ") || "Online, Offline"}
+                        </p>
+                      </div>
+                      <div className="col-span-2">
+                         <p className="text-text-sub text-[10px] mb-1">Target Mapel</p>
+                         <p className="text-xs font-bold text-text-main">{selectedUser.tutor_details.target_subjects?.join(", ") || "-"}</p>
+                      </div>
+                      <div className="col-span-2">
+                         <p className="text-text-sub text-[10px] mb-1">Hari & Jam Tersedia</p>
+                         <p className="text-[11px] text-text-main">
+                           Hari: {selectedUser.tutor_details.available_days?.map((d: number) => ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d]).join(", ") || "-"}
+                           <br/>
+                           Jam: {selectedUser.tutor_details.available_hours?.join(", ") || "-"}
+                         </p>
+                      </div>
+                      <div className="col-span-2">
+                         <p className="text-text-sub text-[10px] mb-1">Alamat/Lokasi</p>
+                         <p className="text-xs font-bold text-text-main">{selectedUser.tutor_details.address || "-"}</p>
+                      </div>
                     </div>
                     {selectedUser.tutor_details.bio && (
                       <div className="mt-4">
@@ -358,6 +384,10 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                         <p className="text-xs font-bold text-text-main capitalize">
                           {selectedUser.student_details.education_level || "-"}
                         </p>
+                      </div>
+                      <div className="col-span-2">
+                         <p className="text-text-sub text-[10px] mb-1">Alamat/Lokasi</p>
+                         <p className="text-xs font-bold text-text-main">{selectedUser.student_details.address || "-"}</p>
                       </div>
                     </div>
                     {selectedUser.student_details.bio && (
@@ -391,7 +421,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
             </div>
           </div>
         </div>
-      )}
-    </div>
+      , document.body)}
+    </>
   );
 }

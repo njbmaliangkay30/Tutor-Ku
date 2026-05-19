@@ -123,7 +123,7 @@ export function Search() {
                </div>
                
                <div className="flex gap-[5px] flex-wrap mt-[10px]">
-                 {t.tags.map(tag => {
+                 {(t.tags || []).map((tag: string) => {
                    const st = getTagStyle(tag);
                    return (
                      <span key={tag} className="rounded px-[9px] py-[3px] text-[11px] font-semibold border border-border font-mono" style={{backgroundColor: st.bg, color: st.c, borderColor: st.c + '33'}}>{tag}</span>
@@ -133,7 +133,7 @@ export function Search() {
                
                {t.badges && t.badges.length > 0 && (
                  <div className="flex gap-[5px] flex-wrap mt-[7px]">
-                   {t.badges.map(b => (
+                   {(t.badges || []).map((b: string) => (
                       <span key={b} className="bg-lime-dim text-lime border border-[color:var(--color-lime-mid)] rounded px-2 py-[2px] text-[10px] font-bold font-mono whitespace-nowrap">{b}</span>
                    ))}
                  </div>

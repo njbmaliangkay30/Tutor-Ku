@@ -192,7 +192,7 @@ export function TutorDetail() {
           </div>
           <div className="grid grid-cols-7 gap-[5px] mb-1.5">
             {DAYS.map((d, i) => {
-              const isActive = tutor.activeDays.includes(i);
+              const isActive = (tutor.activeDays || []).includes(i);
               return (
                 <div
                   key={d}
@@ -204,7 +204,7 @@ export function TutorDetail() {
             })}
           </div>
           <div className="text-[11px] text-text-sub font-mono">
-            Aktif: {tutor.activeDays.map((d) => DAYS[d]).join(", ")}
+            Aktif: {(tutor.activeDays || []).map((d: number) => DAYS[d]).join(", ")}
           </div>
         </div>
 
@@ -213,7 +213,7 @@ export function TutorDetail() {
             MATA PELAJARAN
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {tutor.tags.map((tag) => {
+            {(tutor.tags || []).map((tag: string) => {
               const st = getTagStyle(tag);
               return (
                 <span
