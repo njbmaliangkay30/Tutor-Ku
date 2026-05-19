@@ -25,6 +25,7 @@ import { TutorSessions } from "./pages/TutorSessions";
 import { StudentSessions } from "./pages/StudentSessions";
 import { StudentProgress } from "./pages/StudentProgress";
 import { AdminDashboard } from "./pages/AdminDashboard";
+import { AdminPanel } from "./pages/admin/AdminPanel";
 import { OnboardingForm } from "./components/OnboardingForm";
 import { UnverifiedTutorView } from "./components/UnverifiedTutorView";
 import { VerificationForm } from "./components/VerificationForm";
@@ -193,6 +194,37 @@ export default function App() {
                   </span>
                 </button>
               </>
+            ) : userRole === "admin" ? (
+              <>
+                <button
+                  onClick={() => setActiveTab("home")}
+                  title="Admin Dashboard"
+                  className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "home" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
+                >
+                  <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
+                    <Home size={22} />
+                  </span>
+                  <span
+                    className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
+                  >
+                    Dashboard
+                  </span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("admin")}
+                  title="Admin Panel"
+                  className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
+                >
+                  <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
+                    <CheckSquare size={22} />
+                  </span>
+                  <span
+                    className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
+                  >
+                    Admin Panel
+                  </span>
+                </button>
+              </>
             ) : (
               <>
                 <button
@@ -237,22 +269,6 @@ export default function App() {
                     Progress
                   </span>
                 </button>
-                {userRole === "admin" && (
-                  <button
-                    onClick={() => setActiveTab("admin")}
-                    title="Admin Dashboard"
-                    className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
-                  >
-                    <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
-                      <CheckSquare size={22} />
-                    </span>
-                    <span
-                      className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
-                    >
-                      Admin Panel
-                    </span>
-                  </button>
-                )}
               </>
             )}
           </div>
@@ -333,12 +349,14 @@ export default function App() {
                   </>
                 )}
 
-                {activeTab === "home" && userRole !== "tutor" && <PageHome />}
-                {activeTab === "search" && userRole !== "tutor" && <PageSearch />}
-                {activeTab === "student_sessions" && userRole !== "tutor" && (
+                {activeTab === "home" && userRole === "guest" && <PageHome />}
+                {activeTab === "home" && userRole === "student" && <PageHome />}
+                
+                {activeTab === "search" && userRole !== "tutor" && userRole !== "admin" && <PageSearch />}
+                {activeTab === "student_sessions" && userRole !== "tutor" && userRole !== "admin" && (
                   <StudentSessions />
                 )}
-                {activeTab === "progress" && userRole !== "tutor" && (
+                {activeTab === "progress" && userRole !== "tutor" && userRole !== "admin" && (
                   <StudentProgress />
                 )}
 
@@ -346,8 +364,11 @@ export default function App() {
                 {activeTab === "login" && userRole === "guest" && <PageLogin />}
                 {activeTab === "login" && userRole !== "guest" && <PageProfile />}
 
-                {userRole === "admin" && activeTab === "admin" && (
+                {activeTab === "home" && userRole === "admin" && (
                   <AdminDashboard />
+                )}
+                {activeTab === "admin" && userRole === "admin" && (
+                  <AdminPanel />
                 )}
               </>
             )}
@@ -391,6 +412,31 @@ export default function App() {
                   <span className="text-[10px] font-mono">Sessions</span>
                 </button>
               </>
+            ) : userRole === "admin" ? (
+              <>
+                <button
+                  onClick={() => setActiveTab("home")}
+                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all flex-1 ${activeTab === "home" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                >
+                  <span
+                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                  >
+                    <Home size={18} />
+                  </span>
+                  <span className="text-[10px] font-mono">Dashboard</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("admin")}
+                  className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all flex-1 ${activeTab === "admin" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
+                >
+                  <span
+                    className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "admin" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                  >
+                    <CheckSquare size={18} />
+                  </span>
+                  <span className="text-[10px] font-mono">Admin</span>
+                </button>
+              </>
             ) : (
               <>
                 <button
@@ -426,19 +472,6 @@ export default function App() {
                   </span>
                   <span className="text-[10px] font-mono">Progress</span>
                 </button>
-                {userRole === "admin" && (
-                  <button
-                    onClick={() => setActiveTab("admin")}
-                    className={`flex flex-col items-center gap-[3px] bg-transparent border-none cursor-pointer pb-1 transition-all flex-1 ${activeTab === "admin" ? "text-lime font-bold" : "text-text-sub font-medium hover:text-text-main"}`}
-                  >
-                    <span
-                      className={`w-10 h-7 flex items-center justify-center rounded-lg transition-all text-[20px] ${activeTab === "admin" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
-                    >
-                      <CheckSquare size={18} />
-                    </span>
-                    <span className="text-[10px] font-mono">Admin</span>
-                  </button>
-                )}
               </>
             )}
             <button
