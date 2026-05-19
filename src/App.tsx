@@ -198,7 +198,7 @@ export default function App() {
               <>
                 <button
                   onClick={() => setActiveTab("home")}
-                  title="Admin Dashboard"
+                  title="Overview"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "home" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -207,12 +207,12 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Dashboard
+                    Overview
                   </span>
                 </button>
                 <button
                   onClick={() => setActiveTab("admin")}
-                  title="Admin Panel"
+                  title="Data Management"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -221,7 +221,7 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Admin Panel
+                    Data
                   </span>
                 </button>
               </>
@@ -423,7 +423,7 @@ export default function App() {
                   >
                     <Home size={18} />
                   </span>
-                  <span className="text-[10px] font-mono">Dashboard</span>
+                  <span className="text-[10px] font-mono">Overview</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("admin")}
@@ -434,7 +434,7 @@ export default function App() {
                   >
                     <CheckSquare size={18} />
                   </span>
-                  <span className="text-[10px] font-mono">Admin</span>
+                  <span className="text-[10px] font-mono">Data</span>
                 </button>
               </>
             ) : (
