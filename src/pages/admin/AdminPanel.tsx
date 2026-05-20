@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Users, BookOpen, Search, ShieldCheck, Eye, ShieldAlert, X, AlertOctagon, CreditCard, Calendar, Star, LayoutGrid, List } from "lucide-react";
+import { Users, BookOpen, Search, ShieldCheck, Eye, ShieldAlert, X, AlertOctagon, CreditCard, Calendar, Star, LayoutGrid, List, Plus, Edit3, Trash2 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
 export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "students" | "transactions" | "sessions" | "packages" | "reviews" }) {
@@ -20,6 +20,15 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
   const [viewMode, setViewMode] = useState<"list" | "gallery">("gallery");
   const [selectedGalleryTutor, setSelectedGalleryTutor] = useState<any | null>(null);
   const [modalSubTab, setModalSubTab] = useState<"sessions" | "reviews">("sessions");
+
+  // Package Management states
+  const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
+  const [editingPackage, setEditingPackage] = useState<any | null>(null);
+  const [pkgName, setPkgName] = useState("");
+  const [pkgSessionCount, setPkgSessionCount] = useState(4);
+  const [pkgPricingType, setPkgPricingType] = useState<"percentage" | "fixed">("percentage");
+  const [pkgPriceValue, setPkgPriceValue] = useState<number>(5);
+  const [pkgDescription, setPkgDescription] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -108,25 +117,38 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
           setTutors(formattedTutors);
         }
       } else if (activeSubTab === "packages") {
-        const { data, error } = await supabase
-          .from("packages")
-          .select("*")
-          .order("price", { ascending: true });
-        if (!error && data) setPackages(data);
+        const [packagesRes, studentPackagesRes, studentProfilesRes, tutorProfilesRes] = await Promise.all([
+          supabase.from("packages").select("*").order("price", { ascending: true }),
+          supabase.from("student_packages").select("*"),
+          supabase.from("student_profiles").select("*, profiles(*)"),
+          supabase.from("tutor_profiles").select("*, profiles(*)")
+        ]);
 
-        const { data: stdPkgs, error: stdPkgsErr } = await supabase
-          .from("student_packages")
-          .select(`
-            id,
-            remaining_sessions,
-            valid_until,
-            status,
-            student:student_profiles(profiles(full_name, email)),
-            tutor:tutor_profiles(profiles(full_name)),
-            packages(*)
-          `);
-        if (!stdPkgsErr && stdPkgs) {
-          setStudentPackages(stdPkgs);
+        if (!packagesRes.error && packagesRes.data) {
+          setPackages(packagesRes.data);
+        }
+
+        if (!studentPackagesRes.error && studentPackagesRes.data) {
+          const stdPkgsRaw = studentPackagesRes.data;
+          const stdProfs = studentProfilesRes.data || [];
+          const tutProfs = tutorProfilesRes.data || [];
+          const pkgsCatalog = packagesRes.data || [];
+
+          // Stitch relational details manually on the client-side to be 100% immune to Supabase 400 JOIN limit errors
+          const stitched = stdPkgsRaw.map((sp: any) => {
+            const studentInfo = stdProfs.find((s: any) => s.id === sp.student_id);
+            const tutorInfo = tutProfs.find((t: any) => t.id === sp.tutor_id);
+            const packageInfo = pkgsCatalog.find((p: any) => p.id === sp.package_id);
+
+            return {
+              ...sp,
+              student: studentInfo ? { profiles: studentInfo.profiles } : null,
+              tutor: tutorInfo ? { profiles: tutorInfo.profiles } : null,
+              packages: packageInfo || (sp.package_id ? { name: "Paket Belajar (ID: " + sp.package_id.substring(0,6) + ")" } : null)
+            };
+          });
+
+          setStudentPackages(stitched);
         }
       }
     } catch (err) {
@@ -172,17 +194,152 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
     setIsProcessing(true);
     try {
       const defaultPkgs = [
-        { name: 'Sesi Satuan', session_count: 1, price: 65000, description: 'Booking satu sesi dulu, cocok untuk percobaan.' },
-        { name: 'Paket 4 Pertemuan', session_count: 4, price: 247000, description: '4 sesi, cocok untuk persiapan ulangan.' },
-        { name: 'Paket 8 Pertemuan', session_count: 8, price: 468000, description: 'Paket terlaris — belajar rutin, hasil lebih optimal.' },
-        { name: 'Paket 12 Pertemuan', session_count: 12, price: 686400, description: 'Untuk persiapan UTBK atau kursus intensif.' }
+        { name: 'Sesi Satuan', session_count: 1, price: 0, description: 'Booking satu sesi dulu, cocok untuk percobaan. Harga adaptif menyesuaikan tarif tutor.' },
+        { name: 'Paket 4 Pertemuan', session_count: 4, price: 5, description: '4 sesi, cocok untuk persiapan ulangan. Diskon 5% dari tarif normal tutor.' },
+        { name: 'Paket 8 Pertemuan', session_count: 8, price: 10, description: 'Paket terlaris — belajar rutin, hasil lebih optimal. Diskon 10% dari tarif normal tutor.' },
+        { name: 'Paket 12 Pertemuan', session_count: 12, price: 12, description: 'Untuk persiapan UTBK atau kursus intensif. Diskon 12% dari tarif normal tutor.' }
       ];
       const { error } = await supabase.from("packages").insert(defaultPkgs);
       if (error) throw error;
       fetchData();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to initialize default packages:", err);
-      alert("Gagal melakukan inisialisasi paket default.");
+      
+      // Detailed user guidance in case of Supabase 403 / RLS policy issues
+      alert(
+        "Gagal melakukan inisialisasi paket default!\n\n" +
+        "Penyebab Umum: RLS (Row Level Security) aktif di Supabase tetapi policy INSERT belum diizinkan.\n\n" +
+        "Langkah Mengatasinya dalam 30 detik:\n" +
+        "1. Buka Supabase Dashboard proyek Anda.\n" +
+        "2. Masuk ke menu 'Table Editor' -> pilih tabel 'packages'.\n" +
+        "3. Klik tombol 'RLS' atau 'Add RLS Policy' di tabel packages.\n" +
+        "4. Tambahkan Policy: Izinkan ALL atau INSERT / SELECT untuk pengguna terautentikasi (authenticated).\n" +
+        "Atau beralih ke 'Database' -> 'Tables' -> nonaktifkan 'Row Level Security (RLS)' untuk tabel 'packages' sementara jika ingin praktis.\n\n" +
+        "Pesan Error Teknis: " + (err.message || JSON.stringify(err))
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const openPackageModal = (pkg: any | null) => {
+    if (pkg) {
+      setEditingPackage(pkg);
+      setPkgName(pkg.name);
+      setPkgSessionCount(pkg.session_count);
+      if (pkg.price <= 100) {
+        setPkgPricingType("percentage");
+        setPkgPriceValue(pkg.price);
+      } else {
+        setPkgPricingType("fixed");
+        setPkgPriceValue(pkg.price);
+      }
+      setPkgDescription(pkg.description || "");
+    } else {
+      setEditingPackage(null);
+      setPkgName("");
+      setPkgSessionCount(4);
+      setPkgPricingType("percentage");
+      setPkgPriceValue(5);
+      setPkgDescription("");
+    }
+    setIsPackageModalOpen(true);
+  };
+
+  const closePackageModal = () => {
+    setIsPackageModalOpen(false);
+    setEditingPackage(null);
+  };
+
+  const savePackage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pkgName.trim()) {
+      alert("Nama paket wajib diisi!");
+      return;
+    }
+    if (pkgSessionCount <= 0) {
+      alert("Jumlah sesi harus lebih besar dari 0!");
+      return;
+    }
+    if (pkgPriceValue < 0) {
+      alert("Harga atau diskon tidak boleh negatif!");
+      return;
+    }
+    if (pkgPricingType === "percentage" && pkgPriceValue > 100) {
+      alert("Diskon persentase tidak boleh melebihi 100%!");
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      const pkgData = {
+        name: pkgName,
+        session_count: pkgSessionCount,
+        price: pkgPriceValue,
+        description: pkgDescription,
+      };
+
+      if (editingPackage) {
+        // Update existing pack
+        const { error } = await supabase
+          .from("packages")
+          .update(pkgData)
+          .eq("id", editingPackage.id);
+        
+        if (error) throw error;
+      } else {
+        // Insert new pack
+        const { error } = await supabase
+          .from("packages")
+          .insert([pkgData]);
+          
+        if (error) throw error;
+      }
+
+      // Close modal and refresh data
+      closePackageModal();
+      
+      // Refresh package data
+      const packagesFetched = await supabase.from("packages").select("*").order("price", { ascending: true });
+      if (!packagesFetched.error && packagesFetched.data) {
+        setPackages(packagesFetched.data);
+      }
+    } catch (err: any) {
+      console.error("Failed to save package:", err);
+      alert("Gagal menyimpan paket!\nPesan Error: " + (err.message || JSON.stringify(err)));
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const deletePackage = async (pkgId: string) => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus paket/skema diskon ini?")) {
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      const { error } = await supabase
+        .from("packages")
+        .delete()
+        .eq("id", pkgId);
+
+      if (error) {
+        throw error;
+      }
+
+      // Refresh list
+      const packagesFetched = await supabase.from("packages").select("*").order("price", { ascending: true });
+      if (!packagesFetched.error && packagesFetched.data) {
+        setPackages(packagesFetched.data);
+      }
+    } catch (err: any) {
+      console.error("Failed to delete package:", err);
+      alert(
+        "Gagal menghapus paket!\n" +
+        "Penyebab Umum: Paket ini sedang digunakan oleh student pada pendaftaran aktif (ada relasi di tabel student_packages).\n\n" +
+        "Pesan Error Teknis: " + (err.message || JSON.stringify(err))
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -518,53 +675,95 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
           </div>
 
           {adminPackageTab === "catalog" ? (
-            <div className="space-y-4 animate-pgIn">
+            <div className="space-y-4 animate-pgIn font-sans">
               <div className="bg-lime-dim/20 border border-lime/20 rounded-xl p-4 text-xs text-text-sub flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-0.5">
-                  <p className="font-bold text-lime">Katalog Dictionary Paket</p>
-                  <p className="leading-relaxed">Katalog model paket yang didaftarkan siswa saat check out. Sistem akan otomatis merekam tipe-tipe paket di sini.</p>
+                  <p className="font-bold text-lime">Katalog & Skema Diskon Paket</p>
+                  <p className="leading-relaxed">Katalog model paket yang digunakan siswa saat check out. Anda memiliki kontrol penuh untuk menambahkan paket baru atau mengubah skema persentase diskon.</p>
                 </div>
-                {packages.length === 0 && (
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  {packages.length === 0 && (
+                    <button
+                      disabled={isProcessing}
+                      onClick={initializeDefaultPackages}
+                      className="px-3 py-1.5 bg-zinc-800 text-text-[11px] font-bold rounded-lg border border-border/65 hover:bg-zinc-750 transition-colors disabled:opacity-50"
+                    >
+                      Inisialisasi Default
+                    </button>
+                  )}
                   <button
-                    disabled={isProcessing}
-                    onClick={initializeDefaultPackages}
-                    className="px-4 py-2 bg-lime text-black text-[11px] font-bold rounded-lg hover:bg-lime-hover transition-colors shrink-0 disabled:opacity-50 font-mono"
+                    onClick={() => openPackageModal(null)}
+                    className="px-4 py-2 bg-lime hover:bg-lime-hover text-black text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-lg shadow-lime/10"
                   >
-                    {isProcessing ? "Memproses..." : "Inisialisasi Katalog Default"}
+                    <Plus size={14} /> Tambah Paket / Promo
                   </button>
-                )}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {packages.map((pkg) => (
-                  <div key={pkg.id} className="bg-card p-4 rounded-xl border border-border flex flex-col justify-between hover:border-lime/30 transition-all">
-                    <div>
-                      <div className="flex justify-between items-start gap-2">
-                        <h3 className="font-semibold text-text-main text-sm uppercase tracking-wider">
-                          {pkg.name}
-                        </h3>
-                        <span className="px-2 py-0.5 bg-lime-dim text-lime text-[9px] font-bold rounded uppercase font-mono">
-                          {pkg.session_count} Sesi
-                        </span>
+                {packages.map((pkg) => {
+                  const isAdaptive = pkg.price <= 100;
+                  const discountPercent = isAdaptive ? pkg.price : 0;
+                  return (
+                    <div key={pkg.id} className="bg-card p-4 rounded-xl border border-border flex flex-col justify-between hover:border-lime/30 transition-all relative group shadow-sm">
+                      <div>
+                        <div className="flex justify-between items-start gap-2">
+                          <h3 className="font-semibold text-text-main text-sm uppercase tracking-wider">
+                            {pkg.name}
+                          </h3>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="px-2 py-0.5 bg-lime-dim text-lime text-[9px] font-bold rounded uppercase font-mono">
+                              {pkg.session_count} Sesi
+                            </span>
+                            <button
+                              onClick={() => openPackageModal(pkg)}
+                              className="p-1 hover:text-lime text-text-sub transition-colors rounded hover:bg-zinc-800"
+                              title="Edit Paket"
+                            >
+                              <Edit3 size={13} />
+                            </button>
+                            <button
+                              onClick={() => deletePackage(pkg.id)}
+                              className="p-1 hover:text-red-500 text-text-sub transition-colors rounded hover:bg-zinc-800"
+                              title="Hapus Paket"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-xs text-text-sub mt-2 line-clamp-2">
+                          {pkg.description || "Daftar Paket Belajar Privat TutorKu."}
+                        </p>
                       </div>
-                      <p className="text-xs text-text-sub mt-2 line-clamp-2">
-                        {pkg.description || "Dibuat otomatis oleh transaksi student."}
-                      </p>
+                      <div className="mt-4 pt-3 border-t border-border/40 flex flex-col gap-1.5">
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-[11px] text-text-light font-mono">Skema Diskon:</span>
+                          <span className="text-xs font-bold font-mono text-lime">
+                            {isAdaptive 
+                              ? (discountPercent === 0 ? "Normal (0% Off)" : `Hemat ${discountPercent}%`)
+                              : `Promo Tetap (Rp ${pkg.price.toLocaleString()})`
+                            }
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-[11px] text-text-light font-mono">Formula Adaptif:</span>
+                          <span className="text-xs font-bold font-mono text-text-main">
+                            {isAdaptive 
+                              ? (discountPercent === 0 ? "Normal / Rate Tutor × 1" : `Rate Tutor × ${pkg.session_count} × ${(1 - discountPercent / 100).toFixed(2)}`)
+                              : "Harga Statik / Overruled"
+                            }
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="mt-4 pt-3 border-t border-border/40 flex justify-between items-baseline">
-                      <span className="text-xs text-text-light font-mono">Nilai Referensi:</span>
-                      <span className="text-base font-extrabold text-lime font-mono">
-                        Rp {pkg.price?.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               {packages.length === 0 && (
                 <div className="text-center py-12 border border-dashed border-border rounded-xl">
                   <p className="text-sm font-semibold text-text-main">Katalog Model Paket Masih Kosong</p>
                   <p className="text-xs text-text-sub mt-1 max-w-md mx-auto">
-                    Katalog akan terisi ketika student bertransaksi membeli paket bundle belajar tutor, atau Anda bisa inisialisasi default menggunakan tombol di atas.
+                    Anda bisa inisialisasi default atau klik tombol "+ Tambah Paket / Promo" di atas untuk menambahkan skema manual.
                   </p>
                 </div>
               )}
@@ -1034,6 +1233,173 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                 )}
               </div>
             </div>
+          </div>
+        </div>, document.body
+      )}
+
+      {isPackageModalOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 font-sans">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={closePackageModal}
+          />
+          
+          {/* Content container */}
+          <div className="bg-card border border-border rounded-xl w-full max-w-sm overflow-hidden relative z-10 shadow-2xl animate-pgIn">
+            <div className="flex justify-between items-center p-4 border-b border-border/60">
+              <h2 className="font-display font-bold text-base text-text-main">
+                {editingPackage ? "Edit Paket / Skema Diskon" : "Tambah Paket / Promo Baru"}
+              </h2>
+              <button 
+                onClick={closePackageModal}
+                className="p-1 rounded-lg hover:bg-bg-2 text-text-sub hover:text-text-main transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            
+            <form onSubmit={savePackage} className="p-4 space-y-4 text-xs">
+              {/* Nama Paket */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono font-bold text-text-sub uppercase tracking-wider block">
+                  Nama Paket / Promo
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={pkgName}
+                  onChange={(e) => setPkgName(e.target.value)}
+                  placeholder="e.g., Paket Belajar Hemat 8 Sesi"
+                  className="w-full bg-bg-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-main placeholder:text-text-light/40 focus:outline-none focus:border-lime/50 transition-colors"
+                />
+              </div>
+
+              {/* Jumlah Sesi */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono font-bold text-text-sub uppercase tracking-wider block">
+                  Jumlah Sesi (Pertemuan)
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  value={pkgSessionCount}
+                  onChange={(e) => setPkgSessionCount(parseInt(e.target.value) || 1)}
+                  className="w-full bg-bg-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-main font-mono focus:outline-none focus:border-lime/50 transition-colors"
+                />
+              </div>
+
+              {/* Tipe Harga / Skema Diskon */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono font-bold text-text-sub uppercase tracking-wider block">
+                  Tipe Penentuan Harga
+                </label>
+                <div className="grid grid-cols-2 gap-1.5 bg-bg-2 p-1 rounded-lg border border-border/60">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPkgPricingType("percentage");
+                      setPkgPriceValue(5); 
+                    }}
+                    className={`px-2.5 py-1.5 text-[10px] font-bold rounded transition-all ${pkgPricingType === "percentage" ? "bg-lime text-black" : "text-text-sub hover:text-text-main"}`}
+                  >
+                    Diskon Adaptif (%)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPkgPricingType("fixed");
+                      setPkgPriceValue(200000); 
+                    }}
+                    className={`px-2.5 py-1.5 text-[10px] font-bold rounded transition-all ${pkgPricingType === "fixed" ? "bg-lime text-black" : "text-text-sub hover:text-text-main"}`}
+                  >
+                    Harga Tetap (Rp)
+                  </button>
+                </div>
+              </div>
+
+              {/* Nilai Harga / Diskon */}
+              <div className="space-y-1 bg-bg-2/40 p-3 rounded-lg border border-border/40">
+                {pkgPricingType === "percentage" ? (
+                  <>
+                    <label className="text-[10px] font-mono font-bold text-text-sub uppercase tracking-wider block">
+                      Diskon Persentase (%)
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        max="100"
+                        value={pkgPriceValue}
+                        onChange={(e) => setPkgPriceValue(parseInt(e.target.value) || 0)}
+                        className="w-full bg-bg-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-main font-mono focus:outline-none focus:border-lime/50 transition-colors"
+                      />
+                      <span className="text-[11px] font-bold text-lime font-mono shrink-0">% OFF</span>
+                    </div>
+                    <p className="text-[10px] text-text-light font-sans mt-1 leading-relaxed">
+                      Sifatnya <strong>Adaptif</strong> terhadap tarif dari tutor mana pun yang dipilih siswa. <br />
+                      Membayar: <code>Sesi × Rate Tutor × {(1 - (pkgPriceValue || 0) / 100).toFixed(2)}</code>
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <label className="text-[10px] font-mono font-bold text-text-sub uppercase tracking-wider block">
+                      Harga Penjualan Total (Rp Rupiah)
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-bold text-text-light font-mono shrink-0">Rp</span>
+                      <input
+                        type="number"
+                        required
+                        min="101"
+                        value={pkgPriceValue}
+                        onChange={(e) => setPkgPriceValue(parseInt(e.target.value) || 0)}
+                        className="w-full bg-bg-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-main font-mono focus:outline-none focus:border-lime/50 transition-colors"
+                      />
+                    </div>
+                    <p className="text-[10px] text-text-light font-sans mt-1 leading-relaxed">
+                      Sifatnya <strong>Statik / Tetap</strong>. Siswa membayar nominal pas ini, menimpa tarif per sesi tutor. <br />
+                      Membayar: <code>Rp {(pkgPriceValue || 0).toLocaleString()}</code> (Nilai harus &gt; 100)
+                    </p>
+                  </>
+                )}
+              </div>
+
+              {/* Deskripsi */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono font-bold text-text-sub uppercase tracking-wider block">
+                  Keterangan Deskripsi
+                </label>
+                <textarea
+                  value={pkgDescription}
+                  onChange={(e) => setPkgDescription(e.target.value)}
+                  placeholder="e.g., Paket ekonomis untuk persiapan UTBK"
+                  rows={2}
+                  className="w-full bg-bg-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-main placeholder:text-text-light/40 focus:outline-none focus:border-lime/50 transition-colors resize-none"
+                />
+              </div>
+
+              {/* Submit / actions */}
+              <div className="flex justify-end gap-1.5 pt-1.5">
+                <button
+                  type="button"
+                  onClick={closePackageModal}
+                  disabled={isProcessing}
+                  className="px-3.5 py-1.5 bg-zinc-800 text-text-sub border border-border/80 text-[10px] font-bold rounded-lg hover:text-text-main hover:bg-zinc-750 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isProcessing}
+                  className="px-4 py-1.5 bg-lime text-black text-[10px] font-bold rounded-lg hover:bg-lime-hover transition-colors"
+                >
+                  {isProcessing ? "Menyimpan..." : (editingPackage ? "Simpan Perubahan" : "Tambah Paket")}
+                </button>
+              </div>
+            </form>
           </div>
         </div>, document.body
       )}
