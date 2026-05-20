@@ -181,7 +181,7 @@ export function TutorDetail() {
         }
 
         // 1. Insert session
-        const { error: sessionError } = await supabase
+        const { data: sessionData, error: sessionError } = await supabase
           .from("sessions")
           .insert({
             student_id: userProfile.id,
@@ -195,7 +195,9 @@ export function TutorDetail() {
             payment_status: 'paid', // Prepaid
             meeting_type: meetingType,
             location: meetingType === 'offline' ? location : null
-          });
+          })
+          .select()
+          .single();
 
         if (sessionError) throw sessionError;
 
@@ -221,11 +223,12 @@ export function TutorDetail() {
         });
 
         // 4. Notify tutor
+        const sessionId = sessionData?.id;
         await supabase.from("notifications").insert({
           user_id: tutor.id,
           title: "Sesi Paket Baru!",
           message: `${userProfile.full_name} memesan 1 sesi baru menggunakan kuota paket langganan mereka untuk subjek ${subjectName}.`,
-          link: "sessions"
+          link: sessionId ? `sessions:${sessionId}` : "sessions"
         });
 
       } else {
@@ -242,7 +245,7 @@ export function TutorDetail() {
 
         if (sessionsCount === 1) {
           // Single Session Purchase
-          const { error: sessionError } = await supabase
+          const { data: sessionData, error: sessionError } = await supabase
             .from("sessions")
             .insert({
               student_id: userProfile.id,
@@ -256,7 +259,9 @@ export function TutorDetail() {
               payment_status: 'unpaid', // Typically paid later or paid on check-out
               meeting_type: meetingType,
               location: meetingType === 'offline' ? location : null
-            });
+            })
+            .select()
+            .single();
 
           if (sessionError) throw sessionError;
 
@@ -270,11 +275,12 @@ export function TutorDetail() {
           });
 
           // Notify tutor
+          const sessionId = sessionData?.id;
           await supabase.from("notifications").insert({
             user_id: tutor.id,
             title: "Sesi Baru Dipesan!",
             message: `${userProfile.full_name} memesan 1 sesi pelajaran subjek ${subjectName}.`,
-            link: "sessions"
+            link: sessionId ? `sessions:${sessionId}` : "sessions"
           });
 
         } else {
@@ -321,7 +327,7 @@ export function TutorDetail() {
           if (spError) throw spError;
 
           // 2. Book the first session right now
-          const { error: sessionError } = await supabase
+          const { data: sessionData, error: sessionError } = await supabase
             .from("sessions")
             .insert({
               student_id: userProfile.id,
@@ -335,7 +341,9 @@ export function TutorDetail() {
               payment_status: 'paid', // Bundles are pre-paid
               meeting_type: meetingType,
               location: meetingType === 'offline' ? location : null
-            });
+            })
+            .select()
+            .single();
 
           if (sessionError) throw sessionError;
 
@@ -349,11 +357,12 @@ export function TutorDetail() {
           });
 
           // 4. Notify tutor
+          const sessionId = sessionData?.id;
           await supabase.from("notifications").insert({
             user_id: tutor.id,
             title: "Paket Belajar Baru Dibeli!",
             message: `${userProfile.full_name} membeli ${pkgInfo.name} (${sessionsCount} sesi) untuk subjek ${subjectName}. Sesi pertama sudah dijadwalkan.`,
-            link: "sessions"
+            link: sessionId ? `sessions:${sessionId}` : "sessions"
           });
         }
       }

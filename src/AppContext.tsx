@@ -31,6 +31,8 @@ type AppContextType = {
   tutors: any[];
   isLoadingTutors: boolean;
   isLoadingProfile: boolean;
+  targetSessionId: string | null;
+  setTargetSessionId: (id: string | null) => void;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -61,6 +63,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoadingTutors, setIsLoadingTutors] = useState(true);
 
   const [theme, setTheme] = useState("light");
+  const [targetSessionId, setTargetSessionId] = useState<string | null>(null);
 
   const fetchTutors = async () => {
     try {
@@ -330,6 +333,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         tutors,
         isLoadingTutors,
         isLoadingProfile,
+        targetSessionId,
+        setTargetSessionId,
       }}
     >
       {children}

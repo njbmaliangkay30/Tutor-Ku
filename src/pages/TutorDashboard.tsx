@@ -11,6 +11,7 @@ export function TutorDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [sessions, setSessions] = useState<any[]>([]);
   const [sessionReports, setSessionReports] = useState<any[]>([]);
+  const [studentPackages, setStudentPackages] = useState<any[]>([]);
   const [tutorStats, setTutorStats] = useState({ rating: 0, total_reviews: 0 });  
   const [isEditingDays, setIsEditingDays] = useState(false);
   const [tutorSchedule, setTutorSchedule] = useState<{[key: number]: string[]}>({});
@@ -116,8 +117,30 @@ export function TutorDashboard() {
           .select('*')
           .eq('tutor_id', user.id);
 
+        // Fetch student packages for the tutor
+        const { data: tutorPkgs } = await supabase
+          .from('student_packages')
+          .select(`
+            id,
+            remaining_sessions,
+            valid_until,
+            status,
+            student_id,
+            packages (
+              id,
+              name,
+              session_count
+            ),
+            student:student_profiles(
+              id,
+              profiles(full_name, avatar_url)
+            )
+          `)
+          .eq('tutor_id', user.id);
+
         if (tutorSessions) setSessions(tutorSessions);
         if (reports) setSessionReports(reports);
+        if (tutorPkgs) setStudentPackages(tutorPkgs);
       } catch (err) {
         console.error(err);
       } finally {
@@ -159,30 +182,79 @@ export function TutorDashboard() {
   const pendingReviews = pastSessions
     .filter(s => !reportSessionIds.has(s.id));
 
-  // Active students (hanya siswa yang masih memiliki sesi aktif/belum selesai, belum dibatalkan, dan tidak ditolak)
+  // Active students (disesuaikan dengan kuota yang terdaftar dari student_packages dan sisa kuota real-time)
   const studentMap = new Map();
-  sessions.forEach(s => {
-    const activeSessionsForStudent = sessions.filter(sess => 
-      sess.student_id === s.student_id && 
-      sess.status !== 'completed' && 
-      sess.status !== 'cancelled' && 
-      sess.status !== 'rejected'
-    );
-    const hasActiveSession = activeSessionsForStudent.length > 0;
 
-    if (hasActiveSession && !studentMap.has(s.student_id) && s.student) {
-      studentMap.set(s.student_id, {
-        id: s.student_id,
-        name: s.student.profiles?.full_name || 'Student',
-        level: 'Siswa',
-        subject: s.subject,
-        sessions: activeSessionsForStudent.length,
-        nextSession: activeSessionsForStudent.find(sess => getSessionStartDateTime(sess) > new Date())?.session_date || 'Belum ada',
-        remaining: activeSessionsForStudent.length,
-        avatarColor: getAvatarColor(s.student.profiles?.full_name || 'Student'),
-      });
+  // 1. Proses dari data student_packages (paket aktif dengan kuota tertentu)
+  studentPackages.forEach(pkg => {
+    if (pkg.status === 'active' && pkg.student) {
+      const studentId = pkg.student_id;
+      const originalSess = pkg.packages?.session_count || 4;
+      const rem = pkg.remaining_sessions;
+
+      // Cari sesi milik siswa ini untuk memicu subjek dan sesi berikutnya
+      const studentSessions = sessions.filter(sess => sess.student_id === studentId);
+      const subject = studentSessions.length > 0 ? studentSessions[0].subject : "Pelajaran Privat";
+      
+      const nextSessDate = studentSessions
+        .filter(sess => 
+          sess.status !== 'completed' && 
+          sess.status !== 'cancelled' && 
+          sess.status !== 'rejected' &&
+          getSessionStartDateTime(sess) > new Date()
+        )
+        .map(sess => sess.session_date)
+        .sort()[0] || 'Belum ada';
+
+      if (studentMap.has(studentId)) {
+        const existing = studentMap.get(studentId);
+        studentMap.set(studentId, {
+          ...existing,
+          sessions: existing.sessions + originalSess,
+          remaining: existing.remaining + rem,
+          nextSession: nextSessDate !== 'Belum ada' ? nextSessDate : existing.nextSession
+        });
+      } else {
+        studentMap.set(studentId, {
+          id: studentId,
+          name: pkg.student.profiles?.full_name || 'Siswa',
+          level: 'Paket Belajar',
+          subject,
+          sessions: originalSess,
+          nextSession: nextSessDate,
+          remaining: rem,
+          avatarColor: getAvatarColor(pkg.student.profiles?.full_name || 'Siswa'),
+        });
+      }
     }
   });
+
+  // 2. Sesi satuan mandiri (jika data student_packages tidak ada tapi siswa punya sesi aktif/pending/approved berjalan)
+  sessions.forEach(s => {
+    if (!studentMap.has(s.student_id) && s.student) {
+      const activeSessionsForStudent = sessions.filter(sess => 
+        sess.student_id === s.student_id && 
+        sess.status !== 'completed' && 
+        sess.status !== 'cancelled' && 
+        sess.status !== 'rejected'
+      );
+      const hasActiveSession = activeSessionsForStudent.length > 0;
+
+      if (hasActiveSession) {
+        studentMap.set(s.student_id, {
+          id: s.student_id,
+          name: s.student.profiles?.full_name || 'Siswa',
+          level: 'Sesi Satuan',
+          subject: s.subject,
+          sessions: activeSessionsForStudent.length,
+          nextSession: activeSessionsForStudent.find(sess => getSessionStartDateTime(sess) > new Date())?.session_date || 'Belum ada',
+          remaining: activeSessionsForStudent.length,
+          avatarColor: getAvatarColor(s.student.profiles?.full_name || 'Siswa'),
+        });
+      }
+    }
+  });
+
   const activeStudents = Array.from(studentMap.values());
 
   const tierBadge = (tier: string) => {
@@ -454,12 +526,12 @@ export function TutorDashboard() {
                 </div>
                 <div className="flex-1 min-w-0">
                    <div className="font-display text-[13px] font-bold whitespace-nowrap overflow-hidden text-ellipsis">{s.name}</div>
-                   <div className="text-[11px] text-text-sub font-mono mt-[2px]">{s.level} · {s.subject} · {s.sessions} sesi</div>
+                   <div className="text-[11px] text-text-sub font-mono mt-[2px]">{s.level} · {s.subject} · {s.sessions} sesi total</div>
                    <div className="flex items-center gap-1.5 mt-1">
                       <div className="h-[3px] bg-bg-3 w-[70px] rounded-full overflow-hidden border border-border">
-                         <div className="h-full bg-lime rounded-full" style={{ width: `${Math.round((s.remaining/8)*100)}%` }}></div>
+                         <div className="h-full bg-lime rounded-full" style={{ width: `${Math.round((s.remaining / (s.sessions || 1)) * 100)}%` }}></div>
                       </div>
-                      <span className="text-[10px] text-text-sub font-mono">{s.remaining} tersisa</span>
+                      <span className="text-[10px] text-text-sub font-mono">{s.remaining} sesi tersisa</span>
                    </div>
                 </div>
                 <div className="text-right shrink-0">

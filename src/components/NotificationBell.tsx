@@ -9,7 +9,7 @@ interface NotificationBellProps {
 }
 
 export function NotificationBell({ id = 'default' }: NotificationBellProps) {
-  const { userProfile, userRole } = useAppContext();
+  const { userProfile, userRole, setActiveTab, setTargetSessionId } = useAppContext();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -81,6 +81,24 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       setUnreadCount(0);
     } catch(e) { console.error(e); }
+  };
+
+  const handleNotificationClick = async (n: any) => {
+    if (!n.is_read) {
+      await markAsRead(n.id);
+    }
+    if (n.link) {
+      if (n.link.includes(':')) {
+        const parts = n.link.split(':');
+        const tab = parts[0];
+        const targetSid = parts[1];
+        setTargetSessionId(targetSid);
+        setActiveTab(tab);
+      } else {
+        setActiveTab(n.link);
+      }
+    }
+    setIsOpen(false);
   };
 
   const toggleOpen = (e: React.MouseEvent) => {
@@ -169,7 +187,7 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
                 notifications.map((n) => (
                   <div 
                     key={n.id} 
-                    onClick={() => { if(!n.is_read) markAsRead(n.id); }}
+                    onClick={() => handleNotificationClick(n)}
                     className={`p-3 border-b border-border last:border-b-0 cursor-pointer hover:bg-bg-2 transition-colors rounded-xl mb-1 ${n.is_read ? 'opacity-70' : 'bg-lime/5 border-l-2 border-l-lime'}`}
                   >
                     <div className="flex gap-2">

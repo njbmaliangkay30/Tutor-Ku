@@ -11,7 +11,7 @@ export function TutorSessions() {
   const [sessions, setSessions] = useState<any[]>([]);
   const [sessionReports, setSessionReports] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
-  const { userProfile, user } = useAppContext();
+  const { userProfile, user, targetSessionId, setTargetSessionId } = useAppContext();
 
   // Report Form State
   const [reportText, setReportText] = useState("");
@@ -105,6 +105,7 @@ export function TutorSessions() {
   const upcoming = sessions.filter(s => s.status === 'confirmed' && getSessionEndDateTime(s) >= now);
   const pendingReviews = sessions.filter(s => s.status === 'confirmed' && getSessionEndDateTime(s) < now && !sessionReports.has(s.id));
   const waitingForStudent = sessions.filter(s => s.status === 'waiting_for_student');
+  const targetSession = targetSessionId ? sessions.find(s => s.id === targetSessionId) : null;
 
   const updateSessionStatus = async (sessionId: string, newStatus: string, studentId: string) => {
     try {
@@ -122,7 +123,7 @@ export function TutorSessions() {
         message: newStatus === 'confirmed' 
           ? "Tutor telah menyetujui jadwal sesi kamu. Sampai jumpa di kelas!"
           : "Maaf, tutor tidak dapat memenuhi permintaan sesi kamu pada waktu tersebut.",
-        link: "sessions"
+        link: "student_sessions"
       });
       
       fetchSessions();
@@ -385,10 +386,23 @@ export function TutorSessions() {
                               <Video size={16} /> Buka Link Meeting
                             </a>
                           ) : (
-                            <button onClick={() => {
+                            <button onClick={async () => {
                               const link = prompt('Masukkan Link Meeting (Zoom/GMeet):');
                               if (link) {
-                                supabase.from('sessions').update({ meeting_link: link }).eq('id', session.id).then(() => fetchSessions());
+                                try {
+                                  await supabase.from('sessions').update({ meeting_link: link }).eq('id', session.id);
+                                  // Notify Student
+                                  await supabase.from('notifications').insert({
+                                    user_id: session.student_id,
+                                    title: "Link Kelas Sudah Siap!",
+                                    message: `Tutor ${userProfile?.full_name || 'kamu'} telah menyertakan link meeting untuk kelas ${session.subject} pada ${new Date(session.session_date).toLocaleDateString('id-ID')}.`,
+                                    link: "student_sessions"
+                                  });
+                                  fetchSessions();
+                                } catch (err) {
+                                  console.error('Error adding meeting link and notification:', err);
+                                  fetchSessions();
+                                }
                               }
                             }} className="flex-1 bg-bg-2 border border-lime text-lime font-bold py-2.5 rounded-lg text-sm hover:bg-lime/10 transition-colors flex items-center justify-center gap-2">
                               <Video size={16} /> Tambah Link Meeting
@@ -491,6 +505,120 @@ export function TutorSessions() {
                 {isSubmittingReport ? <Loader2 size={16} className="animate-spin" /> : null}
                 {isSubmittingReport ? "Mengirim..." : "Kirim Laporan"}
               </button>
+            </div>
+          </div>
+        </div>, document.body
+      )}
+
+      {targetSession && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>
+          <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center p-4 border-b-[1.5px] border-border bg-bg-2">
+              <div className="font-display font-bold text-[16px]">
+                Detail Permintaan Sesi
+              </div>
+              <button
+                onClick={() => setTargetSessionId(null)}
+                className="text-text-sub hover:text-text-main"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-5 flex-1 overflow-y-auto">
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center font-bold font-display text-white opacity-80 text-lg"
+                  style={{ background: getAvatarColor(targetSession.student_profiles?.profiles?.full_name || 'Siswa') }}
+                >
+                  {(targetSession.student_profiles?.profiles?.full_name || 'S').substring(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <div className="font-bold text-text-main font-display text-lg leading-snug">
+                    {targetSession.student_profiles?.profiles?.full_name || 'Siswa'}
+                  </div>
+                  <div className="text-xs text-text-sub font-mono uppercase tracking-wider">
+                    {targetSession.subject}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-bg-2 rounded-xl p-4 space-y-3 border border-border/80 mb-6">
+                <div className="flex items-center gap-2.5 text-sm text-text-main">
+                  <Calendar size={18} className="text-lime" />
+                  <div>
+                    <span className="block text-[10px] text-text-sub font-mono uppercase">Tanggal</span>
+                    <span className="font-bold">{new Date(targetSession.session_date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5 text-sm text-text-main border-t border-border/40 pt-2.5">
+                  <Clock size={18} className="text-lime" />
+                  <div>
+                    <span className="block text-[10px] text-text-sub font-mono uppercase">Waktu</span>
+                    <span className="font-bold">{formatTime(targetSession.start_time)} - {formatTime(targetSession.end_time)}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5 text-sm text-text-main border-t border-border/40 pt-2.5">
+                  <span className="text-lg leading-none select-none">📍</span>
+                  <div>
+                    <span className="block text-[10px] text-text-sub font-mono uppercase">Jenis Pertemuan</span>
+                    <span className="font-bold capitalize">{targetSession.meeting_type === 'offline' ? `Offline (${targetSession.location || 'Lokasi n/a'})` : 'Online'}</span>
+                  </div>
+                </div>
+                {targetSession.material_notes && (
+                  <div className="border-t border-border/40 pt-2.5">
+                    <span className="block text-[10px] text-text-sub font-mono uppercase pb-1">Catatan Siswa</span>
+                    <p className="text-xs text-text-sub italic bg-card/50 p-2.5 rounded-lg border border-border/30">
+                      "{targetSession.material_notes}"
+                    </p>
+                  </div>
+                )}
+                <div className="border-t border-border/40 pt-2.5 flex items-center justify-between">
+                  <span className="text-[10px] text-text-sub font-mono uppercase">Status Saat Ini</span>
+                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded font-mono uppercase tracking-wider ${
+                    targetSession.status === 'pending' ? 'bg-amber-500/15 text-amber-500 border border-amber-500/30' :
+                    targetSession.status === 'confirmed' ? 'bg-lime/10 text-lime border border-lime/30' :
+                    'bg-zinc-500/15 text-text-sub border border-zinc-500/30'
+                  }`}>
+                    {targetSession.status}
+                  </span>
+                </div>
+              </div>
+
+              {targetSession.status === 'pending' ? (
+                <div className="space-y-3">
+                  <div className="text-center text-xs text-text-sub font-medium px-4 mb-2">
+                    Apakah Anda ingin menyetujui jadwal sesi kelas ini?
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={async () => {
+                        await updateSessionStatus(targetSession.id, 'confirmed', targetSession.student_id);
+                        setTargetSessionId(null);
+                      }}
+                      className="flex-1 bg-lime text-black font-bold py-3 rounded-xl text-sm hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                    >
+                      ✓ Setuju Sesi
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await updateSessionStatus(targetSession.id, 'rejected', targetSession.student_id);
+                        setTargetSessionId(null);
+                      }}
+                      className="flex-1 bg-bg-3 border border-border text-red-500 font-bold py-3 rounded-xl text-sm hover:bg-bg-2 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                    >
+                      ✗ Tolak Sesi
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setTargetSessionId(null)}
+                  className="w-full bg-lime text-black font-bold py-3 rounded-xl text-sm hover:opacity-90 transition-all"
+                >
+                  Tutup
+                </button>
+              )}
             </div>
           </div>
         </div>, document.body
