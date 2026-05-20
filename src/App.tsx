@@ -558,88 +558,154 @@ export default function App() {
           </div>
 
       {/* Bottom Nav (Mobile Only) */}
-          <nav className="flex md:hidden h-[72px] bg-bg-2/95 backdrop-blur-2xl border-t border-border/60 pt-2 shrink-0 relative z-50 overflow-x-auto custom-scrollbar pb-[14px] shadow-[0_-10px_30px_rgba(0,0,0,0.08)] items-center gap-2 px-4 sticky bottom-0">
+          <nav className="flex md:hidden h-[72px] bg-bg-2/95 backdrop-blur-2xl border-t border-border/60 pt-2 shrink-0 relative z-50 overflow-x-auto overflow-y-hidden no-scrollbar pb-[14px] shadow-[0_-10px_30px_rgba(0,0,0,0.08)] items-center gap-2 px-4 sticky bottom-0">
             {userRole === "tutor" ? (
               <>
                 <button
                   onClick={() => setActiveTab("home")}
-                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "home" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "home" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <Home size={19} />
+                    <Home size={22} />
                   </span>
-                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100" : "opacity-70"}`}>Dash</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Dash</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("schedule")}
-                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "schedule" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "schedule" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "schedule" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "schedule" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <Calendar size={19} />
+                    <Calendar size={22} />
                   </span>
-                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "schedule" ? "opacity-100" : "opacity-70"}`}>Jadwal</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "schedule" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Jadwal</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("sessions")}
-                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "sessions" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "sessions" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <BookOpen size={19} />
+                    <BookOpen size={22} />
                   </span>
-                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "sessions" ? "opacity-100" : "opacity-70"}`}>Sesi</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "sessions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Sesi</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("history")}
-                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "history" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "history" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "history" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "history" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <Clock size={19} />
+                    <Clock size={22} />
                   </span>
-                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "history" ? "opacity-100" : "opacity-70"}`}>History</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "history" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>History</span>
                 </button>
               </>
             ) : userRole === "admin" ? (
               <>
                 <button
                   onClick={() => setActiveTab("home")}
-                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "home" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "home" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <Home size={19} />
+                    <Home size={22} />
                   </span>
-                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100" : "opacity-70"}`}>Info</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Info</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("admin-tutors")}
-                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "admin-tutors" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-tutors" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-tutors" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-tutors" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <BookOpen size={19} />
+                    <BookOpen size={22} />
                   </span>
-                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-tutors" ? "opacity-100" : "opacity-70"}`}>Tutor</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-tutors" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Tutor</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("admin-verifications")}
-                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all min-w-[64px] ${activeTab === "admin-verifications" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-verifications" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-11 h-7 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-verifications" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-verifications" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
-                    <ShieldCheck size={19} />
+                    <ShieldCheck size={22} />
                   </span>
-                  <span className={`text-[9px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-verifications" ? "opacity-100" : "opacity-70"}`}>Verif</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-verifications" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Verif</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("admin-rate-requests")}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-rate-requests" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
+                >
+                  <span
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-rate-requests" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                  >
+                    <DollarSign size={22} />
+                  </span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-rate-requests" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Harga</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("admin-students")}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-students" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
+                >
+                  <span
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-students" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                  >
+                    <Users size={22} />
+                  </span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-students" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Siswa</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("admin-sessions")}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-sessions" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
+                >
+                  <span
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                  >
+                    <Calendar size={22} />
+                  </span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-sessions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Sesi</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("admin-transactions")}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-transactions" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
+                >
+                  <span
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-transactions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                  >
+                    <CreditCard size={22} />
+                  </span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-transactions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Bayar</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("admin-packages")}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-packages" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
+                >
+                  <span
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-packages" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                  >
+                    <Package size={22} />
+                  </span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-packages" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Paket</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("admin-reviews")}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-reviews" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
+                >
+                  <span
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-reviews" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                  >
+                    <Star size={22} />
+                  </span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-reviews" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Ulasan</span>
                 </button>
               </>
             ) : (
@@ -653,7 +719,7 @@ export default function App() {
                   >
                     <Search size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" || activeTab === "search" ? "opacity-100" : "opacity-70"}`}>Explore</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" || activeTab === "search" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Explore</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("student_sessions")}
@@ -664,7 +730,7 @@ export default function App() {
                   >
                     <Calendar size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "student_sessions" ? "opacity-100" : "opacity-70"}`}>Sesi</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "student_sessions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Sesi</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("progress")}
@@ -675,13 +741,13 @@ export default function App() {
                   >
                     <Activity size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "progress" ? "opacity-100" : "opacity-70"}`}>Progres</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "progress" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Progres</span>
                 </button>
               </>
             )}
             <button
               onClick={() => setActiveTab(user ? "profile" : "login")}
-              className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "login" || activeTab === "profile" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
+              className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all ${userRole === "admin" ? "shrink-0 min-w-[72px]" : "flex-1 min-w-[70px]"} ${activeTab === "login" || activeTab === "profile" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
             >
               <span
                 className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "login" || activeTab === "profile" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
@@ -703,7 +769,7 @@ export default function App() {
                   )
                 )}
               </span>
-              <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "login" ? "opacity-100" : "opacity-70"}`}>Profil</span>
+              <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "login" || activeTab === "profile" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Profil</span>
             </button>
           </nav>
 

@@ -67,14 +67,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setIsLoadingTutors(true);
       const { data, error } = await supabase.from("tutor_profiles").select(`
           *,
-          profiles(full_name, avatar_url),
+          profiles(full_name, avatar_url, gender),
           tutor_subjects(subject_name)
         `);
 
       if (error) throw error;
 
-      const mapped = (data || []).map((t) => {
+      const mapped = (data || []).map((t: any) => {
         const tags = t.target_subjects || (t.tutor_subjects ? t.tutor_subjects.map((s: any) => s.subject_name) : []);
+        const resolvedGender = t.profiles?.gender || t.gender;
         return {
           id: t.id,
           name: t.profiles?.full_name || "Tutor",
@@ -85,11 +86,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           major: tags[0] || "Umum",
           rating: Number(t.rating) || 0,
           sessions: t.total_reviews || 0,
-          gender: t.gender,
-          genderCode: t.gender,
-          genderIcon: t.gender === "P" || t.gender === "F" ? "♀" : "♂",
+          gender: resolvedGender === "P" || resolvedGender === "F" ? "Perempuan" : resolvedGender === "L" || resolvedGender === "M" ? "Laki-laki" : resolvedGender,
+          genderCode: resolvedGender === "P" || resolvedGender === "F" ? "F" : "M",
+          genderIcon: resolvedGender === "P" || resolvedGender === "F" ? "♀" : "♂",
           genderClass:
-            t.gender === "P" || t.gender === "F"
+            resolvedGender === "P" || resolvedGender === "F"
               ? "bg-[rgba(255,80,160,0.1)] text-[#FF50A0] border-[rgba(255,80,160,0.25)]"
               : "bg-[rgba(80,160,255,0.1)] text-[#50A0FF] border-[rgba(80,160,255,0.25)]",
           online: true,

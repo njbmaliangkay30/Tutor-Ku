@@ -175,107 +175,218 @@ export function AdminDashboard() {
           {error}
         </div>
       ) : (
-        <div className="bg-bg-2 border border-border rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-bg-3/50 text-xs text-text-sub font-bold uppercase tracking-wider">
-                  <th className="p-4 font-mono">Tutor</th>
-                  <th className="p-4 font-mono">Pengalaman & Prestasi</th>
-                  <th className="p-4 font-mono">Status</th>
-                  <th className="p-4 font-mono">Dokumen</th>
-                  <th className="p-4 font-mono">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {verifications.map((item) => (
-                  <tr key={item.id} className="hover:bg-bg-3/30 transition-colors">
-                      <td className="p-4">
-                        <div className="font-bold text-text-main">{item.nama || 'Tanpa Nama'}</div>
-                        <div className="text-xs text-text-muted mt-1 font-mono break-all">{item.tutor_id}</div>
-                        {item.user_profiles?.phone && (
-                           <div className="text-xs text-text-muted mt-1 font-mono break-all">WA: {item.user_profiles.phone}</div>
-                        )}
-                      </td>
-                      <td className="p-4 text-sm text-text-sub">
-                        {item.pengalaman_mengajar && <p className="text-xs line-clamp-2" title={item.pengalaman_mengajar}>{item.pengalaman_mengajar}</p>}
-                        {item.achievements && <p className="text-xs text-lime mt-1 line-clamp-1" title={item.achievements}>🏆 {item.achievements}</p>}
-                      </td>
-                      <td className="p-4">
-                        {item.status === 'pending' && <span className="inline-flex items-center gap-1.5 bg-yellow-500/10 text-yellow-500 text-xs font-bold px-2 py-1 rounded-md"><Clock size={14}/> Menunggu Review</span>}
-                        {item.status === 'interview' && <span className="inline-flex items-center gap-1.5 bg-blue-500/10 text-blue-500 text-xs font-bold px-2 py-1 rounded-md"><MessageCircle size={14}/> Tahap Interview</span>}
-                        {item.status === 'approved' && <span className="inline-flex items-center gap-1.5 bg-lime/10 text-lime text-xs font-bold px-2 py-1 rounded-md"><CheckCircle size={14}/> Disetujui</span>}
-                        {item.status === 'rejected' && <span className="inline-flex items-center gap-1.5 bg-red-500/10 text-red-500 text-xs font-bold px-2 py-1 rounded-md"><XCircle size={14}/> Ditolak</span>}
-                      </td>
-                      <td className="p-4 text-sm font-mono flex flex-wrap gap-3">
-                        <DocumentPreview url={item.ktp_url} title="KTP" />
-                        <DocumentPreview url={item.ijazah_url} title="Ijazah" />
-                        {item.supporting_docs_url?.[0] && <DocumentPreview url={item.supporting_docs_url[0]} title="Pendukung" />}
-                      </td>
-                      <td className="p-4">
-                        {item.status === 'pending' && (
-                          <div className="flex flex-col gap-2 w-max">
-                            <button 
-                              onClick={() => handleUpdateStatus(item.id, 'interview', item.tutor_id)}
-                              className="bg-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-md hover:bg-blue-600 transition-colors"
-                            >
-                              Jadwalkan Interview
-                            </button>
-                            <button 
-                              onClick={() => handleUpdateStatus(item.id, 'rejected', item.tutor_id)}
-                              className="bg-transparent border border-red-500/50 text-red-500 font-bold text-xs px-3 py-1.5 rounded-md hover:bg-red-500/10 transition-colors"
-                            >
-                              Tolak Langsung
-                            </button>
-                          </div>
-                        )}
+        <>
+          {/* Desktop Table View */}
+          <div className="bg-bg-2 border border-border rounded-2xl overflow-hidden hidden md:block">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border bg-bg-3/50 text-xs text-text-sub font-bold uppercase tracking-wider">
+                    <th className="p-4 font-mono">Tutor</th>
+                    <th className="p-4 font-mono">Pengalaman & Prestasi</th>
+                    <th className="p-4 font-mono">Status</th>
+                    <th className="p-4 font-mono">Dokumen</th>
+                    <th className="p-4 font-mono">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {verifications.map((item) => (
+                    <tr key={item.id} className="hover:bg-bg-3/30 transition-colors">
+                        <td className="p-4">
+                          <div className="font-bold text-text-main">{item.nama || 'Tanpa Nama'}</div>
+                          <div className="text-xs text-text-muted mt-1 font-mono break-all">{item.tutor_id}</div>
+                          {item.user_profiles?.phone && (
+                             <div className="text-xs text-text-muted mt-1 font-mono break-all">WA: {item.user_profiles.phone}</div>
+                          )}
+                        </td>
+                        <td className="p-4 text-sm text-text-sub">
+                          {item.pengalaman_mengajar && <p className="text-xs line-clamp-2" title={item.pengalaman_mengajar}>{item.pengalaman_mengajar}</p>}
+                          {item.achievements && <p className="text-xs text-lime mt-1 line-clamp-1" title={item.achievements}>🏆 {item.achievements}</p>}
+                        </td>
+                        <td className="p-4">
+                          {item.status === 'pending' && <span className="inline-flex items-center gap-1.5 bg-yellow-500/10 text-yellow-500 text-xs font-bold px-2 py-1 rounded-md"><Clock size={14}/> Menunggu Review</span>}
+                          {item.status === 'interview' && <span className="inline-flex items-center gap-1.5 bg-blue-500/10 text-blue-500 text-xs font-bold px-2 py-1 rounded-md"><MessageCircle size={14}/> Tahap Interview</span>}
+                          {item.status === 'approved' && <span className="inline-flex items-center gap-1.5 bg-lime/10 text-lime text-xs font-bold px-2 py-1 rounded-md"><CheckCircle size={14}/> Disetujui</span>}
+                          {item.status === 'rejected' && <span className="inline-flex items-center gap-1.5 bg-red-500/10 text-red-500 text-xs font-bold px-2 py-1 rounded-md"><XCircle size={14}/> Ditolak</span>}
+                        </td>
+                        <td className="p-4 text-sm font-mono flex flex-wrap gap-3">
+                          <DocumentPreview url={item.ktp_url} title="KTP" />
+                          <DocumentPreview url={item.ijazah_url} title="Ijazah" />
+                          {item.supporting_docs_url?.[0] && <DocumentPreview url={item.supporting_docs_url[0]} title="Pendukung" />}
+                        </td>
+                        <td className="p-4">
+                          {item.status === 'pending' && (
+                            <div className="flex flex-col gap-2 w-max">
+                              <button 
+                                onClick={() => handleUpdateStatus(item.id, 'interview', item.tutor_id)}
+                                className="bg-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-md hover:bg-blue-600 transition-colors cursor-pointer"
+                              >
+                                Jadwalkan Interview
+                              </button>
+                              <button 
+                                onClick={() => handleUpdateStatus(item.id, 'rejected', item.tutor_id)}
+                                className="bg-transparent border border-red-500/50 text-red-500 font-bold text-xs px-3 py-1.5 rounded-md hover:bg-red-500/10 transition-colors cursor-pointer"
+                              >
+                                Tolak Langsung
+                              </button>
+                            </div>
+                          )}
 
-                        {item.status === 'interview' && (
-                          <div className="flex flex-col gap-2 w-max">
+                          {item.status === 'interview' && (
+                            <div className="flex flex-col gap-2 w-max">
+                              {item.user_profiles?.phone ? (
+                                <a 
+                                  href={getWhatsAppUrl(item.user_profiles.phone)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="bg-green-500 text-white font-bold text-xs px-3 py-1.5 rounded-md hover:bg-green-600 transition-colors flex items-center gap-1 justify-center"
+                                >
+                                   <MessageCircle size={12}/> Hubungi WA
+                                </a>
+                              ) : (
+                                <span className="text-xs text-red-500">No WA tidak ada</span>
+                              )}
+                              <button 
+                                onClick={() => handleUpdateStatus(item.id, 'approved', item.tutor_id)}
+                                className="bg-lime text-black font-bold text-xs px-3 py-1.5 rounded-md hover:bg-lime-mid transition-colors mt-2 cursor-pointer"
+                              >
+                                Lulus & Setujui
+                              </button>
+                              <button 
+                                onClick={() => handleUpdateStatus(item.id, 'rejected', item.tutor_id)}
+                                className="bg-transparent border border-red-500/50 text-red-500 font-bold text-xs px-3 py-1.5 rounded-md hover:bg-red-500/10 transition-colors cursor-pointer"
+                              >
+                                Tolak
+                              </button>
+                            </div>
+                          )}
+
+                        {(item.status === 'approved' || item.status === 'rejected') && (
+                          <span className="text-text-muted text-xs font-mono">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {verifications.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-text-sub font-mono">
+                        Belum ada pendaftaran tutor.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile Optimized Cards List View */}
+          <div className="block md:hidden space-y-4 pb-20">
+            {verifications.length === 0 ? (
+              <div className="bg-card border border-border rounded-xl p-8 text-center text-text-sub font-mono text-sm shadow-sm">
+                Belum ada pendaftaran tutor.
+              </div>
+            ) : (
+              verifications.map((item) => (
+                <div key={item.id} className="bg-card border border-border rounded-2xl p-4 space-y-3.5 shadow-sm hover:border-border-2 transition-all">
+                  <div className="flex justify-between items-start gap-2">
+                    <div>
+                      <div className="font-bold text-text-main text-base leading-snug">{item.nama || 'Tanpa Nama'}</div>
+                      <div className="text-[11px] text-text-muted font-mono mt-0.5 break-all">{item.tutor_id}</div>
+                      {item.user_profiles?.phone && (
+                        <div className="text-[11px] text-text-sub font-mono mt-0.5">WA: {item.user_profiles.phone}</div>
+                      )}
+                    </div>
+                    <div className="shrink-0">
+                      {item.status === 'pending' && <span className="inline-flex items-center gap-1 bg-yellow-500/10 text-yellow-500 text-[10px] font-bold px-2.5 py-1 rounded-full"><Clock size={12}/> Pending</span>}
+                      {item.status === 'interview' && <span className="inline-flex items-center gap-1 bg-blue-500/10 text-blue-500 text-[10px] font-bold px-2.5 py-1 rounded-full"><MessageCircle size={12}/> Interview</span>}
+                      {item.status === 'approved' && <span className="inline-flex items-center gap-1 bg-lime/10 text-lime text-[10px] font-bold px-2.5 py-1 rounded-full"><CheckCircle size={12}/> Disetujui</span>}
+                      {item.status === 'rejected' && <span className="inline-flex items-center gap-1 bg-red-500/10 text-red-500 text-[10px] font-bold px-2.5 py-1 rounded-full"><XCircle size={12}/> Ditolak</span>}
+                    </div>
+                  </div>
+
+                  {item.pengalaman_mengajar && (
+                    <div className="text-xs text-text-sub bg-bg-2/50 p-3 rounded-xl border border-border/50">
+                      <span className="font-mono text-[9px] uppercase font-bold tracking-wider text-text-muted block mb-1">Pengalaman Mengajar</span>
+                      <p className="leading-relaxed">{item.pengalaman_mengajar}</p>
+                    </div>
+                  )}
+
+                  {item.achievements && (
+                    <div className="text-xs text-lime bg-lime-mid/10 p-2.5 rounded-xl border border-lime/20 flex gap-1.5 items-center">
+                      <span>🏆</span>
+                      <span className="font-bold">{item.achievements}</span>
+                    </div>
+                  )}
+
+                  <div className="space-y-1 bg-bg-3/25 p-2.5 rounded-xl border border-border/40">
+                    <span className="font-mono text-[9px] uppercase font-bold tracking-wider text-text-muted block mb-1.5">Berkas & Dokumen Dokumen</span>
+                    <div className="flex flex-wrap gap-2">
+                      <DocumentPreview url={item.ktp_url} title="KTP" />
+                      <DocumentPreview url={item.ijazah_url} title="Ijazah" />
+                      {item.supporting_docs_url?.[0] && <DocumentPreview url={item.supporting_docs_url[0]} title="Pendukung" />}
+                    </div>
+                  </div>
+
+                  {/* Actions Row */}
+                  {(item.status === 'pending' || item.status === 'interview') && (
+                    <div className="flex gap-2 pt-2 border-t border-border/50">
+                      {item.status === 'pending' && (
+                        <>
+                          <button 
+                            onClick={() => handleUpdateStatus(item.id, 'rejected', item.tutor_id)}
+                            className="flex-1 bg-transparent border border-red-500/30 text-red-500 font-bold text-xs py-2.5 rounded-lg hover:bg-red-500/10 transition-all cursor-pointer text-center"
+                          >
+                            Tolak
+                          </button>
+                          <button 
+                            onClick={() => handleUpdateStatus(item.id, 'interview', item.tutor_id)}
+                            className="flex-1 bg-blue-500 text-white font-bold text-xs py-2.5 rounded-lg hover:bg-blue-600 transition-all cursor-pointer text-center"
+                          >
+                            Interview
+                          </button>
+                        </>
+                      )}
+
+                      {item.status === 'interview' && (
+                        <div className="flex flex-col gap-2 w-full">
+                          <div className="flex gap-2">
                             {item.user_profiles?.phone ? (
                               <a 
                                 href={getWhatsAppUrl(item.user_profiles.phone)}
                                 target="_blank"
-                                rel="noopener noreferrer"
-                                className="bg-green-500 text-white font-bold text-xs px-3 py-1.5 rounded-md hover:bg-green-600 transition-colors flex items-center gap-1 justify-center"
+                                  rel="noopener noreferrer"
+                                className="flex-1 bg-green-500 text-white font-bold text-xs py-2.5 rounded-lg hover:bg-green-600 transition-all flex items-center gap-1.5 justify-center font-mono cursor-pointer"
                               >
-                                 <MessageCircle size={12}/> Hubungi WA
+                                <MessageCircle size={14}/> Hubungi Chat WA
                               </a>
                             ) : (
-                              <span className="text-xs text-red-500">No WA tidak ada</span>
+                              <span className="flex-1 text-center py-2.5 text-xs text-red-500 font-mono italic bg-red-500/5 rounded-lg border border-red-500/10">No WA N/A</span>
                             )}
-                            <button 
-                              onClick={() => handleUpdateStatus(item.id, 'approved', item.tutor_id)}
-                              className="bg-lime text-black font-bold text-xs px-3 py-1.5 rounded-md hover:bg-lime-mid transition-colors mt-2"
-                            >
-                              Lulus & Setujui
-                            </button>
+                          </div>
+                          
+                          <div className="flex gap-2">
                             <button 
                               onClick={() => handleUpdateStatus(item.id, 'rejected', item.tutor_id)}
-                              className="bg-transparent border border-red-500/50 text-red-500 font-bold text-xs px-3 py-1.5 rounded-md hover:bg-red-500/10 transition-colors"
+                              className="flex-1 bg-transparent border border-red-500/30 text-red-500 font-bold text-xs py-2 rounded-lg hover:bg-red-500/10 transition-all cursor-pointer text-center"
                             >
                               Tolak
                             </button>
+                            <button 
+                              onClick={() => handleUpdateStatus(item.id, 'approved', item.tutor_id)}
+                              className="flex-1 bg-lime text-black font-bold text-xs py-2 rounded-lg hover:bg-lime-mid transition-all cursor-pointer text-center font-bold"
+                            >
+                              Lulus & Setuju
+                            </button>
                           </div>
-                        )}
-
-                      {(item.status === 'approved' || item.status === 'rejected') && (
-                        <span className="text-text-muted text-xs font-mono">-</span>
+                        </div>
                       )}
-                    </td>
-                  </tr>
-                ))}
-                {verifications.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-text-sub font-mono">
-                      Belum ada pendaftaran tutor.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
-        </div>
+        </>
       )}
     </div>
   );

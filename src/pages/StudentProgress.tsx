@@ -106,7 +106,7 @@ export function StudentProgress() {
   }
 
   return (
-    <div className="p-4 md:p-8 animate-pgIn max-w-4xl mx-auto w-full">
+    <div className="p-4 md:p-8 animate-pgIn max-w-4xl mx-auto w-full pb-24">
       <div className="mb-6">
         <h1 className="text-2xl font-bold font-display text-text-main">Progressku</h1>
         <p className="text-sm text-text-sub">Pantau perkembangan belajarmu dari waktu ke waktu.</p>

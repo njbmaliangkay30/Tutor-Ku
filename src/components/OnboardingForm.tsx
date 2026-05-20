@@ -9,6 +9,7 @@ export function OnboardingForm() {
   
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [gender, setGender] = useState("");
   const [bio, setBio] = useState("");
   const [address, setAddress] = useState("");
   const [university, setUniversity] = useState("");
@@ -48,6 +49,7 @@ export function OnboardingForm() {
     if (userProfile) {
       if (userProfile.full_name) setFullName(userProfile.full_name);
       if (userProfile.phone) setPhoneNumber(userProfile.phone);
+      if (userProfile.gender) setGender(userProfile.gender);
     }
   }, [userProfile]);
 
@@ -64,6 +66,7 @@ export function OnboardingForm() {
         id: user.id,
         full_name: fullName,
         phone: phoneNumber,
+        gender: gender || null,
       });
 
       if (profileError) throw profileError;
@@ -159,6 +162,22 @@ export function OnboardingForm() {
                   className="w-full bg-bg-3 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all"
                   placeholder="Contoh: 081234567890"
                 />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">
+                  Jenis Kelamin
+                </label>
+                <select 
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  required
+                  className="w-full bg-bg-3 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all appearance-none"
+                >
+                  <option value="">Pilih Jenis Kelamin</option>
+                  <option value="L">Laki-laki</option>
+                  <option value="P">Perempuan</option>
+                </select>
               </div>
 
             {userRole === "tutor" && (
@@ -280,7 +299,7 @@ export function OnboardingForm() {
 
             <button 
               type="submit"
-              disabled={isLoading || !fullName.trim() || !phoneNumber.trim() || (userRole === "tutor" && !bio.trim())}
+              disabled={isLoading || !fullName.trim() || !phoneNumber.trim() || !gender || (userRole === "tutor" && !bio.trim())}
               className="mt-4 px-6 py-3.5 rounded-xl bg-lime hover:bg-lime-hover text-black font-bold text-[14px] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group w-full"
             >
               {isLoading ? (

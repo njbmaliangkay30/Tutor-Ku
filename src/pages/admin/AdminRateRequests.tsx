@@ -69,7 +69,7 @@ export function AdminRateRequests() {
         <p className="text-text-sub font-mono text-sm">Persetujuan perubahan harga per jam tutor</p>
       </div>
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden mt-6">
+      <div className="bg-card border border-border rounded-xl overflow-hidden mt-6 hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
@@ -125,13 +125,13 @@ export function AdminRateRequests() {
                         <div className="flex justify-end gap-2">
                            <button 
                              onClick={() => handleUpdateStatus(item.id, 'rejected', item.tutor_id, item.requested_rate)}
-                             className="bg-bg-2 text-red-500 border border-border text-xs px-3 py-1.5 rounded-md hover:bg-bg-3 transition-colors font-mono font-bold"
+                             className="bg-bg-2 text-red-500 border border-border text-xs px-3 py-1.5 rounded-md hover:bg-bg-3 transition-colors font-mono font-bold text-center cursor-pointer"
                            >
                              Tolak
                            </button>
                            <button 
                              onClick={() => handleUpdateStatus(item.id, 'approved', item.tutor_id, item.requested_rate)}
-                             className="bg-lime text-black font-bold text-xs px-3 py-1.5 rounded-md hover:bg-lime-mid transition-colors font-mono"
+                             className="bg-lime text-black font-bold text-xs px-3 py-1.5 rounded-md hover:bg-lime-mid transition-colors font-mono text-center cursor-pointer"
                            >
                              Setujui
                            </button>
@@ -144,6 +144,72 @@ export function AdminRateRequests() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Mobile-optmized visual card list */}
+      <div className="block md:hidden space-y-4">
+        {requests.length === 0 ? (
+          <div className="bg-card border border-border rounded-xl p-8 text-center text-text-muted font-mono text-sm shadow-sm">
+            Tidak ada pengajuan yang ditemukan.
+          </div>
+        ) : (
+          requests.map((item) => (
+            <div key={item.id} className="bg-card border border-border rounded-xl p-4 gap-3.5 flex flex-col hover:border-border-2 transition-all shadow-sm">
+              <div className="flex justify-between items-start gap-2">
+                <div>
+                  <div className="font-bold text-text-main text-base leading-snug">{item.tutor?.profiles?.full_name || 'Tanpa Nama'}</div>
+                  <div className="text-[11px] text-text-muted font-mono mt-0.5 break-all">{item.tutor_id}</div>
+                </div>
+                <div className="flex items-center gap-1 bg-bg-2 px-2.5 py-1 rounded-full border border-border/80 shrink-0">
+                  {item.status === 'pending' && <Clock size={12} className="text-warning" />}
+                  {item.status === 'approved' && <CheckCircle size={12} className="text-green-500" />}
+                  {item.status === 'rejected' && <XCircle size={12} className="text-red-500" />}
+                  <span className={`text-[10px] font-bold font-mono uppercase tracking-wider
+                    ${item.status === 'pending' ? 'text-warning' : 
+                      item.status === 'approved' ? 'text-green-500' : 'text-red-500'}`}
+                  >
+                    {item.status}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 bg-bg-2/60 p-3 rounded-xl border border-border/60 font-mono text-xs">
+                <div>
+                  <span className="text-text-muted block text-[10px] uppercase font-bold tracking-tight mb-0.5">Harga Lama</span>
+                  <span className="text-text-sub font-semibold">Rp {item.current_rate?.toLocaleString('id-ID')}/jam</span>
+                </div>
+                <div>
+                  <span className="text-text-muted block text-[10px] uppercase font-bold tracking-tight mb-0.5">Pengajuan Baru</span>
+                  <span className="text-lime font-bold">Rp {item.requested_rate?.toLocaleString('id-ID')}/jam</span>
+                </div>
+              </div>
+
+              {item.reason && (
+                <div className="bg-bg-3/30 p-2.5 rounded-lg border border-border/40">
+                  <span className="text-[10px] text-text-muted font-mono font-bold uppercase tracking-wide block mb-1">Alasan Pengubahan</span>
+                  <p className="text-xs text-text-sub italic leading-relaxed">{item.reason}</p>
+                </div>
+              )}
+
+              {item.status === 'pending' && (
+                <div className="flex gap-2 pt-2 border-t border-border/40 mt-1">
+                   <button 
+                     onClick={() => handleUpdateStatus(item.id, 'rejected', item.tutor_id, item.requested_rate)}
+                     className="flex-1 bg-transparent text-red-500 border border-border text-xs py-2.5 rounded-lg hover:bg-bg-3 active:scale-95 transition-all font-mono font-bold cursor-pointer text-center"
+                   >
+                     Tolak
+                   </button>
+                   <button 
+                     onClick={() => handleUpdateStatus(item.id, 'approved', item.tutor_id, item.requested_rate)}
+                     className="flex-1 bg-lime text-black font-bold text-xs py-2.5 rounded-lg hover:bg-lime-mid active:scale-95 transition-all font-mono cursor-pointer text-center"
+                   >
+                     Setujui
+                   </button>
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

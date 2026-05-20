@@ -262,7 +262,7 @@ export function TutorDashboard() {
 
   return (
     <div className="w-full relative h-full animate-pgIn flex flex-col items-center">
-      <div className="w-full max-w-[800px] px-4 py-4 md:py-6 relative z-10 flex flex-col pb-8">
+      <div className="w-full max-w-[800px] px-4 py-4 md:py-6 relative z-10 flex flex-col pb-24">
         
         {/* Header */}
         <div className="sticky top-0 bg-bg-base/80 backdrop-blur-md z-10 border-b-[1.5px] border-border pb-3 mb-4 pt-4 md:pt-0 -mx-4 px-4 md:mx-0 md:px-0">
