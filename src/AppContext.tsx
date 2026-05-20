@@ -229,6 +229,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     fetchTutors();
 
+    const checkAndSeedPackages = async () => {
+      try {
+        const { data, error } = await supabase.from("packages").select("id").limit(1);
+        if (!error && (!data || data.length === 0)) {
+          const defaultPkgs = [
+            { name: 'Sesi Satuan', session_count: 1, price: 65000, description: 'Booking satu sesi dulu, cocok untuk percobaan.' },
+            { name: 'Paket 4 Pertemuan', session_count: 4, price: 247000, description: '4 sesi, cocok untuk persiapan ulangan.' },
+            { name: 'Paket 8 Pertemuan', session_count: 8, price: 468000, description: 'Paket terlaris — belajar rutin, hasil lebih optimal.' },
+            { name: 'Paket 12 Pertemuan', session_count: 12, price: 686400, description: 'Untuk persiapan UTBK atau kursus intensif.' }
+          ];
+          await supabase.from("packages").insert(defaultPkgs);
+        }
+      } catch (err) {
+        console.error("Failed to seed default packages on load:", err);
+      }
+    };
+    checkAndSeedPackages();
+
     // Initial auth check
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);

@@ -18,7 +18,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 
 export function Profile() {
-  const { userRole, setUserRole, setActiveTab, user, userProfile, tutorProfileData } =
+  const { userRole, setUserRole, setActiveTab, user, userProfile, tutorProfileData, setSelectedTutorId } =
     useAppContext();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -32,6 +32,51 @@ export function Profile() {
   const [avatarObjUrl, setAvatarObjUrl] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  // Packages management states
+  const [myPackages, setMyPackages] = useState<any[]>([]);
+  const [isFetchingPkgs, setIsFetchingPkgs] = useState(false);
+  const [showPkgsModal, setShowPkgsModal] = useState(false);
+
+  useEffect(() => {
+    async function fetchMyPackages() {
+      if (!userProfile || userRole === "tutor") return;
+      setIsFetchingPkgs(true);
+      try {
+        const { data, error } = await supabase
+          .from("student_packages")
+          .select(`
+            id,
+            remaining_sessions,
+            valid_until,
+            status,
+            tutor:tutor_profiles(
+              id,
+              name,
+              university,
+              major
+            ),
+            packages(
+              name,
+              session_count,
+              description
+            )
+          `)
+          .eq("student_id", userProfile.id)
+          .gt("remaining_sessions", 0)
+          .eq("status", "active")
+          .order("valid_until", { ascending: true });
+
+        if (error) throw error;
+        setMyPackages(data || []);
+      } catch (err) {
+        console.error("Error loading student packages:", err);
+      } finally {
+        setIsFetchingPkgs(false);
+      }
+    }
+    fetchMyPackages();
+  }, [userProfile, userRole]);
 
   const [targetSubjects, setTargetSubjects] = useState<string[]>(tutorProfileData?.target_subjects || []);
   const [learningStyles, setLearningStyles] = useState<string[]>(tutorProfileData?.learning_styles || []);
@@ -356,7 +401,10 @@ export function Profile() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-4 cursor-pointer hover:bg-bg-3/50 transition-colors border-b border-border/60">
+              <div 
+                onClick={() => setShowPkgsModal(true)}
+                className="flex items-center gap-3 p-4 cursor-pointer hover:bg-bg-3/50 transition-colors border-b border-border/60"
+              >
                 <Package className="text-text-sub" size={20} />
                 <div className="flex-1 flex justify-between items-center">
                   <div>
@@ -364,11 +412,11 @@ export function Profile() {
                       Paket Aktif
                     </div>
                     <div className="text-[11px] text-text-sub">
-                      Sisa kuota sesi belajar
+                      Sisa kuota sesi belajar privat Anda
                     </div>
                   </div>
-                  <span className="bg-lime-mid text-lime text-[10px] font-bold px-2 py-0.5 rounded font-mono">
-                    4 Sesi
+                  <span className="bg-lime-mid text-lime text-[10px] font-bold px-2 py-0.5 rounded font-mono border border-lime-dim">
+                    {myPackages.reduce((sum, p) => sum + (p.remaining_sessions || 0), 0)} Sesi
                   </span>
                 </div>
               </div>
@@ -609,6 +657,103 @@ export function Profile() {
                 </button>
               </div>
            </div>
+        </div>,
+        document.body
+      )}
+
+      {showPkgsModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>
+          <div className="bg-card border border-border sm:shadow-2xl sm:rounded-2xl w-full h-full sm:h-auto sm:max-w-[480px] flex flex-col sm:max-h-[85vh] overflow-hidden relative">
+            <div className="flex items-center justify-between p-4 border-b border-border bg-bg-2">
+              <h3 className="font-display font-bold text-lg flex items-center gap-2">
+                <Package size={20} className="text-lime" /> Paket Belajar Aktif
+              </h3>
+              <button onClick={() => setShowPkgsModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-bg-2 transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-5 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4">
+              <p className="text-xs text-text-sub">
+                Paket yang telah Anda beli terikat untuk masing-masing Tutor spesifik agar perhitungan potongan harga adil dan transparan.
+              </p>
+
+              {isFetchingPkgs ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="animate-spin text-lime" size={32} />
+                </div>
+              ) : myPackages.length === 0 ? (
+                <div className="text-center py-12 px-4 border border-dashed border-border rounded-xl">
+                  <Package className="mx-auto text-text-light/50 mb-3" size={36} />
+                  <p className="text-sm font-bold text-text-main">Belum Ada Paket Aktif</p>
+                  <p className="text-xs text-text-sub mt-1">
+                    Silakan beli paket di profil Tutor pilihan Anda untuk menikmati potongan harga spesial.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setShowPkgsModal(false);
+                      setActiveTab("search");
+                    }}
+                    className="mt-4 px-4 py-2 text-xs font-bold bg-lime text-black rounded-lg hover:bg-lime-hover transition-colors"
+                  >
+                    Cari Tutor Terbaik
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3.5">
+                  {myPackages.map((pkg) => {
+                    const expiryStr = pkg.valid_until 
+                      ? new Date(pkg.valid_until).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })
+                      : "Selamanya";
+                    const tutorName = pkg.tutor?.name || "Tutor Kita";
+
+                    return (
+                      <div key={pkg.id} className="bg-card-2 border-[1.5px] border-border rounded-xl p-4 flex flex-col gap-3 relative overflow-hidden">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="text-xs text-text-sub font-mono font-semibold uppercase tracking-wider text-lime">
+                              {pkg.packages?.name || "Paket Belajar"}
+                            </div>
+                            <div className="font-display text-[15px] font-bold text-text-main mt-0.5">
+                              Tutor: {tutorName}
+                            </div>
+                            <div className="text-[11px] text-text-sub">
+                              {pkg.tutor?.university} • {pkg.tutor?.major}
+                            </div>
+                          </div>
+                          <span className="bg-lime text-black text-[12px] font-bold px-2.5 py-1 rounded-lg font-mono">
+                            {pkg.remaining_sessions} Sesi Sisa
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-text-light font-mono pt-2 border-t border-border/65">
+                          <span>Berlaku s/d: {expiryStr}</span>
+                          <button
+                            onClick={() => {
+                              setSelectedTutorId(pkg.tutor?.id);
+                              setShowPkgsModal(false);
+                            }}
+                            className="bg-lime/10 border border-lime/30 text-lime px-3 py-1.5 rounded-lg hover:bg-lime hover:text-black font-bold transition-all"
+                          >
+                            Pesan Sesi Baru
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-border flex justify-end bg-bg-2/30">
+              <button 
+                onClick={() => setShowPkgsModal(false)}
+                className="px-5 py-2.5 rounded-lg border border-border bg-bg-3 font-bold text-[13px] hover:bg-bg-2 transition-colors w-full"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
         </div>,
         document.body
       )}

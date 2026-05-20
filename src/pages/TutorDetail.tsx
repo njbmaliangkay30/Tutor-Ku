@@ -2,7 +2,6 @@ import { ChevronLeft, Medal, Star } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useAppContext } from "../AppContext";
 import {
-  PKG_SUBSCRIPTIONS,
   DAYS,
   getTagStyle,
   getAvatarColor,
@@ -14,12 +13,44 @@ import { supabase } from "../lib/supabase";
 export function TutorDetail() {
   const { selectedTutorId, setSelectedTutorId, setActiveTab, userRole, tutors, user, userProfile } =
     useAppContext();
-  const [selectedPkg, setSelectedPkg] = useState("pkg-single");
+  const [dbPackages, setDbPackages] = useState<any[]>([]);
+  const [selectedPkg, setSelectedPkg] = useState<string>("");
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reviews, setReviews] = useState<any[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [activePackage, setActivePackage] = useState<any | null>(null);
+  const [usePackageSession, setUsePackageSession] = useState(false);
+
+  // Helper to resolve discounts and badges for UI/Financial calculations
+  const getPkgBadgeAndDiscount = (sessions: number) => {
+    if (sessions === 4) return { discount: 5, badge: "Populer" };
+    if (sessions === 8) return { discount: 10, badge: "Hemat 10%" };
+    if (sessions === 12) return { discount: 12, badge: "Best Value" };
+    return { discount: 0, badge: null };
+  };
+
+  useEffect(() => {
+    async function fetchDbPackages() {
+      try {
+        const { data, error } = await supabase
+          .from("packages")
+          .select("*")
+          .order("session_count", { ascending: true });
+
+        if (!error && data) {
+          setDbPackages(data);
+          if (data.length > 0) {
+            setSelectedPkg(data[0].id);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching packages catalog:", err);
+      }
+    }
+    fetchDbPackages();
+  }, []);
 
   // Scheduling states
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -29,6 +60,38 @@ export function TutorDetail() {
   const [selectedSubject, setSelectedSubject] = useState("");
 
   const tutor = tutors.find((t:any) => t.id === selectedTutorId);
+
+  useEffect(() => {
+    async function fetchActivePackage() {
+      if (!userProfile || !selectedTutorId) {
+        setActivePackage(null);
+        setUsePackageSession(false);
+        return;
+      }
+      try {
+        const { data, error } = await supabase
+          .from("student_packages")
+          .select("*, packages(*)")
+          .eq("student_id", userProfile.id)
+          .eq("tutor_id", selectedTutorId)
+          .eq("status", "active")
+          .gt("remaining_sessions", 0)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (data) {
+          setActivePackage(data);
+          setUsePackageSession(true);
+        } else {
+          setActivePackage(null);
+          setUsePackageSession(false);
+        }
+      } catch (err) {
+        console.error("Error loading active package:", err);
+      }
+    }
+    fetchActivePackage();
+  }, [selectedTutorId, userProfile]);
 
   useEffect(() => {
     async function fetchTutorReviews() {
@@ -94,61 +157,183 @@ export function TutorDetail() {
 
     setIsSubmitting(true);
     try {
-       const pkgInfo = PKG_SUBSCRIPTIONS.find(p => p.id === selectedPkg);
-       const sessionsCount = pkgInfo ? pkgInfo.sessions : 1;
-       
-       // Calculate end time (assuming 1h 30m duration)
-       const baseDate = new Date(selectedDate);
-       const [h, m] = selectedTime.split(':').map(Number);
+      const [h, m] = selectedTime.split(':').map(Number);
+      const startDateTime = new Date(selectedDate);
+      startDateTime.setHours(h, m, 0, 0);
 
-       const inserts = [];
-       for (let i = 0; i < sessionsCount; i++) {
-         const sDate = new Date(selectedDate);
-         sDate.setDate(sDate.getDate() + (i * 7)); // Add 7 days per subsequent session
-         
-         const startDateTime = new Date(sDate);
-         startDateTime.setHours(h, m, 0, 0);
+      const endDateTime = new Date(startDateTime);
+      endDateTime.setHours(h + 1, m + 30, 0, 0);
 
-         const endDateTime = new Date(startDateTime);
-         endDateTime.setHours(h + 1, m + 30, 0, 0);
+      const subjectName = selectedSubject || (tutor.tags?.length > 0 ? tutor.tags[0] : tutor.major);
 
-         inserts.push({
-           student_id: userProfile.id,
-           tutor_id: tutor.id,
-           subject: selectedSubject || (tutor.tags?.length > 0 ? tutor.tags[0] : tutor.major),
-           session_date: sDate.toISOString().split('T')[0], // Useful for day-based queries if needed
-           start_time: startDateTime.toISOString(),
-           end_time: endDateTime.toISOString(),
-           material_notes: i === 0 ? notes : "Sesi " + (i+1) + " dari paket (Terjadwal Otomatis)",
-           status: 'pending',
-           meeting_type: meetingType,
-           location: meetingType === 'offline' ? location : null
-         });
-       }
+      if (usePackageSession && activePackage) {
+        // BOOK USING PREPAID BUNDLE SESSION
+        if (activePackage.remaining_sessions <= 0) {
+          throw new Error("Sisa kuota sesi paket Anda sudah habis.");
+        }
 
-       const { error } = await supabase.from('sessions').insert(inserts);
+        // 1. Insert session
+        const { error: sessionError } = await supabase
+          .from("sessions")
+          .insert({
+            student_id: userProfile.id,
+            tutor_id: tutor.id,
+            subject: subjectName,
+            session_date: selectedDate.toISOString().split('T')[0],
+            start_time: startDateTime.toISOString(),
+            end_time: endDateTime.toISOString(),
+            material_notes: notes || "Sesi menggunakan kuota paket (Prepaid)",
+            status: 'pending',
+            payment_status: 'paid', // Prepaid
+            meeting_type: meetingType,
+            location: meetingType === 'offline' ? location : null
+          });
 
-       if (error) throw error;
+        if (sessionError) throw sessionError;
 
-       // Notify Tutor
-       await supabase.from('notifications').insert({
-         user_id: tutor.id,
-         title: "Sesi Baru Dipesan!",
-         message: `${userProfile.full_name} memesan ${sessionsCount} sesi untuk subjek ${inserts[0].subject}.`,
-         link: "sessions"
-       });
+        // 2. Decrement remaining sessions
+        const newCount = activePackage.remaining_sessions - 1;
+        const { error: pkgUpdateError } = await supabase
+          .from("student_packages")
+          .update({
+            remaining_sessions: newCount,
+            status: newCount === 0 ? "empty" : "active"
+          })
+          .eq("id", activePackage.id);
 
-       setBookingSuccess(true);
-       setTimeout(() => {
-         setBookingSuccess(false);
-         setSelectedTutorId(null);
-         setActiveTab("student_sessions");
-       }, 2000);
-    } catch(err) {
-       console.error("Booking error", err);
-       alert("Gagal melakukan booking. Pastikan profil Anda sudah diatur.");
+        if (pkgUpdateError) throw pkgUpdateError;
+
+        // 3. Insert free transaction
+        await supabase.from("transactions").insert({
+          user_id: user.id,
+          amount: 0,
+          transaction_type: "session_booking",
+          status: "success",
+          reference_id: `PKG-SPEND-${Date.now()}`
+        });
+
+        // 4. Notify tutor
+        await supabase.from("notifications").insert({
+          user_id: tutor.id,
+          title: "Sesi Paket Baru!",
+          message: `${userProfile.full_name} memesan 1 sesi baru menggunakan kuota paket langganan mereka untuk subjek ${subjectName}.`,
+          link: "sessions"
+        });
+
+      } else {
+        // BOOK SINGLE SESSION OR PURCHASE A NEW PACKAGE
+        const pkgInfo = dbPackages.find(p => p.id === selectedPkg);
+        const sessionsCount = pkgInfo ? pkgInfo.session_count : 1;
+        const { discount } = getPkgBadgeAndDiscount(sessionsCount);
+        const total = sessionsCount * tutor.rate * (1 - discount / 100);
+
+        if (sessionsCount === 1) {
+          // Single Session Purchase
+          const { error: sessionError } = await supabase
+            .from("sessions")
+            .insert({
+              student_id: userProfile.id,
+              tutor_id: tutor.id,
+              subject: subjectName,
+              session_date: selectedDate.toISOString().split('T')[0],
+              start_time: startDateTime.toISOString(),
+              end_time: endDateTime.toISOString(),
+              material_notes: notes || "Sesi baru",
+              status: 'pending',
+              payment_status: 'unpaid', // Typically paid later or paid on check-out
+              meeting_type: meetingType,
+              location: meetingType === 'offline' ? location : null
+            });
+
+          if (sessionError) throw sessionError;
+
+          // Transaction
+          await supabase.from("transactions").insert({
+            user_id: user.id,
+            amount: Math.round(total),
+            transaction_type: "session_booking",
+            status: "success",
+            reference_id: `SINGLE-${Date.now()}`
+          });
+
+          // Notify tutor
+          await supabase.from("notifications").insert({
+            user_id: tutor.id,
+            title: "Sesi Baru Dipesan!",
+            message: `${userProfile.full_name} memesan 1 sesi pelajaran subjek ${subjectName}.`,
+            link: "sessions"
+          });
+
+        } else {
+          // Multi-session Package Purchase
+          if (!pkgInfo) {
+            throw new Error("Gagal memperoleh ID paket langganan.");
+          }
+          const packageId = pkgInfo.id;
+
+          // 1. Create the student_packages entry (1 session used now, count - 1 remaining)
+          const { error: spError } = await supabase
+            .from("student_packages")
+            .insert({
+              student_id: userProfile.id,
+              package_id: packageId,
+              tutor_id: tutor.id,
+              remaining_sessions: sessionsCount - 1,
+              valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+              status: "active"
+            });
+
+          if (spError) throw spError;
+
+          // 2. Book the first session right now
+          const { error: sessionError } = await supabase
+            .from("sessions")
+            .insert({
+              student_id: userProfile.id,
+              tutor_id: tutor.id,
+              subject: subjectName,
+              session_date: selectedDate.toISOString().split('T')[0],
+              start_time: startDateTime.toISOString(),
+              end_time: endDateTime.toISOString(),
+              material_notes: notes || `Sesi 1 dari Paket (${pkgInfo.name}) (Telah Dipesan)`,
+              status: 'pending',
+              payment_status: 'paid', // Bundles are pre-paid
+              meeting_type: meetingType,
+              location: meetingType === 'offline' ? location : null
+            });
+
+          if (sessionError) throw sessionError;
+
+          // 3. Insert transaction
+          await supabase.from("transactions").insert({
+            user_id: user.id,
+            amount: Math.round(total),
+            transaction_type: "bundle_purchase",
+            status: "success",
+            reference_id: `BUNDLE-${Date.now()}`
+          });
+
+          // 4. Notify tutor
+          await supabase.from("notifications").insert({
+            user_id: tutor.id,
+            title: "Paket Belajar Baru Dibeli!",
+            message: `${userProfile.full_name} membeli ${pkgInfo.name} (${sessionsCount} sesi) untuk subjek ${subjectName}. Sesi pertama sudah dijadwalkan.`,
+            link: "sessions"
+          });
+        }
+      }
+
+      setBookingSuccess(true);
+      setTimeout(() => {
+        setBookingSuccess(false);
+        setSelectedTutorId(null);
+        setActiveTab("student_sessions");
+      }, 2000);
+    } catch(err: any) {
+      console.error("Booking error", err);
+      alert(err.message || "Gagal melakukan booking. Pastikan profil Anda sudah diatur.");
     } finally {
-       setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -359,69 +544,112 @@ export function TutorDetail() {
           )}
         </div>
 
-        <div className="mb-3.5">
-          <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">
-            PILIH PAKET
-          </div>
-          <div className="flex flex-col gap-2">
-            {PKG_SUBSCRIPTIONS.map((pkg) => {
-              const total =
-                pkg.sessions *
-                tutor.rate *
-                (pkg.discount ? 1 - pkg.discount / 100 : 1);
-              const perSesi = total / pkg.sessions;
-              const isSelected = selectedPkg === pkg.id;
+        {activePackage && (
+          <div className="bg-lime/10 border-[1.5px] border-lime/30 rounded-xl p-4 mb-3.5 flex flex-col gap-2.5">
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="bg-lime text-black font-mono text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                  Paket Aktif Anda
+                </span>
+                <h4 className="font-bold text-sm text-text-main mt-1.5">
+                  Anda memiliki paket aktif dengan {tutor.name}
+                </h4>
+                <p className="text-xs text-text-sub mt-1 font-mono">
+                  Sisa kuota: <span className="text-lime font-bold">{activePackage.remaining_sessions} sesi</span> lagi
+                </p>
+              </div>
+            </div>
 
-              return (
-                <div
-                  key={pkg.id}
-                  onClick={() => setSelectedPkg(pkg.id)}
-                  className={`bg-card-2 rounded-xl p-3.5 border-[1.5px] cursor-pointer transition-all relative overflow-hidden group ${isSelected ? "border-lime bg-lime-dim shadow-lime" : "border-border hover:border-text-sub"}`}
-                >
-                  {pkg.badge && (
-                    <div className="absolute top-0 right-0 bg-lime text-black text-[9px] font-extrabold px-2.5 py-[3px] rounded-bl-lg font-mono tracking-[0.05em]">
-                      {pkg.badge}
-                    </div>
-                  )}
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="font-display text-[14px] font-bold text-text-main pr-[60px]">
-                        {pkg.label}
-                      </div>
-                      <div className="text-[11px] text-text-sub mt-0.5">
-                        {pkg.desc}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-end mt-2">
-                    <div>
-                      <div className="font-mono text-[17px] font-bold text-lime">
-                        {formatRupiah(total)}
-                      </div>
-                      {pkg.sessions > 1 ? (
-                        <div className="text-[10px] text-text-sub font-mono">
-                          {formatRupiah(perSesi)}/sesi{" "}
-                          {pkg.discount > 0 && (
-                            <span className="text-online font-bold">
-                              hemat {pkg.discount}%
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-[10px] text-text-sub font-mono">
-                          per sesi
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-[12px] text-text-sub font-mono">
-                      {pkg.sessions} sesi
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            <div className="flex gap-2 items-center mt-1 bg-black/20 p-2.5 rounded-lg border border-border/30">
+              <input
+                type="checkbox"
+                id="use-package"
+                checked={usePackageSession}
+                onChange={(e) => setUsePackageSession(e.target.checked)}
+                className="w-4 h-4 accent-lime rounded cursor-pointer"
+              />
+              <label htmlFor="use-package" className="text-xs text-text-main font-semibold cursor-pointer select-none">
+                Gunakan kuota paket (Biaya Sesi Rp 0)
+              </label>
+            </div>
           </div>
-        </div>
+        )}
+
+        {!usePackageSession ? (
+          <div className="mb-3.5">
+            <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">
+              PILIH PAKET
+            </div>
+            <div className="flex flex-col gap-2">
+              {dbPackages.map((pkg) => {
+                const { discount, badge } = getPkgBadgeAndDiscount(pkg.session_count);
+                const total =
+                  pkg.session_count *
+                  tutor.rate *
+                  (1 - discount / 100);
+                const perSesi = total / pkg.session_count;
+                const isSelected = selectedPkg === pkg.id;
+
+                return (
+                  <div
+                    key={pkg.id}
+                    onClick={() => setSelectedPkg(pkg.id)}
+                    className={`bg-card-2 rounded-xl p-3.5 border-[1.5px] cursor-pointer transition-all relative overflow-hidden group ${isSelected ? "border-lime bg-lime-dim shadow-lime" : "border-border hover:border-text-sub"}`}
+                  >
+                    {badge && (
+                      <div className="absolute top-0 right-0 bg-lime text-black text-[9px] font-extrabold px-2.5 py-[3px] rounded-bl-lg font-mono tracking-[0.05em]">
+                        {badge}
+                      </div>
+                    )}
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-display text-[14px] font-bold text-text-main pr-[60px]">
+                          {pkg.name}
+                        </div>
+                        <div className="text-[11px] text-text-sub mt-0.5">
+                          {pkg.description || "Daftar Paket Belajar Privat Tutor"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-end mt-2">
+                      <div>
+                        <div className="font-mono text-[17px] font-bold text-lime">
+                          {formatRupiah(total)}
+                        </div>
+                        {pkg.session_count > 1 ? (
+                          <div className="text-[10px] text-text-sub font-mono">
+                            {formatRupiah(perSesi)}/sesi{" "}
+                            {discount > 0 && (
+                              <span className="text-online font-bold">
+                                hemat {discount}%
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-[10px] text-text-sub font-mono">
+                            per sesi
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-[12px] text-text-sub font-mono">
+                        {pkg.session_count} sesi
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {dbPackages.length === 0 && (
+                <p className="text-xs text-text-sub text-center py-4 italic border border-dashed border-border rounded-xl">
+                  Memuat penawaran paket...
+                </p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="bg-lime-dim/10 border-[1.5px] border-lime/20 rounded-xl p-4 mb-3.5 text-xs text-text-sub font-mono">
+            Sesi ini akan dijadwalkan secara individu menggunakan kuota paket Anda.
+          </div>
+        )}
 
         <div className="mb-3.5">
           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">

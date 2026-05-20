@@ -10,6 +10,8 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
   const [sessions, setSessions] = useState<any[]>([]);
   const [packages, setPackages] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [studentPackages, setStudentPackages] = useState<any[]>([]);
+  const [adminPackageTab, setAdminPackageTab] = useState<"catalog" | "active_purchases">("catalog");
   const [isLoading, setIsLoading] = useState(true);
   
   // Modal states
@@ -111,6 +113,21 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
           .select("*")
           .order("price", { ascending: true });
         if (!error && data) setPackages(data);
+
+        const { data: stdPkgs, error: stdPkgsErr } = await supabase
+          .from("student_packages")
+          .select(`
+            id,
+            remaining_sessions,
+            valid_until,
+            status,
+            student:student_profiles(profiles(full_name, email)),
+            tutor:tutor_profiles(profiles(full_name)),
+            packages(*)
+          `);
+        if (!stdPkgsErr && stdPkgs) {
+          setStudentPackages(stdPkgs);
+        }
       }
     } catch (err) {
       console.error("Failed to fetch data", err);
@@ -146,6 +163,26 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
       }
     } catch (err) {
       console.error("Failed to update status", err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const initializeDefaultPackages = async () => {
+    setIsProcessing(true);
+    try {
+      const defaultPkgs = [
+        { name: 'Sesi Satuan', session_count: 1, price: 65000, description: 'Booking satu sesi dulu, cocok untuk percobaan.' },
+        { name: 'Paket 4 Pertemuan', session_count: 4, price: 247000, description: '4 sesi, cocok untuk persiapan ulangan.' },
+        { name: 'Paket 8 Pertemuan', session_count: 8, price: 468000, description: 'Paket terlaris — belajar rutin, hasil lebih optimal.' },
+        { name: 'Paket 12 Pertemuan', session_count: 12, price: 686400, description: 'Untuk persiapan UTBK atau kursus intensif.' }
+      ];
+      const { error } = await supabase.from("packages").insert(defaultPkgs);
+      if (error) throw error;
+      fetchData();
+    } catch (err) {
+      console.error("Failed to initialize default packages:", err);
+      alert("Gagal melakukan inisialisasi paket default.");
     } finally {
       setIsProcessing(false);
     }
@@ -464,28 +501,130 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
           {sessions.length === 0 && <p className="text-sm text-text-sub text-center py-10">Belum ada sesi belajar.</p>}
         </div>
       ) : activeSubTab === "packages" ? (
-        <div className="space-y-3">
-          {packages.map((pkg) => (
-            <div key={pkg.id} className="bg-card p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-              <div>
-                 <h3 className="font-semibold text-text-main text-lg uppercase tracking-wider">
-                    {pkg.name}
-                 </h3>
-                 <p className="text-sm text-text-sub mt-1">
-                   {pkg.description || "Paket langganan"}
-                 </p>
+        <div className="space-y-6">
+          <div className="flex border-b border-border bg-bg-2 p-1 rounded-xl w-fit">
+            <button
+              onClick={() => setAdminPackageTab("catalog")}
+              className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors ${adminPackageTab === "catalog" ? "bg-lime text-black" : "text-text-sub hover:text-text-main"}`}
+            >
+              Katalog Model Paket
+            </button>
+            <button
+              onClick={() => setAdminPackageTab("active_purchases")}
+              className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors ${adminPackageTab === "active_purchases" ? "bg-lime text-black" : "text-text-sub hover:text-text-main"}`}
+            >
+              Paket Aktif Siswa ({studentPackages.length})
+            </button>
+          </div>
+
+          {adminPackageTab === "catalog" ? (
+            <div className="space-y-4 animate-pgIn">
+              <div className="bg-lime-dim/20 border border-lime/20 rounded-xl p-4 text-xs text-text-sub flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <p className="font-bold text-lime">Katalog Dictionary Paket</p>
+                  <p className="leading-relaxed">Katalog model paket yang didaftarkan siswa saat check out. Sistem akan otomatis merekam tipe-tipe paket di sini.</p>
+                </div>
+                {packages.length === 0 && (
+                  <button
+                    disabled={isProcessing}
+                    onClick={initializeDefaultPackages}
+                    className="px-4 py-2 bg-lime text-black text-[11px] font-bold rounded-lg hover:bg-lime-hover transition-colors shrink-0 disabled:opacity-50 font-mono"
+                  >
+                    {isProcessing ? "Memproses..." : "Inisialisasi Katalog Default"}
+                  </button>
+                )}
               </div>
-              <div className="flex gap-2 flex-col items-end">
-                 <span className="text-lg font-bold text-lime">
-                    Rp {pkg.price?.toLocaleString()}
-                 </span>
-                 <span className="px-2 py-1 bg-lime-dim text-lime text-[10px] font-bold rounded uppercase">
-                    {pkg.session_count} Sesi
-                 </span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {packages.map((pkg) => (
+                  <div key={pkg.id} className="bg-card p-4 rounded-xl border border-border flex flex-col justify-between hover:border-lime/30 transition-all">
+                    <div>
+                      <div className="flex justify-between items-start gap-2">
+                        <h3 className="font-semibold text-text-main text-sm uppercase tracking-wider">
+                          {pkg.name}
+                        </h3>
+                        <span className="px-2 py-0.5 bg-lime-dim text-lime text-[9px] font-bold rounded uppercase font-mono">
+                          {pkg.session_count} Sesi
+                        </span>
+                      </div>
+                      <p className="text-xs text-text-sub mt-2 line-clamp-2">
+                        {pkg.description || "Dibuat otomatis oleh transaksi student."}
+                      </p>
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-border/40 flex justify-between items-baseline">
+                      <span className="text-xs text-text-light font-mono">Nilai Referensi:</span>
+                      <span className="text-base font-extrabold text-lime font-mono">
+                        Rp {pkg.price?.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {packages.length === 0 && (
+                <div className="text-center py-12 border border-dashed border-border rounded-xl">
+                  <p className="text-sm font-semibold text-text-main">Katalog Model Paket Masih Kosong</p>
+                  <p className="text-xs text-text-sub mt-1 max-w-md mx-auto">
+                    Katalog akan terisi ketika student bertransaksi membeli paket bundle belajar tutor, atau Anda bisa inisialisasi default menggunakan tombol di atas.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4 animate-pgIn">
+              <div className="bg-lime-dim/20 border border-lime/20 rounded-xl p-4 text-xs text-text-sub">
+                <p className="font-bold text-lime mb-0.5">Monitoring Pembelian Paket Siswa</p>
+                <p className="leading-relaxed">Platform akan mencatat seluruh kuota paket siswa di sini. Kuota didecrement Rp 0 setiap kali siswa menjadwalkan pertemuan privat dengan tutor bersangkutan.</p>
+              </div>
+
+              <div className="space-y-3">
+                {studentPackages.map((sPkg) => {
+                  const studentName = sPkg.student?.profiles?.full_name || "Siswa";
+                  const studentEmail = sPkg.student?.profiles?.email || "-";
+                  const tutorName = sPkg.tutor?.profiles?.full_name || "Tutor";
+                  const pkgName = sPkg.packages?.name || "Paket Belajar";
+                  const expiryStr = sPkg.valid_until 
+                    ? new Date(sPkg.valid_until).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })
+                    : "Selamanya";
+                  const isExhausted = sPkg.remaining_sessions <= 0;
+
+                  return (
+                    <div key={sPkg.id} className="bg-card p-4 rounded-xl border border-border flex flex-col sm:flex-row gap-4 justify-between sm:items-center hover:border-lime/30 transition-all animate-pgIn">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs font-extrabold text-lime uppercase font-mono tracking-wider">{pkgName}</span>
+                          <span className={`px-1.5 py-0.5 text-[8px] font-mono font-bold rounded uppercase ${isExhausted ? "bg-red-500/10 text-red-500" : "bg-success/10 text-success"}`}>
+                            {isExhausted ? "Habis" : sPkg.status?.toUpperCase() || "AKTIF"}
+                          </span>
+                        </div>
+                        <h4 className="font-semibold text-text-main text-sm">
+                          {studentName} &rarr; {tutorName}
+                        </h4>
+                        <p className="text-[11px] text-text-sub">
+                          Siswa Email: {studentEmail} &bull; Berlaku s/d: {expiryStr}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col items-start sm:items-end gap-1.5 self-start sm:self-auto shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-border/50 w-full sm:w-auto">
+                        <span className="text-xs text-text-sub font-mono">Sisa Kuota:</span>
+                        <span className={`text-base font-bold font-mono ${isExhausted ? 'text-text-light/50 line-through' : 'text-lime'}`}>
+                          {sPkg.remaining_sessions} dari {sPkg.packages?.session_count || "/"} Sesi
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {studentPackages.length === 0 && (
+                  <div className="text-center py-12 border border-dashed border-border rounded-xl">
+                    <p className="text-sm font-semibold text-text-main">Belum Ada Sesi Paket Aktif</p>
+                    <p className="text-xs text-text-sub mt-1">
+                      Platform belum merekam pembelian paket belajar aktif dari siswa ke tutor mana pun.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-          ))}
-          {packages.length === 0 && <p className="text-sm text-text-sub text-center py-10">Belum ada package tersedia.</p>}
+          )}
         </div>
       ) : activeSubTab === "reviews" ? (
         <div className="space-y-3">

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { LogOut, ArrowRight, Edit3 as PencilSimple, AlertCircle as WarningCircle, CheckCircle, Notebook, Bell, X as XIcon, Clock, Loader2 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { supabase } from '../lib/supabase';
+import { getAvatarColor } from '../data';
 
 export function TutorDashboard() {
   const { setActiveTab, setUserRole, user, userProfile } = useAppContext();
@@ -158,19 +159,27 @@ export function TutorDashboard() {
   const pendingReviews = pastSessions
     .filter(s => !reportSessionIds.has(s.id));
 
-  // Active students
+  // Active students (hanya siswa yang masih memiliki sesi aktif/belum selesai, belum dibatalkan, dan tidak ditolak)
   const studentMap = new Map();
   sessions.forEach(s => {
-    if (!studentMap.has(s.student_id) && s.student) {
+    const activeSessionsForStudent = sessions.filter(sess => 
+      sess.student_id === s.student_id && 
+      sess.status !== 'completed' && 
+      sess.status !== 'cancelled' && 
+      sess.status !== 'rejected'
+    );
+    const hasActiveSession = activeSessionsForStudent.length > 0;
+
+    if (hasActiveSession && !studentMap.has(s.student_id) && s.student) {
       studentMap.set(s.student_id, {
         id: s.student_id,
         name: s.student.profiles?.full_name || 'Student',
         level: 'Siswa',
         subject: s.subject,
-        sessions: sessions.filter(sess => sess.student_id === s.student_id).length,
-        nextSession: sessions.find(sess => sess.student_id === s.student_id && getSessionStartDateTime(sess) > new Date())?.session_date || 'Belum ada',
-        remaining: 0, // if we want to query packages
-        avatarColor: '#1A3A28', // Placeholder color
+        sessions: activeSessionsForStudent.length,
+        nextSession: activeSessionsForStudent.find(sess => getSessionStartDateTime(sess) > new Date())?.session_date || 'Belum ada',
+        remaining: activeSessionsForStudent.length,
+        avatarColor: getAvatarColor(s.student.profiles?.full_name || 'Student'),
       });
     }
   });
@@ -462,9 +471,7 @@ export function TutorDashboard() {
         </div>
 
         <div className="h-8"></div>
-        <button onClick={handleLogout} className="btn danger flex items-center justify-center gap-2 w-full max-w-[200px] mx-auto mt-4 py-3 bg-red-500/10 text-red-500 font-bold border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-colors">
-          <LogOut size={18} /> Keluar
-        </button>
+
         <div className="h-14"></div>
       </div>
 
