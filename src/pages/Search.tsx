@@ -29,7 +29,8 @@ export function Search() {
                tMajor.toLowerCase().includes(q);
     const ms = subjectFilter === "" || subjectFilter === "Semua" || (t.tags || []).includes(subjectFilter);
     const mg = genderFilter === 'all' || t.genderCode === genderFilter;
-    return mq && ms && mg;
+    const isV = t.isVerified;
+    return isV && mq && ms && mg;
   });
 
   return (

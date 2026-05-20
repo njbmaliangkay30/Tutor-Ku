@@ -21,7 +21,7 @@ export function PageHome() {
     setActiveTab('search');
   };
 
-  const visibleTutors = tutors.slice(0, 3);
+  const visibleTutors = tutors.filter(t => t.isVerified).slice(0, 3);
 
   return (
     <div className="p-0 animate-pgIn pb-5 max-w-5xl mx-auto w-full">

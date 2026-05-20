@@ -100,6 +100,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           rate: t.hourly_rate || 50000,
           price: "Rp " + (t.hourly_rate || 50000).toLocaleString("id-ID"),
           tier: t.is_verified ? "Gold" : "Silver",
+          isVerified: t.is_verified,
           tags: tags,
           badges: [],
           bio: t.bio,
