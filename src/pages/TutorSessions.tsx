@@ -119,9 +119,9 @@ export function TutorSessions() {
       // Notify Student
       await supabase.from('notifications').insert({
         user_id: studentId,
-        title: newStatus === 'confirmed' ? "Sesi Dikonfirmasi!" : "Sesi Ditolak",
+        title: newStatus === 'confirmed' ? "Sesi Disetujui Tutor!" : "Sesi Ditolak",
         message: newStatus === 'confirmed' 
-          ? "Tutor telah menyetujui jadwal sesi kamu. Sampai jumpa di kelas!"
+          ? "Tutor telah menyetujui jadwal sesi kamu. Silakan selesaikan pembayaran di tab Tagihan agar link kelas dapat diakses!"
           : "Maaf, tutor tidak dapat memenuhi permintaan sesi kamu pada waktu tersebut.",
         link: "student_sessions"
       });

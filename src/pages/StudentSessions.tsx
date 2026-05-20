@@ -60,7 +60,11 @@ export function StudentSessions() {
     try {
       const { data, error } = await supabase
         .from('transactions')
-        .select('*')
+        .select(`
+          *,
+          sessions (id, status, session_date, start_time, subject, meeting_type),
+          student_packages (id, status)
+        `)
         .eq('user_id', user.id)
         .in('transaction_type', ['session_booking', 'bundle_purchase'])
         .order('created_at', { ascending: false });
@@ -282,12 +286,21 @@ export function StudentSessions() {
           ) : (
             transactions.map((trx) => {
               const itemType = trx.transaction_type === 'bundle_purchase' ? 'Beli Paket Belajar' : 'Booking Sesi Satuan';
+              const associatedSession = Array.isArray(trx.sessions) ? trx.sessions[0] : trx.sessions;
+              const isSessionPending = associatedSession?.status === 'pending';
+              const isSessionRejected = associatedSession?.status === 'rejected';
+
               return (
                 <div key={trx.id} className="bg-card border-[1.5px] border-border rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-lime/20 transition-colors">
                   <div className="space-y-1">
                     <div className="text-xs text-text-sub font-mono">{new Date(trx.created_at).toLocaleDateString()}</div>
                     <h3 className="font-bold text-text-main text-base">{itemType}</h3>
                     <div className="font-mono font-bold text-lime mt-1 text-base">Rp {trx.amount?.toLocaleString('id-ID')}</div>
+                    {associatedSession && (
+                      <div className="text-[11px] text-text-sub flex items-center gap-1">
+                        Subjek: <strong className="text-text-main">{associatedSession.subject}</strong> &bull; Jadwal: <strong className="text-text-main">{new Date(associatedSession.session_date).toLocaleDateString('id-ID')}</strong>
+                      </div>
+                    )}
                     {trx.rejection_reason && trx.status === 'failed' && (
                       <div className="text-xs text-red-400 bg-red-400/5 p-2 rounded border border-red-500/15 mt-2">
                         Alasan Tolak: "{trx.rejection_reason}"
@@ -303,14 +316,36 @@ export function StudentSessions() {
                     }`}>
                       {trx.status === 'pending_verification' ? 'Menunggu Verifikasi' : trx.status === 'success' ? 'Lunas' : trx.status === 'failed' ? 'Ditolak' : 'Belum Bayar'}
                     </span>
-                    {(trx.status === 'pending' || trx.status === 'failed') && (
-                      <button
-                        onClick={() => setSelectedTrx(trx)}
-                        className="bg-lime text-black font-bold text-xs px-4 py-2.5 rounded-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5"
-                      >
-                        <CreditCard size={14} /> Bayar Sekarang
-                      </button>
+                    
+                    {isSessionPending ? (
+                      <div className="flex flex-col items-center sm:items-end gap-1 text-center sm:text-right">
+                        <span className="text-xs text-warning font-semibold flex items-center gap-1 bg-warning/10 px-2.5 py-1 rounded">
+                          <Clock size={12} /> Menunggu Persetujuan Tutor
+                        </span>
+                        <span className="text-[9px] text-text-sub max-w-[200px] leading-tight">
+                          Pembayaran dibuka setelah tutor menyetujui request jadwal Anda.
+                        </span>
+                      </div>
+                    ) : isSessionRejected ? (
+                      <div className="flex flex-col items-center sm:items-end gap-1 text-center sm:text-right">
+                        <span className="text-xs text-red-400 font-semibold flex items-center gap-1 bg-red-400/10 px-2.5 py-1 rounded">
+                          <X size={12} /> Ditolak oleh Tutor
+                        </span>
+                        <span className="text-[9px] text-text-sub max-w-[200px] leading-tight">
+                          Sesi request ditolak oleh tutor. Anda tidak perlu membayar tagihan ini.
+                        </span>
+                      </div>
+                    ) : (
+                      (trx.status === 'pending' || trx.status === 'failed') && (
+                        <button
+                          onClick={() => setSelectedTrx(trx)}
+                          className="bg-lime text-black font-bold text-xs px-4 py-2.5 rounded-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                        >
+                          <CreditCard size={14} /> Bayar Sekarang
+                        </button>
+                      )
                     )}
+
                     {trx.status === 'pending_verification' && (
                       <button
                         onClick={() => setSelectedTrx(trx)}
@@ -389,7 +424,20 @@ export function StudentSessions() {
 
                   {type === 'upcoming' ? (
                     <div className="flex gap-2 w-full">
-                      {session.meeting_type === 'offline' ? (
+                      {session.status === 'confirmed' && session.payment_status === 'unpaid' ? (
+                        <div className="flex-1 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                          <div className="space-y-0.5">
+                            <span className="text-[10px] sm:text-xs font-bold text-warning uppercase tracking-wider block">Menunggu Pembayaran</span>
+                            <p className="text-xs text-text-sub">Silakan selesaikan pembayaran tagihan untuk mengakses link atau lokasi sesi ini.</p>
+                          </div>
+                          <button
+                            onClick={() => setType('invoices')}
+                            className="bg-lime text-black font-bold text-xs px-4 py-2 rounded-lg hover:opacity-95 transition-all whitespace-nowrap self-stretch sm:self-auto text-center"
+                          >
+                            Buka Tagihan
+                          </button>
+                        </div>
+                      ) : session.meeting_type === 'offline' ? (
                         <div className="flex-1 bg-bg-2 border border-border text-center text-text-main font-bold py-2.5 rounded-lg text-[13px] flex items-center justify-center gap-2 px-2">
                           <span className="truncate">📍 Lokasi: {session.location || 'Menunggu Info'}</span>
                         </div>
