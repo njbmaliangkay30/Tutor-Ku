@@ -270,16 +270,17 @@ export function TutorDetail() {
             user_id: user.id,
             amount: Math.round(total),
             transaction_type: "session_booking",
-            status: "success",
-            reference_id: `SINGLE-${Date.now()}`
+            status: "pending",
+            reference_id: `SINGLE-${Date.now()}`,
+            session_id: sessionData?.id
           });
 
-          // Notify tutor
+          // Notify tutor of upcoming request (pending payment, can be approved/pending)
           const sessionId = sessionData?.id;
           await supabase.from("notifications").insert({
             user_id: tutor.id,
-            title: "Sesi Baru Dipesan!",
-            message: `${userProfile.full_name} memesan 1 sesi pelajaran subjek ${subjectName}.`,
+            title: "Sesi Baru Dipesan (Menunggu Pembayaran)!",
+            message: `${userProfile.full_name} memesan 1 sesi pelajaran subjek ${subjectName}. Sesi akan aktif setelah pembayaran dikonfirmasi.`,
             link: sessionId ? `sessions:${sessionId}` : "sessions"
           });
 
@@ -313,7 +314,7 @@ export function TutorDetail() {
           }
 
           // 1. Create the student_packages entry (1 session used now, count - 1 remaining)
-          const { error: spError } = await supabase
+          const { data: spInsertData, error: spError } = await supabase
             .from("student_packages")
             .insert({
               student_id: userProfile.id,
@@ -321,8 +322,10 @@ export function TutorDetail() {
               tutor_id: tutor.id,
               remaining_sessions: sessionsCount - 1,
               valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-              status: "active"
-            });
+              status: "pending_payment"
+            })
+            .select()
+            .single();
 
           if (spError) throw spError;
 
@@ -338,7 +341,7 @@ export function TutorDetail() {
               end_time: endDateTime.toISOString(),
               material_notes: notes || `Sesi 1 dari Paket (${pkgInfo.name}) (Telah Dipesan)`,
               status: 'pending',
-              payment_status: 'paid', // Bundles are pre-paid
+              payment_status: 'unpaid', // Bundles are pre-paid but unpaid until client pays
               meeting_type: meetingType,
               location: meetingType === 'offline' ? location : null
             })
@@ -352,16 +355,18 @@ export function TutorDetail() {
             user_id: user.id,
             amount: Math.round(total),
             transaction_type: "bundle_purchase",
-            status: "success",
-            reference_id: `BUNDLE-${Date.now()}`
+            status: "pending",
+            reference_id: `BUNDLE-${Date.now()}`,
+            session_id: sessionData?.id,
+            student_package_id: spInsertData?.id
           });
 
           // 4. Notify tutor
           const sessionId = sessionData?.id;
           await supabase.from("notifications").insert({
             user_id: tutor.id,
-            title: "Paket Belajar Baru Dibeli!",
-            message: `${userProfile.full_name} membeli ${pkgInfo.name} (${sessionsCount} sesi) untuk subjek ${subjectName}. Sesi pertama sudah dijadwalkan.`,
+            title: "Paket Belajar Baru Dipesan (Menunggu Pembayaran)!",
+            message: `${userProfile.full_name} memesan ${pkgInfo.name} (${sessionsCount} sesi) untuk subjek ${subjectName}. Sesi akan berjalan jika pembayaran dikonfirmasi.`,
             link: sessionId ? `sessions:${sessionId}` : "sessions"
           });
         }

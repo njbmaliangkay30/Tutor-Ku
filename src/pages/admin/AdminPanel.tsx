@@ -17,6 +17,79 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
   // Modal states
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleApprovePayment = async (trx: any) => {
+    if (!window.confirm(`Setujui pembayaran dari ${trx.profiles?.full_name || 'Siswa'}?`)) return;
+    try {
+      // 1. Update transaction status
+      const { error: trxError } = await supabase
+        .from("transactions")
+        .update({ status: "success" })
+        .eq("id", trx.id);
+      if (trxError) throw trxError;
+
+      // 2. Locate associated session (if session_id exists) and set payment_status to 'paid'
+      if (trx.session_id) {
+         const { error: sessionError } = await supabase
+           .from("sessions")
+           .update({ payment_status: "paid" })
+           .eq("id", trx.session_id);
+         if (sessionError) throw sessionError;
+      }
+
+      // 3. Locate associated student_packages (if student_package_id exists) and set status to 'active'
+      if (trx.student_package_id) {
+         const { error: spError } = await supabase
+           .from("student_packages")
+           .update({ status: "active" })
+           .eq("id", trx.student_package_id);
+         if (spError) throw spError;
+      }
+
+      // 4. Send notification back to student
+      await supabase.from("notifications").insert({
+         user_id: trx.user_id,
+         title: "Pembayaran Diverifikasi & Disetujui!",
+         message: `Pembayaran Anda untuk ${trx.transaction_type === "bundle_purchase" ? "Paket Belajar" : "Booking Sesi"} sebesar Rp ${trx.amount?.toLocaleString('id-ID')} telah diverifikasi & disetujui.`,
+         link: "sessions"
+      });
+
+      alert("Pembayaran berhasil disetujui!");
+      fetchData();
+    } catch (err: any) {
+       console.error(err);
+       alert("Error: " + err.message);
+    }
+  };
+
+  const handleRejectPayment = async (trx: any) => {
+    const reason = window.prompt("Alasan penolakan pembayaran:");
+    if (reason === null) return;
+    try {
+      const { error: trxError } = await supabase
+        .from("transactions")
+        .update({ 
+           status: "failed",
+           rejection_reason: reason || "Bukti transfer tidak valid atau kurang tepat"
+        })
+        .eq("id", trx.id);
+      if (trxError) throw trxError;
+
+      // Notify student
+      await supabase.from("notifications").insert({
+         user_id: trx.user_id,
+         title: "Pembayaran Pembelian Ditolak",
+         message: `Pembayaran Anda untuk ${trx.transaction_type === "bundle_purchase" ? "Paket Belajar" : "Booking Sesi"} ditolak oleh admin dengan alasan: "${reason || 'Bukti transfer tidak valid'}". Silakan berikan bukti transfer yang valid.`,
+         link: "sessions"
+      });
+
+      alert("Pembayaran ditolak!");
+      fetchData();
+    } catch (err: any) {
+       console.error(err);
+       alert("Error: " + err.message);
+    }
+  };
   const [viewMode, setViewMode] = useState<"list" | "gallery">("gallery");
   const [selectedGalleryTutor, setSelectedGalleryTutor] = useState<any | null>(null);
   const [modalSubTab, setModalSubTab] = useState<"sessions" | "reviews">("sessions");
@@ -615,17 +688,56 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
             <div key={trx.id} className="bg-card p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
               <div>
                  <p className="text-xs text-text-sub mb-1">{new Date(trx.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' })}</p>
-                 <h3 className="font-semibold text-text-main">
-                    Rp {trx.amount?.toLocaleString()}
+                 <h3 className="font-semibold text-text-main text-base">
+                    Rp {trx.amount?.toLocaleString('id-ID')}
                  </h3>
-                 <p className="text-sm text-text-main capitalize mt-1">
-                   {trx.transaction_type && trx.transaction_type.replace(/_/g, " ")} &bull; {trx.profiles?.full_name || "Unknown User"}
+                 <p className="text-sm text-text-main capitalize mt-1 font-medium text-lime">
+                   {trx.transaction_type && trx.transaction_type.replace(/_/g, " ")} &bull; <span className="text-text-main font-bold">{trx.profiles?.full_name || "Unknown User"}</span>
                  </p>
+                 {trx.proof_url && (
+                    <div className="mt-2.5">
+                      <a 
+                        href={trx.proof_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="inline-flex items-center gap-1 text-xs text-lime bg-lime-dim/20 px-3 py-1.5 rounded-lg border border-lime/30 font-semibold"
+                      >
+                        👁 Lihat Bukti Transfer ↗
+                      </a>
+                    </div>
+                 )}
+                 {trx.rejection_reason && trx.status === 'failed' && (
+                    <p className="text-xs text-red-400 bg-red-400/5 p-2 rounded border border-red-500/15 mt-2 font-mono">
+                      Alasan Tolak: "{trx.rejection_reason}"
+                    </p>
+                 )}
               </div>
-              <div className="flex gap-2">
-                 <span className={`px-2 py-1 text-[10px] font-bold rounded flex items-center uppercase ${trx.status === 'success' ? 'bg-success/10 text-success' : trx.status === 'failed' ? 'bg-danger/10 text-danger' : 'bg-warning/10 text-warning'}`}>
-                    {trx.status}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+                 <span className={`px-2.5 py-1.5 rounded text-[10px] font-bold font-mono uppercase tracking-wider text-center ${
+                   trx.status === 'success' ? 'bg-success/10 text-success border border-success/30' :
+                   trx.status === 'pending_verification' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' :
+                   trx.status === 'failed' ? 'bg-red-500/10 text-red-400 border border-red-500/30' : 
+                   'bg-warning/10 text-warning border border-warning/30'
+                 }`}>
+                    {trx.status === 'pending_verification' ? 'Menunggu Verifikasi' : trx.status === 'success' ? 'Lunas' : trx.status === 'failed' ? 'Ditolak' : 'Belum Bayar'}
                  </span>
+                 
+                 {(trx.status === 'pending' || trx.status === 'pending_verification') && (
+                   <div className="flex gap-1.5">
+                     <button
+                       onClick={() => handleApprovePayment(trx)}
+                       className="bg-lime text-black font-bold text-xs px-3 py-1.5 rounded-lg hover:opacity-90 active:scale-95 transition-all text-center flex-1"
+                     >
+                       Setujui
+                     </button>
+                     <button
+                       onClick={() => handleRejectPayment(trx)}
+                       className="bg-red-500/20 text-red-400 font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-red-500/30 active:scale-95 transition-all text-center border border-red-500/30 flex-1"
+                     >
+                       Tolak
+                     </button>
+                   </div>
+                 )}
               </div>
             </div>
           ))}
