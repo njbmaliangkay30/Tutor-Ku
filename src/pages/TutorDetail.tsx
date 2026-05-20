@@ -8,7 +8,7 @@ import {
   getAvatarColor,
   formatRupiah,
 } from "../data";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 
 export function TutorDetail() {
@@ -18,6 +18,8 @@ export function TutorDetail() {
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
 
   // Scheduling states
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -27,6 +29,37 @@ export function TutorDetail() {
   const [selectedSubject, setSelectedSubject] = useState("");
 
   const tutor = tutors.find((t:any) => t.id === selectedTutorId);
+
+  useEffect(() => {
+    async function fetchTutorReviews() {
+      if (!selectedTutorId) return;
+      setIsLoadingReviews(true);
+      try {
+        const { data, error } = await supabase
+          .from("reviews")
+          .select(`
+            id,
+            rating,
+            review_text,
+            created_at,
+            show_on_profile,
+            student:student_profiles(
+              profiles(full_name)
+            )
+          `)
+          .eq("tutor_id", selectedTutorId)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        setReviews(data || []);
+      } catch (err) {
+        console.error("Error loading reviews:", err);
+      } finally {
+        setIsLoadingReviews(false);
+      }
+    }
+    fetchTutorReviews();
+  }, [selectedTutorId]);
 
   if (!tutor) return null;
 
@@ -287,6 +320,43 @@ export function TutorDetail() {
               );
             })}
           </div>
+        </div>
+
+        {/* Tutor Selected Featured Reviews */}
+        <div className="bg-card rounded-xl p-4 border-[1.5px] border-border mb-2.5 transition-colors hover:border-border-2">
+          <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">
+            ULASAN SISWA ({reviews.filter(r => r.show_on_profile !== false).length})
+          </div>
+          {isLoadingReviews ? (
+            <div className="text-xs text-text-sub font-mono py-2">Memuat ulasan...</div>
+          ) : reviews.filter(r => r.show_on_profile !== false).length === 0 ? (
+            <p className="text-xs text-text-sub italic py-2">Belum ada ulasan yang ditampilkan oleh tutor.</p>
+          ) : (
+            <div className="space-y-3 pt-1">
+              {reviews.filter(r => r.show_on_profile !== false).map((r) => (
+                <div key={r.id} className="bg-bg-2/30 border border-border/60 rounded-xl p-3 text-xs space-y-2">
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="font-bold text-text-main">
+                      {r.student?.profiles?.full_name || "Siswa"}
+                    </span>
+                    <div className="flex items-center gap-0.5 text-warning font-mono font-bold">
+                       ⭐ {r.rating} / 5
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-text-sub font-mono -mt-1">
+                    {new Date(r.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                  {r.review_text ? (
+                    <p className="text-xs italic text-text-main bg-bg-base/70 py-2 px-2.5 border-l border-lime rounded-r">
+                      "{r.review_text}"
+                    </p>
+                  ) : (
+                    <p className="text-[11px] text-text-sub/70 italic">Siswa memberikan rating bintang tanpa ulasan tertulis.</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="mb-3.5">

@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
-import { Calendar, Clock, Star, MapPin } from "lucide-react";
+import { Calendar, Clock, Star, MapPin, Eye, EyeOff } from "lucide-react";
 import { getAvatarColor } from "../data";
 
 export function TutorHistory() {
   const [sessions, setSessions] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [sessionReports, setSessionReports] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
+  const [togglingReviewId, setTogglingReviewId] = useState<string | null>(null);
   const { userProfile } = useAppContext();
 
   const formatTime = (timeStr: string) => {
@@ -16,41 +18,71 @@ export function TutorHistory() {
     return timeStr.substring(0, 5);
   };
 
-  useEffect(() => {
-    const fetchSessions = async () => {
-       if (!userProfile) return;
-       setIsLoading(true);
-       try {
-         const { data, error } = await supabase
-           .from('sessions')
-           .select(`
-             *,
-             student_profiles(id, profiles(full_name))
-           `)
-           .eq('tutor_id', userProfile.id)
-           .eq('status', 'completed')
-           .order('session_date', { ascending: false });
-           
-         if (error) throw error;
-         setSessions(data || []);
-
-         const { data: reports } = await supabase
-           .from('session_reports')
-           .select('session_id')
-           .eq('tutor_id', userProfile.id);
+  const fetchSessionsAndReviews = async () => {
+     if (!userProfile) return;
+     setIsLoading(true);
+     try {
+       const { data, error } = await supabase
+         .from('sessions')
+         .select(`
+           *,
+           student_profiles(id, profiles(full_name))
+         `)
+         .eq('tutor_id', userProfile.id)
+         .eq('status', 'completed')
+         .order('session_date', { ascending: false });
          
-         if (reports) {
-           setSessionReports(new Set(reports.map(r => r.session_id)));
-         }
-       } catch (e) {
-         console.error(e);
-       } finally {
-         setIsLoading(false);
-       }
-    };
+       if (error) throw error;
+       setSessions(data || []);
 
-    fetchSessions();
+       const { data: reports } = await supabase
+         .from('session_reports')
+         .select('session_id')
+         .eq('tutor_id', userProfile.id);
+       
+       if (reports) {
+         setSessionReports(new Set(reports.map(r => r.session_id)));
+       }
+
+       // Fetch student reviews
+       const { data: reviewsData } = await supabase
+         .from('reviews')
+         .select('*')
+         .eq('tutor_id', userProfile.id);
+
+       if (reviewsData) {
+         setReviews(reviewsData);
+       }
+     } catch (e) {
+       console.error(e);
+     } finally {
+       setIsLoading(false);
+     }
+  };
+
+  useEffect(() => {
+    fetchSessionsAndReviews();
   }, [userProfile]);
+
+  const handleToggleShowOnProfile = async (reviewId: string, currentVal: boolean) => {
+    setTogglingReviewId(reviewId);
+    try {
+      const { error } = await supabase
+        .from('reviews')
+        .update({ show_on_profile: !currentVal })
+        .eq('id', reviewId);
+        
+      if (error) throw error;
+      
+      // Update locally
+      setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, show_on_profile: !currentVal } : r));
+    } catch (err) {
+      console.error("Gagal mengubah tampilan ulasan:", err);
+      alert("Gagal memperbarui ulasan. Silakan pastikan kolom 'show_on_profile' di tabel 'reviews' telah ditambahkan di database.");
+    } finally {
+      setTogglingReviewId(null);
+    }
+  };
 
   const history = sessions.filter(s => sessionReports.has(s.id));
 
@@ -117,6 +149,62 @@ export function TutorHistory() {
                   <p className="text-[13px]">{session.material_notes}</p>
                 </div>
               )}
+
+              {/* Review Section */}
+              {(() => {
+                const review = reviews.find(r => r.session_id === session.id);
+                if (!review) return null;
+                return (
+                  <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[11px] font-bold text-text-sub uppercase tracking-wider font-mono">Ulasan Siswa</span>
+                      <div className="flex items-center gap-0.5 text-warning font-mono text-xs font-bold bg-warning/10 px-2 py-0.5 rounded">
+                        ⭐ {review.rating} / 5
+                      </div>
+                    </div>
+                    {review.review_text ? (
+                      <p className="text-xs text-text-main italic p-2.5 bg-bg-2 border-l-2 border-warning/60 rounded-r">
+                        "{review.review_text}"
+                      </p>
+                    ) : (
+                      <p className="text-xs text-text-sub italic">Siswa memberikan rating bintang tanpa ulasan tertulis.</p>
+                    )}
+
+                    <div className="flex justify-between items-center bg-bg-2 p-2.5 rounded-lg border border-border/40">
+                      <div className="text-[11px] text-text-sub flex items-center gap-1.5 font-mono">
+                        {review.show_on_profile !== false ? (
+                          <>
+                            <Eye size={14} className="text-lime" />
+                            <span>Tampil di profil publik</span>
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff size={14} className="text-text-muted" />
+                            <span>Disembunyikan di profil</span>
+                          </>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleToggleShowOnProfile(review.id, review.show_on_profile !== false)}
+                        disabled={togglingReviewId === review.id}
+                        className={`px-3 py-1.5 text-[11px] font-bold rounded-md font-mono transition-colors border ${
+                          review.show_on_profile !== false
+                            ? "bg-red-500/10 hover:bg-red-500/20 text-red-500 border-red-500/20"
+                            : "bg-lime/10 hover:bg-lime/20 text-lime border-lime/30"
+                        } flex items-center gap-1 cursor-pointer`}
+                      >
+                        {togglingReviewId === review.id ? (
+                          <span className="w-3.5 h-3.5 rounded-full border-2 border-current border-t-transparent animate-spin inline-block"></span>
+                        ) : review.show_on_profile !== false ? (
+                          "Sembunyikan"
+                        ) : (
+                          "Tampilkan"
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           ))
         )}
