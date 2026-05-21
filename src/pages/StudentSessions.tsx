@@ -164,7 +164,12 @@ export function StudentSessions() {
     if (!file) return;
     setIsUploading(true);
     try {
-       const cleanFileName = `receipt_${transactionId}_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+       const customerName = (userProfile?.full_name || 'Customer').toString().trim().replace(/[^a-zA-Z0-9]/g, '_');
+       const now = new Date();
+       const formatDigit = (num: number) => String(num).padStart(2, '0');
+       const dateStr = `${now.getFullYear()}-${formatDigit(now.getMonth() + 1)}-${formatDigit(now.getDate())}_${formatDigit(now.getHours())}-${formatDigit(now.getMinutes())}-${formatDigit(now.getSeconds())}`;
+       const fileExt = file.name.split('.').pop() || 'png';
+       const cleanFileName = `bukti_${customerName}_${dateStr}_trx_${transactionId.substring(0, 8)}.${fileExt}`;
        
        // Try upload to 'receipts'
        let { error: uploadError } = await supabase.storage
@@ -596,9 +601,20 @@ export function StudentSessions() {
                           </div>
                           <button
                             onClick={() => handleCopyText(paymentSettings.account_number)}
-                            className="text-lime hover:text-lime-dim p-1.5"
+                            className="text-lime hover:text-lime-dim p-1.5 flex items-center gap-1 cursor-pointer transition-all border border-border bg-bg-base/30 rounded-lg px-2.5 hover:bg-bg-3"
+                            title="Salin No. Rekening"
                           >
-                            <Copy size={16} />
+                            {copiedText ? (
+                              <>
+                                <span className="text-[10px] font-bold text-success font-sans">Disalin!</span>
+                                <Check size={14} className="text-success" />
+                              </>
+                            ) : (
+                              <>
+                                <span className="text-[10px] text-text-sub font-semibold font-sans">Salin</span>
+                                <Copy size={13} className="text-text-sub" />
+                              </>
+                            )}
                           </button>
                         </div>
                       </div>

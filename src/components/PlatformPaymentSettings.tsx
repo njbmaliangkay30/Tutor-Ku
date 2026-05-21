@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { CreditCard, Upload, Check, Edit3, Settings, AlertCircle, Info, QrCode } from 'lucide-react';
+import { CreditCard, Upload, Check, Edit3, Settings, AlertCircle, Info, QrCode, Copy } from 'lucide-react';
 
 export interface PaymentSettingsType {
   bank_name: string;
@@ -16,6 +16,14 @@ export function PlatformPaymentSettings() {
     account_name: "RuangTutor Platform",
     qris_url: "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://RuangTutorPlatformQRIS"
   });
+
+  const [copiedText, setCopiedText] = useState(false);
+  
+  const handleCopyText = (val: string) => {
+    navigator.clipboard.writeText(val);
+    setCopiedText(true);
+    setTimeout(() => setCopiedText(false), 2000);
+  };
 
   const [isEditing, setIsEditing] = useState(false);
   const [bankName, setBankName] = useState("");
@@ -204,9 +212,29 @@ export function PlatformPaymentSettings() {
                       <span className="block text-[10px] text-text-sub font-mono uppercase tracking-wider">Nama Bank / Dompet Digital</span>
                       <span className="font-bold text-text-main text-sm">{settings.bank_name}</span>
                     </div>
-                    <div>
-                      <span className="block text-[10px] text-text-sub font-mono uppercase tracking-wider">Nomor Rekening / HP</span>
-                      <span className="font-bold font-mono tracking-wide text-lime text-base">{settings.account_number}</span>
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <span className="block text-[10px] text-text-sub font-mono uppercase tracking-wider">Nomor Rekening / HP</span>
+                        <span className="font-bold font-mono tracking-wide text-lime text-base">{settings.account_number}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyText(settings.account_number)}
+                        className="text-lime hover:text-lime-dim p-2 flex items-center gap-1.5 cursor-pointer transition-all border border-border/80 bg-bg-base/60 rounded-xl px-3 hover:bg-bg-3"
+                        title="Salin No. Rekening"
+                      >
+                        {copiedText ? (
+                          <>
+                            <span className="text-xs font-bold text-success font-sans">Disalin!</span>
+                            <Check size={14} className="text-success" />
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-xs text-text-sub font-semibold font-sans">Salin</span>
+                            <Copy size={13} className="text-text-sub" />
+                          </>
+                        )}
+                      </button>
                     </div>
                     <div>
                       <span className="block text-[10px] text-text-sub font-mono uppercase tracking-wider">Nama Pemilik Rekening</span>

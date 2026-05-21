@@ -26,6 +26,7 @@ interface StatDetails {
   activeTutors: number;
   activeStudents: number;
   pendingVerifications: number;
+  pendingTransactions: number;
   monthlyRevenue: number;
   activeSessions: number;
   totalSessions: number;
@@ -36,6 +37,7 @@ export function AdminOverview() {
     activeTutors: 0,
     activeStudents: 0,
     pendingVerifications: 0,
+    pendingTransactions: 0,
     monthlyRevenue: 0,
     activeSessions: 0,
     totalSessions: 0,
@@ -115,6 +117,12 @@ export function AdminOverview() {
       
       const realEstRevenue = rxData?.reduce((acc, rx) => acc + (rx.amount || 0), 0) || 4500000;
 
+      // Get pending transactions count
+      const { count: pendingTrxCount } = await supabase
+        .from("transactions")
+        .select('*', { count: 'exact', head: true })
+        .eq("status", "pending_verification");
+
       // Get all sessions for the chart
       const { data: allSessionsData } = await supabase
         .from("sessions")
@@ -128,6 +136,7 @@ export function AdminOverview() {
         activeTutors: tutorsCount || 0,
         activeStudents: studentsCount || 0,
         pendingVerifications: pendingCount || 0,
+        pendingTransactions: pendingTrxCount || 0,
         monthlyRevenue: realEstRevenue > 0 ? realEstRevenue : 4500000,
         activeSessions: activeCount || 0,
         totalSessions: sessionsCount || 0,
@@ -250,8 +259,8 @@ export function AdminOverview() {
         </div>
       </div>
 
-      {/* Stats Cards (5 Columns Grid) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      {/* Stats Cards (6 Columns Grid) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {/* Siswa Aktif */}
         <div className="bg-card p-5 rounded-2xl border border-border flex flex-col gap-3 relative overflow-hidden group hover:border-lime/40 transition-all duration-300">
           <div className="flex items-start justify-between">
@@ -315,6 +324,26 @@ export function AdminOverview() {
           <div>
             <p className="text-xs text-text-sub font-semibold mb-0.5">Verifikasi Pending</p>
             <h3 className="text-2xl font-display font-bold text-text-main">{stats.pendingVerifications}</h3>
+          </div>
+        </div>
+
+        {/* Transaksi Pending */}
+        <div className="bg-card p-5 rounded-2xl border border-border flex flex-col gap-3 relative overflow-hidden group hover:border-[#22d3ee]/40 transition-all duration-300">
+          <div className="flex items-start justify-between">
+            <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+              <CreditCard size={18} />
+            </div>
+            {stats.pendingTransactions > 0 && (
+              <span className="text-[10px] font-bold text-cyan-400 flex items-center gap-1 bg-cyan-500/10 px-1.5 py-0.5 rounded font-mono animate-pulse">
+                Butuh ACC
+              </span>
+            )}
+          </div>
+          <div>
+            <p className="text-xs text-text-sub font-semibold mb-0.5">Transaksi Pending</p>
+            <h3 className={`text-2xl font-display font-bold ${stats.pendingTransactions > 0 ? "text-cyan-400 font-bold" : "text-text-main"}`}>
+              {stats.pendingTransactions}
+            </h3>
           </div>
         </div>
 
