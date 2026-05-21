@@ -145,14 +145,31 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
           setStudents(formatedStudents);
         }
       } else if (activeSubTab === "transactions") {
-        const { data, error } = await supabase
+        const { data: trxData, error: trxError } = await supabase
           .from("transactions")
-          .select(`
-            *,
-            profiles(full_name, email)
-          `)
+          .select("*")
           .order("created_at", { ascending: false });
-        if (!error && data) setTransactions(data);
+        
+        if (trxError) throw trxError;
+        
+        if (trxData) {
+          const { data: profilesData, error: profsError } = await supabase
+            .from("profiles")
+            .select("id, full_name, email");
+          
+          if (!profsError && profilesData) {
+            const stitched = trxData.map((trx: any) => {
+              const matchedProfile = profilesData.find((p: any) => p.id === trx.user_id);
+              return {
+                ...trx,
+                profiles: matchedProfile || null
+              };
+            });
+            setTransactions(stitched);
+          } else {
+            setTransactions(trxData);
+          }
+        }
       } else if (activeSubTab === "sessions" || activeSubTab === "reviews") {
         const [sessionsRes, reviewsRes, tutorsRes] = await Promise.all([
           supabase
