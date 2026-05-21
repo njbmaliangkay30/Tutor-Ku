@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Users, BookOpen, Search, ShieldCheck, Eye, ShieldAlert, X, AlertOctagon, CreditCard, Calendar, Star, LayoutGrid, List, Plus, Edit3, Trash2 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import { PlatformPaymentSettings } from "../../components/PlatformPaymentSettings";
 
 export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "students" | "transactions" | "sessions" | "packages" | "reviews" }) {
   const [tutors, setTutors] = useState<any[]>([]);
@@ -683,65 +684,69 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
           {students.length === 0 && <p className="text-sm text-text-sub text-center py-10">Belum ada student terdaftar.</p>}
         </div>
       ) : activeSubTab === "transactions" ? (
-        <div className="space-y-3">
-          {transactions.map((trx) => (
-            <div key={trx.id} className="bg-card p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-              <div>
-                 <p className="text-xs text-text-sub mb-1">{new Date(trx.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' })}</p>
-                 <h3 className="font-semibold text-text-main text-base">
-                    Rp {trx.amount?.toLocaleString('id-ID')}
-                 </h3>
-                 <p className="text-sm text-text-main capitalize mt-1 font-medium text-lime">
-                   {trx.transaction_type && trx.transaction_type.replace(/_/g, " ")} &bull; <span className="text-text-main font-bold">{trx.profiles?.full_name || "Unknown User"}</span>
-                 </p>
-                 {trx.proof_url && (
-                    <div className="mt-2.5">
-                      <a 
-                        href={trx.proof_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="inline-flex items-center gap-1 text-xs text-lime bg-lime-dim/20 px-3 py-1.5 rounded-lg border border-lime/30 font-semibold"
-                      >
-                        👁 Lihat Bukti Transfer ↗
-                      </a>
-                    </div>
-                 )}
-                 {trx.rejection_reason && trx.status === 'failed' && (
-                    <p className="text-xs text-red-400 bg-red-400/5 p-2 rounded border border-red-500/15 mt-2 font-mono">
-                      Alasan Tolak: "{trx.rejection_reason}"
-                    </p>
-                 )}
+        <div className="space-y-6">
+          <PlatformPaymentSettings />
+          
+          <div className="space-y-3">
+            {transactions.map((trx) => (
+              <div key={trx.id} className="bg-card p-4 rounded-xl border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                <div>
+                   <p className="text-xs text-text-sub mb-1">{new Date(trx.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' })}</p>
+                   <h3 className="font-semibold text-text-main text-base">
+                      Rp {trx.amount?.toLocaleString('id-ID')}
+                   </h3>
+                   <p className="text-sm text-text-main capitalize mt-1 font-medium text-lime">
+                     {trx.transaction_type && trx.transaction_type.replace(/_/g, " ")} &bull; <span className="text-text-main font-bold">{trx.profiles?.full_name || "Unknown User"}</span>
+                   </p>
+                   {trx.proof_url && (
+                      <div className="mt-2.5">
+                        <a 
+                          href={trx.proof_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="inline-flex items-center gap-1 text-xs text-lime bg-lime-dim/20 px-3 py-1.5 rounded-lg border border-lime/30 font-semibold"
+                        >
+                          👁 Lihat Bukti Transfer ↗
+                        </a>
+                      </div>
+                   )}
+                   {trx.rejection_reason && trx.status === 'failed' && (
+                      <p className="text-xs text-red-400 bg-red-400/5 p-2 rounded border border-red-500/15 mt-2 font-mono">
+                        Alasan Tolak: "{trx.rejection_reason}"
+                      </p>
+                   )}
+                </div>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+                   <span className={`px-2.5 py-1.5 rounded text-[10px] font-bold font-mono uppercase tracking-wider text-center ${
+                     trx.status === 'success' ? 'bg-success/10 text-success border border-success/30' :
+                     trx.status === 'pending_verification' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' :
+                     trx.status === 'failed' ? 'bg-red-500/10 text-red-400 border border-red-500/30' : 
+                     'bg-warning/10 text-warning border border-warning/30'
+                   }`}>
+                      {trx.status === 'pending_verification' ? 'Menunggu Verifikasi' : trx.status === 'success' ? 'Lunas' : trx.status === 'failed' ? 'Ditolak' : 'Belum Bayar'}
+                   </span>
+                   
+                   {(trx.status === 'pending' || trx.status === 'pending_verification') && (
+                     <div className="flex gap-1.5">
+                       <button
+                         onClick={() => handleApprovePayment(trx)}
+                         className="bg-lime text-black font-bold text-xs px-3 py-1.5 rounded-lg hover:opacity-90 active:scale-95 transition-all text-center flex-1"
+                       >
+                         Setujui
+                       </button>
+                       <button
+                         onClick={() => handleRejectPayment(trx)}
+                         className="bg-red-500/20 text-red-400 font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-red-500/30 active:scale-95 transition-all text-center border border-red-500/30 flex-1"
+                       >
+                         Tolak
+                       </button>
+                     </div>
+                   )}
+                </div>
               </div>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
-                 <span className={`px-2.5 py-1.5 rounded text-[10px] font-bold font-mono uppercase tracking-wider text-center ${
-                   trx.status === 'success' ? 'bg-success/10 text-success border border-success/30' :
-                   trx.status === 'pending_verification' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' :
-                   trx.status === 'failed' ? 'bg-red-500/10 text-red-400 border border-red-500/30' : 
-                   'bg-warning/10 text-warning border border-warning/30'
-                 }`}>
-                    {trx.status === 'pending_verification' ? 'Menunggu Verifikasi' : trx.status === 'success' ? 'Lunas' : trx.status === 'failed' ? 'Ditolak' : 'Belum Bayar'}
-                 </span>
-                 
-                 {(trx.status === 'pending' || trx.status === 'pending_verification') && (
-                   <div className="flex gap-1.5">
-                     <button
-                       onClick={() => handleApprovePayment(trx)}
-                       className="bg-lime text-black font-bold text-xs px-3 py-1.5 rounded-lg hover:opacity-90 active:scale-95 transition-all text-center flex-1"
-                     >
-                       Setujui
-                     </button>
-                     <button
-                       onClick={() => handleRejectPayment(trx)}
-                       className="bg-red-500/20 text-red-400 font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-red-500/30 active:scale-95 transition-all text-center border border-red-500/30 flex-1"
-                     >
-                       Tolak
-                     </button>
-                   </div>
-                 )}
-              </div>
-            </div>
-          ))}
-          {transactions.length === 0 && <p className="text-sm text-text-sub text-center py-10">Belum ada transaksi.</p>}
+            ))}
+            {transactions.length === 0 && <p className="text-sm text-text-sub text-center py-10">Belum ada transaksi.</p>}
+          </div>
         </div>
       ) : activeSubTab === "sessions" ? (
         <div className="space-y-3">

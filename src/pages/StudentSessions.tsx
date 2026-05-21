@@ -18,6 +18,47 @@ export function StudentSessions() {
   const [isUploading, setIsUploading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'bank_transfer' | 'qris'>('bank_transfer');
   const [copiedText, setCopiedText] = useState(false);
+  const [paymentSettings, setPaymentSettings] = useState({
+    bank_name: "BANK BCA",
+    account_number: "223-0182-991",
+    account_name: "a/n RuangTutor Platform",
+    qris_url: "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://RuangTutorPlatformQRIS"
+  });
+
+  useEffect(() => {
+    const fetchPaymentSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('platform_settings')
+          .select('*')
+          .eq('key', 'payment_settings')
+          .single();
+        if (!error && data && data.value) {
+          setPaymentSettings(data.value);
+          return;
+        }
+      } catch (e) {
+        console.warn("DB settings table not found. Using local storage or default.", e);
+      }
+
+      const local = localStorage.getItem('rt_payment_settings');
+      if (local) {
+        try {
+          setPaymentSettings(JSON.parse(local));
+        } catch (e) {}
+      }
+    };
+
+    fetchPaymentSettings();
+
+    const handleUpdate = () => {
+      fetchPaymentSettings();
+    };
+    window.addEventListener('rt_payment_settings_updated', handleUpdate);
+    return () => {
+      window.removeEventListener('rt_payment_settings_updated', handleUpdate);
+    };
+  }, []);
 
   // Review Modal State
   const [reviewModal, setReviewModal] = useState<any>(null);
@@ -543,32 +584,18 @@ export function StudentSessions() {
                   {paymentMethod === 'bank_transfer' ? (
                     <div className="space-y-3 pt-2">
                       <div className="text-xs text-text-sub leading-relaxed">
-                        Silakan transfer nominal di atas secara tepat ke salah satu rekening resmi platform berikut:
+                        Silakan transfer nominal di atas secara tepat ke rekening resmi platform berikut:
                       </div>
                       
                       <div className="space-y-2">
                         <div className="bg-bg-2 border border-border p-3 rounded-lg flex justify-between items-center">
                           <div>
-                            <span className="block text-[10px] text-text-sub font-semibold">BANK BCA</span>
-                            <span className="font-bold font-mono tracking-wide text-text-main">123-456-7890</span>
-                            <span className="block text-[9px] text-text-sub leading-none">a/n RuangTutor Platform</span>
+                            <span className="block text-[10px] text-text-sub font-semibold">{paymentSettings.bank_name}</span>
+                            <span className="font-bold font-mono tracking-wide text-text-main">{paymentSettings.account_number}</span>
+                            <span className="block text-[9px] text-text-sub leading-none mt-1">{paymentSettings.account_name}</span>
                           </div>
                           <button
-                            onClick={() => handleCopyText('1234567890')}
-                            className="text-lime hover:text-lime-dim p-1.5"
-                          >
-                            <Copy size={16} />
-                          </button>
-                        </div>
-
-                        <div className="bg-bg-2 border border-border p-3 rounded-lg flex justify-between items-center">
-                          <div>
-                            <span className="block text-[10px] text-text-sub font-semibold">BANK MANDIRI</span>
-                            <span className="font-bold font-mono tracking-wide text-text-main">111-222-3334</span>
-                            <span className="block text-[9px] text-text-sub leading-none">a/n RuangTutor Platform</span>
-                          </div>
-                          <button
-                            onClick={() => handleCopyText('1112223334')}
+                            onClick={() => handleCopyText(paymentSettings.account_number)}
                             className="text-lime hover:text-lime-dim p-1.5"
                           >
                             <Copy size={16} />
@@ -579,17 +606,19 @@ export function StudentSessions() {
                   ) : (
                     <div className="text-center pt-2 space-y-3">
                       <div className="text-xs text-text-sub">
-                        Scan kode QRIS ini menggunakan GoPay, OVO, Dana, ShopeePay, atau m-Banking Anda:
+                        Scan kode QRIS resmi platform ini menggunakan GoPay, OVO, Dana, ShopeePay, atau m-Banking Anda:
                       </div>
-                      <div className="bg-white p-3 rounded-xl inline-block border border-border/40 shadow-sm">
-                        {/* Dynamic aesthetic QR mockup */}
-                        <div className="w-40 h-40 bg-zinc-100 flex flex-col items-center justify-center border-2 border-dashed border-zinc-300 rounded relative overflow-hidden">
-                          <div className="absolute inset-4 border-2 border-black"></div>
-                          <div className="w-12 h-12 bg-black flex items-center justify-center text-white text-xs font-bold font-display rounded-lg z-10">QRIS</div>
-                          <div className="absolute inset-0 bg-[radial-gradient(#1c1c1c_20%,transparent_20%)] [background-size:8px_8px] opacity-40"></div>
-                        </div>
+                      <div className="bg-white p-2.5 rounded-xl inline-block border border-border/40 shadow-sm max-w-[185px] w-full aspect-square">
+                        <img 
+                          src={paymentSettings.qris_url} 
+                          alt="Platform QRIS" 
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            e.currentTarget.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=RuangTutorPlatformQRIS";
+                          }}
+                        />
                       </div>
-                      <div className="text-[10px] text-orange-400 font-mono tracking-wider">MOCKUP QRIS &bull; SCAN AMAN</div>
+                      <div className="text-[10px] text-lime font-bold tracking-wider font-mono">SCAN QRIS PLATFORM &bull; OTOMATIS AMAN</div>
                     </div>
                   )}
 
