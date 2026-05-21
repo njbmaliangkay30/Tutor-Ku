@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Users, BookOpen, CreditCard, TrendingUp, CheckCircle, Clock, Calendar, ShieldCheck, ArrowUpRight, Check } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import { useAppContext } from "../../AppContext";
 
 interface SessionData {
   id: string;
@@ -33,6 +34,7 @@ interface StatDetails {
 }
 
 export function AdminOverview() {
+  const { setActiveTab } = useAppContext();
   const [stats, setStats] = useState<StatDetails>({
     activeTutors: 0,
     activeStudents: 0,
@@ -310,7 +312,10 @@ export function AdminOverview() {
         </div>
 
         {/* Menunggu Verifikasi */}
-        <div className="bg-card p-5 rounded-2xl border border-border flex flex-col gap-3 relative overflow-hidden group hover:border-lime/40 transition-all duration-300">
+        <div 
+          onClick={() => setActiveTab("admin-verifications")}
+          className="bg-card p-5 rounded-2xl border border-border flex flex-col gap-3 relative overflow-hidden group hover:border-lime/40 transition-all duration-300 cursor-pointer active:scale-98"
+        >
           <div className="flex items-start justify-between">
             <div className="w-9 h-9 rounded-xl bg-warning/10 text-warning flex items-center justify-center">
               <Clock size={18} />
@@ -328,7 +333,10 @@ export function AdminOverview() {
         </div>
 
         {/* Transaksi Pending */}
-        <div className="bg-card p-5 rounded-2xl border border-border flex flex-col gap-3 relative overflow-hidden group hover:border-[#22d3ee]/40 transition-all duration-300">
+        <div 
+          onClick={() => setActiveTab("admin-transactions")}
+          className="bg-card p-5 rounded-2xl border border-border flex flex-col gap-3 relative overflow-hidden group hover:border-[#22d3ee]/40 transition-all duration-300 cursor-pointer active:scale-98"
+        >
           <div className="flex items-start justify-between">
             <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
               <CreditCard size={18} />
