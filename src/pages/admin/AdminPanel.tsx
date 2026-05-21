@@ -155,7 +155,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
         if (trxData) {
           const { data: profilesData, error: profsError } = await supabase
             .from("profiles")
-            .select("id, full_name, email");
+            .select("id, full_name, phone");
           
           if (!profsError && profilesData) {
             const stitched = trxData.map((trx: any) => {
