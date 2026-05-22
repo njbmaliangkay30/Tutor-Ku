@@ -163,6 +163,11 @@ export function TutorDetail() {
       return;
     }
 
+    if (!selectedSubject) {
+      alert("Silakan pilih mata pelajaran terlebih dahulu untuk menghindari kesalahan memilih mapel.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const [h, m] = selectedTime.split(':').map(Number);
@@ -172,7 +177,7 @@ export function TutorDetail() {
       const endDateTime = new Date(startDateTime);
       endDateTime.setHours(h + 1, m + 30, 0, 0);
 
-      const subjectName = selectedSubject || (tutor.tags?.length > 0 ? tutor.tags[0] : tutor.major);
+      const subjectName = selectedSubject;
 
       if (usePackageSession && activePackage) {
         // BOOK USING PREPAID BUNDLE SESSION
@@ -219,7 +224,9 @@ export function TutorDetail() {
           amount: 0,
           transaction_type: "session_booking",
           status: "success",
-          reference_id: `PKG-SPEND-${Date.now()}`
+          reference_id: `PKG-SPEND-${Date.now()}`,
+          session_id: sessionData?.id,
+          student_package_id: activePackage.id
         });
 
         // 4. Notify tutor
@@ -708,7 +715,7 @@ export function TutorDetail() {
             JADWAL SESI PERTAMA
           </div>
           
-          <div className="flex overflow-x-auto gap-2 pb-2 custom-scrollbar mb-2">
+          <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar mb-2">
             {availableDates.length > 0 ? availableDates.map(d => {
               const isSelected = selectedDate?.toISOString() === d.toISOString();
               return (
@@ -748,13 +755,14 @@ export function TutorDetail() {
 
         <div className="flex flex-col gap-[5px] mb-4">
           <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
-            Mata Pelajaran
+            Mata Pelajaran <span className="text-red-500 font-bold">*</span>
           </label>
           <select 
-            value={selectedSubject || (tutor.tags?.length > 0 ? tutor.tags[0] : tutor.major)}
+            value={selectedSubject}
             onChange={(e) => setSelectedSubject(e.target.value)}
             className="bg-bg-1 border-[1.5px] border-border rounded-xl p-3 text-[13px] font-bold text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime/50 transition-colors"
           >
+            <option value="">-- Pilih Mata Pelajaran (Wajib) --</option>
             {tutor.tags && tutor.tags.length > 0 ? (
                tutor.tags.map((tag: string, idx: number) => (
                  <option key={idx} value={tag}>{tag}</option>

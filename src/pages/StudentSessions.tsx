@@ -518,11 +518,12 @@ export function StudentSessions() {
                     </div>
                     {(() => {
                       const parsed = parseSessionNotes(session.material_notes);
-                      if (!parsed.notes) return null;
                       return (
                         <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">
                           <span className="text-xs text-text-sub font-medium font-mono uppercase tracking-wider">Catatan Tambahan:</span>
-                           <p className="text-sm font-sans italic">"{parsed.notes}"</p>
+                           <p className="text-sm font-sans italic">
+                             {parsed.notes ? `"${parsed.notes}"` : "- (Membahas materi umum sesuai pelajaran)"}
+                           </p>
                         </div>
                       );
                     })()}

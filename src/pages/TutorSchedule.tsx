@@ -334,16 +334,14 @@ export function TutorSchedule() {
                         </div>
                       </div>
                     )}
-                    {parsed.notes && (
-                      <div className="mb-6">
-                        <div className="text-xs text-text-sub font-bold font-mono tracking-wider uppercase mb-2">
-                          Catatan Tambahan Siswa
-                        </div>
-                        <p className="bg-bg-2 p-3 text-sm rounded-lg border border-border leading-relaxed font-sans italic">
-                          "{parsed.notes}"
-                        </p>
+                    <div className="mb-6">
+                      <div className="text-xs text-text-sub font-bold font-mono tracking-wider uppercase mb-2">
+                        Catatan Tambahan Siswa
                       </div>
-                    )}
+                      <p className="bg-bg-2 p-3 text-sm rounded-lg border border-border leading-relaxed font-sans italic">
+                        {parsed.notes ? `"${parsed.notes}"` : "Siswa tidak menuliskan catatan tambahan."}
+                      </p>
+                    </div>
                   </>
                 );
               })()}

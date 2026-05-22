@@ -247,10 +247,9 @@ export function TutorSessions() {
                         </div>
                         {(() => {
                           const parsed = parseSessionNotes(session.material_notes);
-                          if (!parsed.notes) return null;
                           return (
                             <p className="text-[11px] text-text-sub italic mt-2 border-t border-border/30 pt-2 line-clamp-2">
-                              "{parsed.notes}"
+                              {parsed.notes ? `"${parsed.notes}"` : "Topik: Membahas materi umum"}
                             </p>
                           );
                         })()}
@@ -460,13 +459,14 @@ export function TutorSessions() {
                         </div>
                         {(() => {
                           const parsed = parseSessionNotes(session.material_notes);
-                          if (!parsed.notes) return null;
                           return (
                             <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">
                               <span className="text-xs text-text-sub font-medium font-mono uppercase tracking-wider">
-                                Catatan:
+                                Catatan/Topik Bahasan:
                               </span>
-                              <p className="text-sm font-sans italic">"{parsed.notes}"</p>
+                              <p className="text-sm font-sans italic text-text-main">
+                                {parsed.notes ? `"${parsed.notes}"` : "Siswa tidak menuliskan topik spesifik (belajar materi umum sesuai mapel)."}
+                              </p>
                             </div>
                           );
                         })()}
@@ -676,14 +676,12 @@ export function TutorSessions() {
                           </span>
                         </div>
                       )}
-                      {parsed.notes && (
-                        <div className="border-t border-border/40 pt-2.5">
-                          <span className="block text-[10px] text-text-sub font-mono uppercase pb-1">Catatan Siswa</span>
-                          <p className="text-xs text-text-sub italic bg-card/50 p-2.5 rounded-lg border border-border/30 font-sans">
-                            "{parsed.notes}"
-                          </p>
-                        </div>
-                      )}
+                      <div className="border-t border-border/40 pt-2.5">
+                        <span className="block text-[10px] text-text-sub font-mono uppercase pb-1">Catatan Siswa (Topik Bahasan)</span>
+                        <p className="text-xs text-text-sub italic bg-card/50 p-2.5 rounded-lg border border-border/30 font-sans">
+                          {parsed.notes ? `"${parsed.notes}"` : "Siswa tidak menuliskan topik spesifik (belajar materi umum sesuai mapel)."}
+                        </p>
+                      </div>
                     </>
                   );
                 })()}

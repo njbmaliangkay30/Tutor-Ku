@@ -179,11 +179,12 @@ export function TutorHistory() {
 
               {(() => {
                 const parsed = parseSessionNotes(session.material_notes);
-                if (!parsed.notes) return null;
                 return (
                   <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">
                     <span className="text-[11px] font-bold text-text-sub uppercase tracking-wider font-mono">Topik Bahasan</span>
-                    <p className="text-[13px] font-sans italic">"{parsed.notes}"</p>
+                    <p className="text-[13px] font-sans italic">
+                      {parsed.notes ? `"${parsed.notes}"` : "- (Membahas materi umum sesuai pelajaran)"}
+                    </p>
                   </div>
                 );
               })()}

@@ -225,6 +225,27 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
             });
           }
 
+          // Dynamically link 0-rupiah transaction proofs to their parent bundle purchase
+          stitched = stitched.map((trx: any) => {
+            if (trx.amount === 0) {
+              // Find matching parent transaction
+              let parentTrx = null;
+              if (trx.student_package_id) {
+                parentTrx = stitched.find(t => t.student_package_id === trx.student_package_id && t.amount > 0 && t.proof_url);
+              }
+              if (!parentTrx) {
+                parentTrx = stitched.find(t => t.user_id === trx.user_id && t.transaction_type === "bundle_purchase" && t.proof_url);
+              }
+              if (parentTrx) {
+                return {
+                  ...trx,
+                  proof_url: parentTrx.proof_url
+                };
+              }
+            }
+            return trx;
+          });
+
           // Filter out transactions where the associated session is 'pending'
           const visibleTrx = stitched.filter((trx: any) => {
             const assocSession = Array.isArray(trx.sessions) ? trx.sessions[0] : trx.sessions;
@@ -782,7 +803,30 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                      {trx.transaction_type && trx.transaction_type.replace(/_/g, " ")} &bull; <span className="text-text-main font-bold">{trx.profiles?.full_name || "Unknown User"}</span>
                    </p>
                    
-                   {!trx.proof_url ? (
+                   {trx.amount === 0 ? (
+                     <div className="mt-3 flex flex-col items-start gap-1.5 bg-cyan-500/5 p-2 rounded-lg border border-cyan-500/10 mb-2">
+                       <span className="text-[10px] text-text-sub font-mono uppercase font-bold">Bukti Pembelian Paket (Hub):</span>
+                       {trx.proof_url ? (
+                         <div className="flex flex-wrap gap-2 items-center">
+                           <a 
+                             href={trx.proof_url} 
+                             target="_blank" 
+                             rel="noopener noreferrer" 
+                             className="inline-flex items-center gap-1 text-xs text-lime bg-lime-dim/20 px-3 py-1.5 rounded-lg border border-lime/30 font-semibold hover:bg-lime-dim/30 transition-colors"
+                           >
+                             👁 Lihat Bukti Transfer Paket ↗
+                           </a>
+                           <span className="text-[9px] text-cyan-400 bg-cyan-500/10 border border-cyan-500/25 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block font-sans">
+                             🔗 Auto Terhubung
+                           </span>
+                         </div>
+                       ) : (
+                         <span className="text-[11px] text-text-light italic">
+                           Otomatis terhubung dengan bukti bayar dari transaksi pembelian paket terkait.
+                         </span>
+                       )}
+                     </div>
+                   ) : !trx.proof_url ? (
                       <div className="mt-3 flex flex-col items-start gap-1.5">
                         <span className="text-[10px] text-text-sub font-mono uppercase font-bold">Unggah Bukti (CS / Admin):</span>
                         <div className="relative">
