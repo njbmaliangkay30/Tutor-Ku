@@ -1268,7 +1268,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                       <div>
                         <p className="text-text-sub text-[9px] mb-0.5">Tarif / Jam</p>
                         <p className="text-xs font-bold text-text-main">
-                          Rp {selectedUser.tutor_details.hourly_rate?.toLocaleString() || 0}
+                          Rp {(selectedUser.tutor_details.hourly_rate || 50000).toLocaleString()}
                         </p>
                       </div>
                       <div>
@@ -1411,7 +1411,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                 
                 <div className="flex flex-col gap-1 text-left md:text-right bg-bg-2 px-4 py-3 rounded-xl border border-border w-full md:w-auto shrink-0 animate-pgIn">
                   <span className="text-[10px] font-bold font-mono tracking-wider text-text-sub uppercase">Tarif Mengajar</span>
-                  <span className="text-lg font-bold text-lime">Rp {selectedGalleryTutor.tutor_details?.hourly_rate?.toLocaleString()}/jam</span>
+                  <span className="text-lg font-bold text-lime">Rp {(selectedGalleryTutor.tutor_details?.hourly_rate || 50000).toLocaleString()}/jam</span>
                 </div>
               </div>
 

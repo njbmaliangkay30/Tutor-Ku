@@ -69,33 +69,7 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        document.activeElement?.tagName === "INPUT" ||
-        document.activeElement?.tagName === "TEXTAREA"
-      ) {
-        return;
-      }
-      
-      if (e.key === "/") {
-        e.preventDefault();
-        setUserRole("admin");
-        setActiveTab("home");
-      } else if (e.key === "1") {
-        e.preventDefault();
-        setUserRole("tutor");
-        setActiveTab("home");
-      } else if (e.key === "2") {
-        e.preventDefault();
-        setUserRole("siswa");
-        setActiveTab("home");
-      }
-    };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [setUserRole, setActiveTab]);
 
   useEffect(() => {
     let timeoutId: number;

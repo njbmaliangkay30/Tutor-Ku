@@ -358,7 +358,10 @@ export function Profile() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-4 cursor-pointer hover:bg-bg-3/50 transition-colors border-b border-border/60">
+              <div 
+                onClick={() => setActiveTab('tutor_dashboard')}
+                className="flex items-center gap-3 p-4 cursor-pointer hover:bg-bg-3/50 transition-colors border-b border-border/60"
+              >
                 <CreditCard className="text-text-sub" size={20} />
                 <div className="flex-1 flex justify-between items-center">
                   <div>
@@ -370,7 +373,7 @@ export function Profile() {
                     </div>
                   </div>
                   <span className="text-[12px] font-bold font-mono text-lime">
-                    Rp 50k / jam
+                    Rp {(tutorProfileData?.hourly_rate || 50000).toLocaleString('id-ID')} / jam
                   </span>
                 </div>
               </div>

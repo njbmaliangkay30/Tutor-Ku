@@ -1,9 +1,14 @@
+import { useEffect } from 'react';
 import { Search, ChevronRight, Sigma, Atom, Languages, Code2, Medal, Flame, Star } from 'lucide-react';
 import { getTagStyle, getAvatarColor } from '../data';
 import { useAppContext } from '../AppContext';
 
 export function PageHome() {
-  const { setActiveTab, setSubjectFilter, setSelectedTutorId, tutors } = useAppContext();
+  const { setActiveTab, setSubjectFilter, setSelectedTutorId, tutors, fetchTutors } = useAppContext();
+
+  useEffect(() => {
+    fetchTutors();
+  }, [fetchTutors]);
 
   const categories = [
     { icon: Sigma, label: 'Hitung', keyword: 'Matematika' },

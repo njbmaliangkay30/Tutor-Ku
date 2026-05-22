@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { CheckCircle, XCircle, Clock, DollarSign } from 'lucide-react';
+import { useAppContext } from '../../AppContext';
 
 export function AdminRateRequests() {
+  const { fetchTutors } = useAppContext();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,6 +48,9 @@ export function AdminRateRequests() {
         .from('rate_requests')
         .update({ status: newStatus })
         .eq('id', id);
+
+      // Refresh listings in context
+      fetchTutors();
 
       fetchRequests();
     } catch (err) {

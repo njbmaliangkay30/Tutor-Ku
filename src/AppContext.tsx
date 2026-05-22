@@ -33,6 +33,7 @@ type AppContextType = {
   isLoadingProfile: boolean;
   targetSessionId: string | null;
   setTargetSessionId: (id: string | null) => void;
+  fetchTutors: () => Promise<void>;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -110,6 +111,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
 
       setTutors(mapped);
+
+      // Self-heal database tutor_profiles with 0 or null hourly_rate to 50000
+      const zeroRateTutors = (data || []).filter((t: any) => !t.hourly_rate || t.hourly_rate === 0);
+      if (zeroRateTutors.length > 0) {
+        Promise.all(
+          zeroRateTutors.map((t: any) =>
+            supabase
+              .from("tutor_profiles")
+              .update({ hourly_rate: 50000 })
+              .eq("id", t.id)
+          )
+        ).catch((err) => console.error("Self-heal rates failed:", err));
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -216,7 +230,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
           .select("*")
           .eq("id", userId)
           .single();
-        if (tutorProf) setTutorProfileData(tutorProf);
+        if (tutorProf) {
+          if (!tutorProf.hourly_rate || tutorProf.hourly_rate === 0) {
+            // Self-heal logged-in tutor rate as well
+            await supabase
+              .from("tutor_profiles")
+              .update({ hourly_rate: 50000 })
+              .eq("id", userId);
+            tutorProf.hourly_rate = 50000;
+          }
+          setTutorProfileData(tutorProf);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -336,6 +360,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isLoadingProfile,
         targetSessionId,
         setTargetSessionId,
+        fetchTutors,
       }}
     >
       {children}

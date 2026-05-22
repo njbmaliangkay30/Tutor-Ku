@@ -14,8 +14,13 @@ export function Search() {
     setSubjectFilter,
     setSelectedTutorId,
     tutors,
-    isLoadingTutors
+    isLoadingTutors,
+    fetchTutors
   } = useAppContext();
+
+  useEffect(() => {
+    fetchTutors();
+  }, [fetchTutors]);
 
   const allSubjects = ["Semua", ...SUBJECTS];
 

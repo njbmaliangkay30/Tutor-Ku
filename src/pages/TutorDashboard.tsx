@@ -79,7 +79,7 @@ export function TutorDashboard() {
         
         if (tutorProfile) {
           setTutorStats({ rating: tutorProfile.rating || 0, total_reviews: tutorProfile.total_reviews || 0 });
-          setHourlyRate(tutorProfile.hourly_rate || 0);
+          setHourlyRate(tutorProfile.hourly_rate || 50000);
           if (tutorProfile.schedule) {
             setTutorSchedule(tutorProfile.schedule);
           }
