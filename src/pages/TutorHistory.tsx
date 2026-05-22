@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
 import { Calendar, Clock, Star, MapPin, Eye, EyeOff } from "lucide-react";
 import { getAvatarColor } from "../data";
+import { parseSessionNotes } from './TutorSessions';
 
 export function TutorHistory() {
   const [sessions, setSessions] = useState<any[]>([]);
@@ -125,6 +126,39 @@ export function TutorHistory() {
                     <div className="text-xs text-text-sub font-mono">
                       {session.subject}
                     </div>
+                    {(() => {
+                      const parsed = parseSessionNotes(session.material_notes);
+                      if (!parsed.meta) return null;
+                      if (parsed.meta === "prepaid") {
+                        return (
+                          <div className="mt-1">
+                            <span className="text-[9px] bg-cyan-500/15 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
+                              ⚡ Kuota Paket
+                            </span>
+                          </div>
+                        );
+                      }
+                      if (parsed.meta === "single") {
+                        return (
+                          <div className="mt-1">
+                            <span className="text-[9px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
+                              🎯 Sesi Satuan
+                            </span>
+                          </div>
+                        );
+                      }
+                      if (parsed.meta.startsWith("bundle_init:")) {
+                        const pkgName = parsed.meta.replace("bundle_init:", "");
+                        return (
+                          <div className="mt-1">
+                            <span className="text-[9px] bg-indigo-500/15 text-indigo-400 border border-indigo-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
+                              📦 Sesi Paket: {pkgName}
+                            </span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
                 <div className="bg-bg-2 text-text-sub border border-border text-[10px] font-bold px-2 py-1 rounded font-mono tracking-wider">
@@ -143,12 +177,16 @@ export function TutorHistory() {
                 </div>
               </div>
 
-              {session.material_notes && (
-                <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">
-                  <span className="text-[11px] font-bold text-text-sub uppercase tracking-wider font-mono">Topik Bahasan</span>
-                  <p className="text-[13px]">{session.material_notes}</p>
-                </div>
-              )}
+              {(() => {
+                const parsed = parseSessionNotes(session.material_notes);
+                if (!parsed.notes) return null;
+                return (
+                  <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">
+                    <span className="text-[11px] font-bold text-text-sub uppercase tracking-wider font-mono">Topik Bahasan</span>
+                    <p className="text-[13px] font-sans italic">"{parsed.notes}"</p>
+                  </div>
+                );
+              })()}
 
               {/* Review Section */}
               {(() => {

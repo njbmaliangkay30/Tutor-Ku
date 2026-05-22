@@ -5,6 +5,29 @@ import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
 import { getAvatarColor } from '../data';
 
+export const parseSessionNotes = (rawNotes: string | null | undefined) => {
+  if (!rawNotes) return { meta: null, notes: "" };
+  if (rawNotes.startsWith("[META:")) {
+    const parts = rawNotes.split(" || ");
+    const metaTag = parts[0].replace("[META:", "").replace("]", "");
+    const notesContent = parts.slice(1).join(" || ").trim();
+    return { meta: metaTag, notes: notesContent };
+  }
+  // Backwards compatibility
+  if (rawNotes === "Sesi menggunakan kuota paket (Prepaid)") {
+    return { meta: "prepaid", notes: "" };
+  }
+  if (rawNotes === "Sesi baru") {
+    return { meta: "single", notes: "" };
+  }
+  if (rawNotes.startsWith("Sesi 1 dari Paket")) {
+    const match = rawNotes.match(/Sesi 1 dari Paket \(([^)]+)\)/);
+    const pkgName = match ? match[1] : "Paket";
+    return { meta: `bundle_init:${pkgName}`, notes: "" };
+  }
+  return { meta: null, notes: rawNotes };
+};
+
 export function StudentSessions() {
   const [type, setType] = useState<'upcoming' | 'past' | 'invoices'>('upcoming');
   const [sessions, setSessions] = useState<any[]>([]);
@@ -444,6 +467,39 @@ export function StudentSessions() {
                       <div>
                         <div className="font-bold text-text-main font-display">{session.tutor_profiles?.profiles?.full_name || 'Tutor'}</div>
                         <div className="text-xs text-text-sub font-mono">{session.subject}</div>
+                        {(() => {
+                          const parsed = parseSessionNotes(session.material_notes);
+                          if (!parsed.meta) return null;
+                          if (parsed.meta === "prepaid") {
+                            return (
+                              <div className="mt-1">
+                                <span className="text-[9px] bg-cyan-500/15 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
+                                  ⚡ Kuota Paket (Prepaid)
+                                </span>
+                              </div>
+                            );
+                          }
+                          if (parsed.meta === "single") {
+                            return (
+                              <div className="mt-1">
+                                <span className="text-[9px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
+                                  🎯 Sesi Satuan (Single)
+                                </span>
+                              </div>
+                            );
+                          }
+                          if (parsed.meta.startsWith("bundle_init:")) {
+                            const pkgName = parsed.meta.replace("bundle_init:", "");
+                            return (
+                              <div className="mt-1">
+                                <span className="text-[9px] bg-indigo-500/15 text-indigo-400 border border-indigo-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
+                                  📦 Sesi Paket: {pkgName}
+                                </span>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
                       </div>
                     </div>
                     <div className={`text-[10px] font-bold px-2.5 py-1.5 rounded font-mono uppercase tracking-wider ${statusColor}`}>
@@ -460,12 +516,16 @@ export function StudentSessions() {
                       <Clock size={16} className="text-text-sub" />
                       <span>{formatTime(session.start_time)} - {formatTime(session.end_time)}</span>
                     </div>
-                    {session.material_notes && (
-                      <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">
-                        <span className="text-xs text-text-sub font-medium font-mono uppercase tracking-wider">Catatan Materi:</span>
-                        <p className="text-sm">{session.material_notes}</p>
-                      </div>
-                    )}
+                    {(() => {
+                      const parsed = parseSessionNotes(session.material_notes);
+                      if (!parsed.notes) return null;
+                      return (
+                        <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">
+                          <span className="text-xs text-text-sub font-medium font-mono uppercase tracking-wider">Catatan Tambahan:</span>
+                           <p className="text-sm font-sans italic">"{parsed.notes}"</p>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {type === 'upcoming' ? (

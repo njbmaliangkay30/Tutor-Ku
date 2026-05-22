@@ -190,7 +190,7 @@ export function TutorDetail() {
             session_date: selectedDate.toISOString().split('T')[0],
             start_time: startDateTime.toISOString(),
             end_time: endDateTime.toISOString(),
-            material_notes: notes || "Sesi menggunakan kuota paket (Prepaid)",
+            material_notes: `[META:prepaid] || ${notes.trim()}`,
             status: 'pending',
             payment_status: 'paid', // Prepaid
             meeting_type: meetingType,
@@ -254,7 +254,7 @@ export function TutorDetail() {
               session_date: selectedDate.toISOString().split('T')[0],
               start_time: startDateTime.toISOString(),
               end_time: endDateTime.toISOString(),
-              material_notes: notes || "Sesi baru",
+              material_notes: `[META:single] || ${notes.trim()}`,
               status: 'pending',
               payment_status: 'unpaid', // Typically paid later or paid on check-out
               meeting_type: meetingType,
@@ -339,7 +339,7 @@ export function TutorDetail() {
               session_date: selectedDate.toISOString().split('T')[0],
               start_time: startDateTime.toISOString(),
               end_time: endDateTime.toISOString(),
-              material_notes: notes || `Sesi 1 dari Paket (${pkgInfo.name}) (Telah Dipesan)`,
+              material_notes: `[META:bundle_init:${pkgInfo.name}] || ${notes.trim()}`,
               status: 'pending',
               payment_status: 'unpaid', // Bundles are pre-paid but unpaid until client pays
               meeting_type: meetingType,

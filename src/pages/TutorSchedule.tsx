@@ -4,6 +4,7 @@ import { Calendar as CalendarIcon, Clock, Check, X, User } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAppContext } from "../AppContext";
 import { getAvatarColor } from "../data";
+import { parseSessionNotes } from './TutorSessions';
 
 export function TutorSchedule() {
   const { userProfile, userRole, setActiveTab } = useAppContext();
@@ -319,14 +320,33 @@ export function TutorSchedule() {
                 )}
               </div>
 
-              <div className="mb-6">
-                <div className="text-xs text-text-sub font-bold font-mono tracking-wider uppercase mb-2">
-                  Catatan Materi Siswa
-                </div>
-                <p className="bg-bg-2 p-3 text-sm rounded-lg border border-border leading-relaxed">
-                  "{bookingModal.material_notes}"
-                </p>
-              </div>
+              {(() => {
+                const parsed = parseSessionNotes(bookingModal.material_notes);
+                return (
+                  <>
+                    {parsed.meta && (
+                      <div className="mb-4 bg-lime/10 p-2.5 rounded-lg border border-lime/20">
+                        <span className="text-[10px] font-mono text-lime uppercase mb-1 block">Tipe Pemesanan</span>
+                        <div className="text-[12px] font-bold">
+                          {parsed.meta === "prepaid" ? "⚡ Kuota Paket (Prepaid)" : 
+                           parsed.meta === "single" ? "🎯 Sesi Satuan" : 
+                           `📦 Sesi Paket (${parsed.meta.replace("bundle_init:", "")})`}
+                        </div>
+                      </div>
+                    )}
+                    {parsed.notes && (
+                      <div className="mb-6">
+                        <div className="text-xs text-text-sub font-bold font-mono tracking-wider uppercase mb-2">
+                          Catatan Tambahan Siswa
+                        </div>
+                        <p className="bg-bg-2 p-3 text-sm rounded-lg border border-border leading-relaxed font-sans italic">
+                          "{parsed.notes}"
+                        </p>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
 
               <div className="flex gap-3">
                 <button

@@ -18,8 +18,65 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
   // Modal states
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [uploadingTrxId, setUploadingTrxId] = useState<string | null>(null);
+
+  const handleAdminUploadReceipt = async (trx: any, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploadingTrxId(trx.id);
+    try {
+      const studentName = (trx.profiles?.full_name || 'Student').toString().trim().replace(/[^a-zA-Z0-9]/g, '_');
+      const now = new Date();
+      const formatDigit = (num: number) => String(num).padStart(2, '0');
+      const dateStr = `${now.getFullYear()}-${formatDigit(now.getMonth() + 1)}-${formatDigit(now.getDate())}_${formatDigit(now.getHours())}-${formatDigit(now.getMinutes())}-${formatDigit(now.getSeconds())}`;
+      const fileExt = file.name.split('.').pop() || 'png';
+      const cleanFileName = `bukti_admin_${studentName}_${dateStr}_trx_${trx.id.substring(0, 8)}.${fileExt}`;
+      
+      // Try upload to 'receipts'
+      let { error: uploadError } = await supabase.storage
+        .from('receipts')
+        .upload(cleanFileName, file);
+
+      let publicUrl = '';
+      if (uploadError) {
+         console.warn('Failed upload receipts bucket, trying avatars fallback:', uploadError);
+         // Try avatars fallback
+         const { error: fallbackError } = await supabase.storage
+           .from('avatars')
+           .upload(cleanFileName, file);
+         
+         if (fallbackError) throw new Error("Gagal mengunggah gambar bukti ke server: " + fallbackError.message);
+         publicUrl = supabase.storage.from('avatars').getPublicUrl(cleanFileName).data.publicUrl;
+      } else {
+         publicUrl = supabase.storage.from('receipts').getPublicUrl(cleanFileName).data.publicUrl;
+      }
+
+      // Update the transaction table with proof_url and update status to 'pending_verification'
+      const { error: dbError } = await supabase
+        .from('transactions')
+        .update({
+           status: 'pending_verification',
+           proof_url: publicUrl
+        })
+        .eq('id', trx.id);
+
+      if (dbError) throw dbError;
+
+      alert("Bukti pembayaran berhasil diunggah oleh Admin! Status transaksi menjadi 'Menunggu Verifikasi'.");
+      fetchData();
+    } catch (err: any) {
+      console.error(err);
+      alert("Gagal mengunggah bukti: " + err.message);
+    } finally {
+      setUploadingTrxId(null);
+    }
+  };
 
   const handleApprovePayment = async (trx: any) => {
+    if (!trx.proof_url) {
+      alert("Tidak dapat menyetujui transaksi karena belum ada data bukti pembayaran! Silakan unggah bukti bayar terlebih dahulu.");
+      return;
+    }
     if (!window.confirm(`Setujui pembayaran dari ${trx.profiles?.full_name || 'Siswa'}?`)) return;
     try {
       // 1. Update transaction status
@@ -147,7 +204,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
       } else if (activeSubTab === "transactions") {
         const { data: trxData, error: trxError } = await supabase
           .from("transactions")
-          .select("*")
+          .select("*, sessions(id, status, subject, session_date)")
           .order("created_at", { ascending: false });
         
         if (trxError) throw trxError;
@@ -157,18 +214,27 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
             .from("profiles")
             .select("id, full_name, phone");
           
+          let stitched = trxData;
           if (!profsError && profilesData) {
-            const stitched = trxData.map((trx: any) => {
+            stitched = trxData.map((trx: any) => {
               const matchedProfile = profilesData.find((p: any) => p.id === trx.user_id);
               return {
                 ...trx,
                 profiles: matchedProfile || null
               };
             });
-            setTransactions(stitched);
-          } else {
-            setTransactions(trxData);
           }
+
+          // Filter out transactions where the associated session is 'pending'
+          const visibleTrx = stitched.filter((trx: any) => {
+            const assocSession = Array.isArray(trx.sessions) ? trx.sessions[0] : trx.sessions;
+            if (assocSession && assocSession.status === 'pending') {
+              return false;
+            }
+            return true;
+          });
+
+          setTransactions(visibleTrx);
         }
       } else if (activeSubTab === "sessions" || activeSubTab === "reviews") {
         const [sessionsRes, reviewsRes, tutorsRes] = await Promise.all([
@@ -715,18 +781,56 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                    <p className="text-sm text-text-main capitalize mt-1 font-medium text-lime">
                      {trx.transaction_type && trx.transaction_type.replace(/_/g, " ")} &bull; <span className="text-text-main font-bold">{trx.profiles?.full_name || "Unknown User"}</span>
                    </p>
-                   {trx.proof_url && (
-                      <div className="mt-2.5">
-                        <a 
-                          href={trx.proof_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="inline-flex items-center gap-1 text-xs text-lime bg-lime-dim/20 px-3 py-1.5 rounded-lg border border-lime/30 font-semibold"
-                        >
-                          👁 Lihat Bukti Transfer ↗
-                        </a>
+                   
+                   {!trx.proof_url ? (
+                      <div className="mt-3 flex flex-col items-start gap-1.5">
+                        <span className="text-[10px] text-text-sub font-mono uppercase font-bold">Unggah Bukti (CS / Admin):</span>
+                        <div className="relative">
+                          {uploadingTrxId === trx.id ? (
+                            <span className="text-xs text-lime font-mono animate-pulse">Mengunggah file...</span>
+                          ) : (
+                            <label className="inline-flex items-center gap-1.5 text-xs text-lime bg-lime/10 border border-lime/30 px-3 py-1.5 rounded-lg hover:bg-lime/20 cursor-pointer transition-colors font-semibold">
+                              <span>📂 Pilih Bukti Pembayaran</span>
+                              <input 
+                                type="file" 
+                                accept="image/*"
+                                onChange={(e) => handleAdminUploadReceipt(trx, e)}
+                                className="hidden"
+                              />
+                            </label>
+                          )}
+                        </div>
+                      </div>
+                   ) : (
+                      <div className="mt-3 flex flex-col items-start gap-1.5">
+                        <span className="text-[10px] text-text-sub font-mono uppercase font-bold">Bukti Pembayaran:</span>
+                        <div className="flex flex-wrap gap-2 items-center">
+                          <a 
+                            href={trx.proof_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="inline-flex items-center gap-1 text-xs text-lime bg-lime-dim/20 px-3 py-1.5 rounded-lg border border-lime/30 font-semibold hover:bg-lime-dim/30 transition-colors"
+                          >
+                            👁 Lihat Bukti Transfer ↗
+                          </a>
+                          
+                          {uploadingTrxId === trx.id ? (
+                            <span className="text-xs text-lime font-mono animate-pulse ml-2">Mengunggah file...</span>
+                          ) : (
+                            <label className="text-[10px] text-text-sub bg-bg-3 hover:text-text-main border border-border px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors font-mono">
+                              Update Bukti
+                              <input 
+                                type="file" 
+                                accept="image/*"
+                                onChange={(e) => handleAdminUploadReceipt(trx, e)}
+                                className="hidden"
+                              />
+                            </label>
+                          )}
+                        </div>
                       </div>
                    )}
+                   
                    {trx.rejection_reason && trx.status === 'failed' && (
                       <p className="text-xs text-red-400 bg-red-400/5 p-2 rounded border border-red-500/15 mt-2 font-mono">
                         Alasan Tolak: "{trx.rejection_reason}"
@@ -743,11 +847,23 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                       {trx.status === 'pending_verification' ? 'Menunggu Verifikasi' : trx.status === 'success' ? 'Lunas' : trx.status === 'failed' ? 'Ditolak' : 'Belum Bayar'}
                    </span>
                    
-                   {(trx.status === 'pending' || trx.status === 'pending_verification') && (
+                   {(trx.status === 'pending' || trx.status === 'pending_verification' || trx.status === 'failed') && (
                      <div className="flex gap-1.5">
                        <button
-                         onClick={() => handleApprovePayment(trx)}
-                         className="bg-lime text-black font-bold text-xs px-3 py-1.5 rounded-lg hover:opacity-90 active:scale-95 transition-all text-center flex-1"
+                         onClick={() => {
+                           if (!trx.proof_url) {
+                             alert("Tombol setuju baru berfungsi setelah ada data bukti bayar! Silakan unggah bukti bayar terlebih dahulu.");
+                             return;
+                           }
+                           handleApprovePayment(trx);
+                         }}
+                         disabled={!trx.proof_url}
+                         title={!trx.proof_url ? "Harus ada bukti bayar untuk menyetujui" : "Setujui Pembayaran"}
+                         className={`font-bold text-xs px-3 py-1.5 rounded-lg transition-all text-center flex-1 ${
+                           trx.proof_url 
+                             ? "bg-lime text-black hover:opacity-90 active:scale-95 cursor-pointer" 
+                             : "bg-gray-600/35 text-gray-500 cursor-not-allowed opacity-55 border border-gray-600/20"
+                         }`}
                        >
                          Setujui
                        </button>
