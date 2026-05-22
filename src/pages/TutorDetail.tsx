@@ -9,6 +9,7 @@ import {
 } from "../data";
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
+import MapPicker from "../components/MapPicker";
 
 export function TutorDetail() {
   const { selectedTutorId, setSelectedTutorId, setActiveTab, userRole, tutors, user, userProfile } =
@@ -66,6 +67,34 @@ export function TutorDetail() {
   const [meetingType, setMeetingType] = useState<'online' | 'offline'>('online');
   const [location, setLocation] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
+  const [isFetchingGps, setIsFetchingGps] = useState(false);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+
+  const handleFetchGps = () => {
+    if (!navigator.geolocation) {
+      setGpsError("Browser tidak mendukung GPS Geolocation.");
+      return;
+    }
+    setIsFetchingGps(true);
+    setGpsError(null);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const mapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        setLocation((prev) => {
+          const base = prev.trim() ? prev + "\n" : "";
+          return `${base}Titik GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${mapsLink})`;
+        });
+        setIsFetchingGps(false);
+      },
+      (error) => {
+        console.error("GPS error:", error);
+        setGpsError("Gagal mendeteksi lokasi. Mohon izinkan akses GPS / lokasi.");
+        setIsFetchingGps(false);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
 
   const tutor = tutors.find((t:any) => t.id === selectedTutorId);
 
@@ -166,6 +195,35 @@ export function TutorDetail() {
     if (!selectedSubject) {
       alert("Silakan pilih mata pelajaran terlebih dahulu untuk menghindari kesalahan memilih mapel.");
       return;
+    }
+
+    if (meetingType === 'offline') {
+      if (!location.trim()) {
+        alert("Alamat detail pertemuan wajib diisi jika Anda memilih pertemuan Tatap Muka (Offline).");
+        return;
+      }
+      
+      // Validasi format lama
+      if (location.includes("Nama Tempat / Cafe / Gedung:")) {
+        const lines = location.split("\n");
+        const placeLine = lines.find(line => line.startsWith("Nama Tempat / Cafe / Gedung:"));
+        const placeNameVal = placeLine ? placeLine.replace("Nama Tempat / Cafe / Gedung:", "").trim() : "";
+        if (!placeNameVal) {
+          alert("Nama Tempat / Cafe / Gedung / Rumah wajib diisi pada peta lokasi sebelum booking.");
+          return;
+        }
+      }
+
+      // Validasi format baru (Lokasi & Detail Pertemuan)
+      if (location.includes("Lokasi & Detail Pertemuan:")) {
+        const lines = location.split("\n");
+        const locLine = lines.find(line => line.startsWith("Lokasi & Detail Pertemuan:"));
+        const locVal = locLine ? locLine.replace("Lokasi & Detail Pertemuan:", "").trim() : "";
+        if (!locVal) {
+          alert("Lokasi, detail alamat & patokan wajib diisi sebelum melakukan booking.");
+          return;
+        }
+      }
     }
 
     setIsSubmitting(true);
@@ -794,17 +852,8 @@ export function TutorDetail() {
         </div>
 
         {meetingType === 'offline' && (
-          <div className="flex flex-col gap-[5px] mb-3 animate-pgIn">
-            <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
-              Lokasi Pertemuan
-            </label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Contoh: Rumah saya, Cafe X, Perpustakaan..."
-              className="px-3 py-2.5 rounded-lg bg-bg-2 border border-border focus:border-lime focus:outline-none text-[13px] text-text-main"
-            />
+          <div className="mb-4 animate-pgIn">
+            <MapPicker value={location} onChange={setLocation} />
           </div>
         )}
 

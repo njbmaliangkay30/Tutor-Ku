@@ -937,6 +937,49 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                  <div className="text-sm text-text-sub mt-1 flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
                     <span><strong className="text-text-[#eaeaea] font-semibold dark:text-text-main">Tutor:</strong> {session.tutor?.profiles?.full_name || "-"}</span>
                     <span><strong className="text-text-[#eaeaea] font-semibold dark:text-text-main">Student:</strong> {session.student?.profiles?.full_name || "-"}</span>
+                  </div>
+                  <div className="mt-3.5 pt-3 border-t border-border/40 text-xs text-text-main w-full">
+                     {session.meeting_type === "offline" ? (
+                        <div className="bg-bg-2 p-2.5 rounded-lg border border-border/40">
+                           <span className="font-bold text-[10px] text-text-sub uppercase font-mono tracking-wider block mb-1">📍 Alamat Pertemuan Offline (Tatap Muka):</span>
+                           <div className="text-text-main font-sans break-words whitespace-pre-line text-xs font-semibold leading-relaxed">
+                              {session.location ? (
+                                 (() => {
+                                    const urlRegex = /(https?:\/\/[^\s]+)/g;
+                                    const words = session.location.split(urlRegex);
+                                    return words.map((word: string, i: number) => {
+                                       if (word.match(urlRegex)) {
+                                          return (
+                                             <a key={i} href={word} target="_blank" rel="noopener noreferrer" className="text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/15 px-1.5 py-0.5 rounded border border-lime/35 inline-flex items-center gap-0.5 ml-1 font-sans">
+                                                Buka Google Maps ↗
+                                             </a>
+                                          );
+                                       }
+                                       return word;
+                                    });
+                                 })()
+                              ) : (
+                                 <span className="text-text-sub italic">Belum diisikan oleh siswa</span>
+                              )}
+                           </div>
+                        </div>
+                     ) : (
+                        <div className="bg-bg-2 p-2.5 rounded-lg border border-border/40">
+                           <span className="font-bold text-[10px] text-text-sub uppercase font-mono tracking-wider block mb-1">🖥️ Link Sesi Online (GMeet/Zoom):</span>
+                           {session.meeting_link ? (
+                              <div className="mt-1">
+                                 <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/10 px-2.5 py-1 rounded border border-lime/25 font-sans text-xs">
+                                    🔗 Buka Link Kelas ↗
+                                 </a>
+                                 <p className="text-[10px] text-text-sub mt-1 break-all font-mono select-all">{session.meeting_link}</p>
+                              </div>
+                           ) : (
+                              <span className="text-text-sub italic text-[11px]">Link meeting belum dimasukkan oleh tutor</span>
+                           )}
+                        </div>
+                     )}
+                  </div>
+                  <div className="hidden">
                  </div>
               </div>
               <div className="flex gap-2 flex-col items-end shrink-0">
@@ -1407,6 +1450,49 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                                 <div className="text-text-main text-right font-bold">{session.student?.profiles?.full_name || "-"}</div>
                                 <div>Status Pembayaran:</div>
                                 <div className="text-right text-lime font-bold uppercase">{session.payment_status || "UNPAID"}</div>
+                                <div>Tipe Sesi:</div>
+                                <div className="text-text-main text-right font-bold capitalize">{session.meeting_type || "Online"}</div>
+                                {session.meeting_type === 'offline' ? (
+                                  <>
+                                    <div className="col-span-2 font-semibold text-text-sub uppercase tracking-wider text-[10px] pt-1.5 border-t border-border/30 mt-1">📍 Alamat Pertemuan Offline:</div>
+                                    <div className="col-span-2 text-text-main leading-relaxed font-sans mt-0.5 break-words normal-case font-medium">
+                                      {session.location ? (
+                                        (() => {
+                                          const urlRegex = /(https?:\/\/[^\s]+)/g;
+                                          const words = session.location.split(urlRegex);
+                                          return words.map((word: string, i: number) => {
+                                            if (word.match(urlRegex)) {
+                                              return (
+                                                <a key={i} href={word} target="_blank" rel="noopener noreferrer" className="text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/10 px-1 py-0.5 rounded border border-lime/15 inline-flex items-center gap-0.5">
+                                                  Buka Google Maps ↗
+                                                </a>
+                                              );
+                                            }
+                                            return word;
+                                          });
+                                        })()
+                                      ) : (
+                                        <span className="text-text-sub italic text-[11px]">Belum diisikan oleh siswa</span>
+                                      )}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="col-span-2 font-semibold text-text-sub uppercase tracking-wider text-[10px] pt-1.5 border-t border-border/30 mt-1">🖥️ Link Sesi Online Class:</div>
+                                    <div className="col-span-2 text-text-main leading-snug font-sans mt-0.5 break-all normal-case font-medium">
+                                      {session.meeting_link ? (
+                                        <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="text-lime font-bold hover:underline underline-offset-2 break-all inline-block bg-lime/10 px-2 py-0.5 rounded border border-lime/15 text-[11px]">
+                                          {session.meeting_link} ↗
+                                        </a>
+                                      ) : (
+                                        <span className="text-text-sub italic text-[11px]">Link meeting belum diunggah oleh tutor</span>
+                                      )}
+                                    </div>
+                                  </>
+                                )}
+                                <div className="hidden">
+                                  <div className="text-right text-lime font-bold uppercase">{session.payment_status || "UNPAID"}</div>
+                                </div>
                               </div>
 
                               {/* Associated Review Shortcut */}

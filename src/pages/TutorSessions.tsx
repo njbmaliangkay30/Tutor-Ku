@@ -470,6 +470,46 @@ export function TutorSessions() {
                             </div>
                           );
                         })()}
+                        <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-border/40 text-xs text-text-main">
+                          {session.meeting_type === 'offline' ? (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="font-bold text-[11px] text-text-sub uppercase font-mono tracking-wider">📍 Lokasi Pertemuan Offline:</span>
+                              <div className="text-text-main font-sans break-words whitespace-pre-line text-xs">
+                                {session.location ? (
+                                  (() => {
+                                    const urlRegex = /(https?:\/\/[^\s]+)/g;
+                                    const words = session.location.split(urlRegex);
+                                    return words.map((word: string, i: number) => {
+                                      if (word.match(urlRegex)) {
+                                        return (
+                                          <a key={i} href={word} target="_blank" rel="noopener noreferrer" className="text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/10 px-1 py-0.5 rounded border border-lime/20 inline-flex items-center gap-0.5 ms-1">
+                                            Buka Google Maps ↗
+                                          </a>
+                                        );
+                                      }
+                                      return word;
+                                    });
+                                  })()
+                                ) : (
+                                  <span className="text-text-sub italic">Belum diisikan</span>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="font-bold text-[11px] text-text-sub uppercase font-mono tracking-wider">🖥️ Link Kelas Online:</span>
+                              {session.meeting_link ? (
+                                <div className="mt-0.5 font-sans">
+                                  <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/15 px-2 py-0.5 rounded border border-lime/30 text-[11px]">
+                                    🔗 {session.meeting_link} ↗
+                                  </a>
+                                </div>
+                              ) : (
+                                <p className="text-text-sub italic text-[11px]">Link meeting belum dimasukkan. Silakan ketuk tombol tambah di bawah.</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <div className="flex gap-2">
