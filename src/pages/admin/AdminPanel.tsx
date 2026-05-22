@@ -4,6 +4,32 @@ import { Users, BookOpen, Search, ShieldCheck, Eye, ShieldAlert, X, AlertOctagon
 import { supabase } from "../../lib/supabase";
 import { PlatformPaymentSettings } from "../../components/PlatformPaymentSettings";
 
+export const parseLocationField = (locationStr: string | null | undefined) => {
+  if (!locationStr) return { text: "", url: "" };
+
+  // Strip common legacy labels and headings
+  let clean = locationStr
+    .replace(/Lokasi & Detail Pertemuan:/gi, "")
+    .replace(/Link Google Maps:/gi, "")
+    .replace(/Nama Tempat \/ Cafe \/ Gedung:/gi, "")
+    .replace(/Detail Alamat & Patokan:/gi, "")
+    .replace(/Alamat \/ Detail Lokasi:/gi, "")
+    .replace(/Alamat Lengkap:/gi, "")
+    .replace(/Titik GPS:/gi, "")
+    .trim();
+
+  // Extract URL if present
+  const urlRegex = /(https?:\/\/[^\s]+)/;
+  const match = clean.match(urlRegex);
+  let url = "";
+  if (match) {
+    url = match[0];
+    clean = clean.replace(urlRegex, "").replace(/\(\s*\)/g, "").trim();
+  }
+
+  return { text: clean, url };
+};
+
 export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "students" | "transactions" | "sessions" | "packages" | "reviews" }) {
   const [tutors, setTutors] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
@@ -941,22 +967,21 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                   <div className="mt-3.5 pt-3 border-t border-border/40 text-xs text-text-main w-full">
                      {session.meeting_type === "offline" ? (
                         <div className="bg-bg-2 p-2.5 rounded-lg border border-border/40">
-                           <span className="font-bold text-[10px] text-text-sub uppercase font-mono tracking-wider block mb-1">📍 Alamat Pertemuan Offline (Tatap Muka):</span>
-                           <div className="text-text-main font-sans break-words whitespace-pre-line text-xs font-semibold leading-relaxed">
+                           <span className="font-bold text-[10px] text-text-sub uppercase font-mono tracking-wider block mb-1.5">📍 Alamat Pertemuan Offline (Tatap Muka):</span>
+                           <div className="text-text-main font-sans break-words text-xs font-semibold leading-relaxed flex flex-wrap items-center gap-1.5">
                               {session.location ? (
                                  (() => {
-                                    const urlRegex = /(https?:\/\/[^\s]+)/g;
-                                    const words = session.location.split(urlRegex);
-                                    return words.map((word: string, i: number) => {
-                                       if (word.match(urlRegex)) {
-                                          return (
-                                             <a key={i} href={word} target="_blank" rel="noopener noreferrer" className="text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/15 px-1.5 py-0.5 rounded border border-lime/35 inline-flex items-center gap-0.5 ml-1 font-sans">
+                                    const parsedLoc = parseLocationField(session.location);
+                                    return (
+                                       <>
+                                          <span>{parsedLoc.text || "Belum ada alamat detail"}</span>
+                                          {parsedLoc.url && (
+                                             <a href={parsedLoc.url} target="_blank" rel="noopener noreferrer" className="text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/15 px-1.5 py-0.5 rounded border border-lime/35 inline-flex items-center gap-0.5 font-sans text-[10px]">
                                                 Buka Google Maps ↗
                                              </a>
-                                          );
-                                       }
-                                       return word;
-                                    });
+                                          )}
+                                       </>
+                                    );
                                  })()
                               ) : (
                                  <span className="text-text-sub italic">Belum diisikan oleh siswa</span>
@@ -1455,21 +1480,20 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                                 {session.meeting_type === 'offline' ? (
                                   <>
                                     <div className="col-span-2 font-semibold text-text-sub uppercase tracking-wider text-[10px] pt-1.5 border-t border-border/30 mt-1">📍 Alamat Pertemuan Offline:</div>
-                                    <div className="col-span-2 text-text-main leading-relaxed font-sans mt-0.5 break-words normal-case font-medium">
+                                    <div className="col-span-2 text-text-main leading-relaxed font-sans mt-0.5 break-words normal-case font-medium flex flex-wrap items-center gap-1.5">
                                       {session.location ? (
                                         (() => {
-                                          const urlRegex = /(https?:\/\/[^\s]+)/g;
-                                          const words = session.location.split(urlRegex);
-                                          return words.map((word: string, i: number) => {
-                                            if (word.match(urlRegex)) {
-                                              return (
-                                                <a key={i} href={word} target="_blank" rel="noopener noreferrer" className="text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/10 px-1 py-0.5 rounded border border-lime/15 inline-flex items-center gap-0.5">
+                                          const parsedLoc = parseLocationField(session.location);
+                                          return (
+                                            <>
+                                              <span>{parsedLoc.text || "Belum ada alamat detail"}</span>
+                                              {parsedLoc.url && (
+                                                <a href={parsedLoc.url} target="_blank" rel="noopener noreferrer" className="text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/10 px-1 py-0.5 rounded border border-lime/15 inline-flex items-center gap-0.5 text-[10px]">
                                                   Buka Google Maps ↗
                                                 </a>
-                                              );
-                                            }
-                                            return word;
-                                          });
+                                              )}
+                                            </>
+                                          );
                                         })()
                                       ) : (
                                         <span className="text-text-sub italic text-[11px]">Belum diisikan oleh siswa</span>

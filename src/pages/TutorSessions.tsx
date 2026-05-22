@@ -28,6 +28,32 @@ export const parseSessionNotes = (rawNotes: string | null | undefined) => {
   return { meta: null, notes: rawNotes };
 };
 
+export const parseLocationField = (locationStr: string | null | undefined) => {
+  if (!locationStr) return { text: "", url: "" };
+
+  // Strip common legacy labels and headings
+  let clean = locationStr
+    .replace(/Lokasi & Detail Pertemuan:/gi, "")
+    .replace(/Link Google Maps:/gi, "")
+    .replace(/Nama Tempat \/ Cafe \/ Gedung:/gi, "")
+    .replace(/Detail Alamat & Patokan:/gi, "")
+    .replace(/Alamat \/ Detail Lokasi:/gi, "")
+    .replace(/Alamat Lengkap:/gi, "")
+    .replace(/Titik GPS:/gi, "")
+    .trim();
+
+  // Extract URL if present
+  const urlRegex = /(https?:\/\/[^\s]+)/;
+  const match = clean.match(urlRegex);
+  let url = "";
+  if (match) {
+    url = match[0];
+    clean = clean.replace(urlRegex, "").replace(/\(\s*\)/g, "").trim();
+  }
+
+  return { text: clean, url };
+};
+
 export function TutorSessions() {
   const [type, setType] = useState<"upcoming" | "past">("upcoming");
   const [reportModal, setReportModal] = useState<any>(null);
@@ -471,31 +497,7 @@ export function TutorSessions() {
                           );
                         })()}
                         <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-border/40 text-xs text-text-main">
-                          {session.meeting_type === 'offline' ? (
-                            <div className="flex flex-col gap-0.5">
-                              <span className="font-bold text-[11px] text-text-sub uppercase font-mono tracking-wider">📍 Lokasi Pertemuan Offline:</span>
-                              <div className="text-text-main font-sans break-words whitespace-pre-line text-xs">
-                                {session.location ? (
-                                  (() => {
-                                    const urlRegex = /(https?:\/\/[^\s]+)/g;
-                                    const words = session.location.split(urlRegex);
-                                    return words.map((word: string, i: number) => {
-                                      if (word.match(urlRegex)) {
-                                        return (
-                                          <a key={i} href={word} target="_blank" rel="noopener noreferrer" className="text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/10 px-1 py-0.5 rounded border border-lime/20 inline-flex items-center gap-0.5 ms-1">
-                                            Buka Google Maps ↗
-                                          </a>
-                                        );
-                                      }
-                                      return word;
-                                    });
-                                  })()
-                                ) : (
-                                  <span className="text-text-sub italic">Belum diisikan</span>
-                                )}
-                              </div>
-                            </div>
-                          ) : (
+                          {session.meeting_type !== 'offline' && (
                             <div className="flex flex-col gap-0.5">
                               <span className="font-bold text-[11px] text-text-sub uppercase font-mono tracking-wider">🖥️ Link Kelas Online:</span>
                               {session.meeting_link ? (
@@ -515,25 +517,25 @@ export function TutorSessions() {
                       <div className="flex gap-2">
                         {session.meeting_type === 'offline' ? (
                           (() => {
-                            const urlRegex = /(https?:\/\/[^\s]+)/;
-                            const match = session.location?.match(urlRegex);
-                            const mapsUrl = match ? match[0] : (session.location ? `https://www.google.com/maps?q=${encodeURIComponent(session.location)}` : null);
-
-                            if (mapsUrl) {
-                              return (
-                                <a 
-                                  href={mapsUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2"
-                                >
-                                  <MapPin size={16} /> Buka Google Maps 📍
-                                </a>
-                              );
-                            }
+                            const parsedLoc = parseLocationField(session.location);
                             return (
-                              <div className="flex-1 bg-bg-2 border border-border text-center text-text-sub font-medium py-2.5 rounded-lg text-xs flex items-center justify-center gap-2">
-                                <span>Belum ada lokasi pertemuan</span>
+                              <div className="w-full bg-bg-2 border border-border p-3 rounded-lg text-[12px] leading-relaxed text-text-main shadow-sm">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <div className="flex items-start gap-1.5 flex-1 min-w-[200px]">
+                                    <span className="font-bold text-text-sub font-mono uppercase text-[10px] mt-0.5">📍:</span>
+                                    <span className="text-text-main font-medium">{parsedLoc.text || "Belum ada lokasi detail"}</span>
+                                  </div>
+                                  {parsedLoc.url && (
+                                    <a
+                                      href={parsedLoc.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 bg-lime text-black font-extrabold px-2.5 py-1 rounded-md text-[11px] hover:bg-lime-dim transition-all whitespace-nowrap border border-black/10 shadow hover:scale-[1.01] active:scale-[0.99]"
+                                    >
+                                      Buka Google Maps ↗
+                                    </a>
+                                  )}
+                                </div>
                               </div>
                             );
                           })()

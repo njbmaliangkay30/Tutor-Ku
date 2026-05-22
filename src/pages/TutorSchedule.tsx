@@ -4,7 +4,7 @@ import { Calendar as CalendarIcon, Clock, Check, X, User } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAppContext } from "../AppContext";
 import { getAvatarColor } from "../data";
-import { parseSessionNotes } from './TutorSessions';
+import { parseSessionNotes, parseLocationField } from './TutorSessions';
 
 export function TutorSchedule() {
   const { userProfile, userRole, setActiveTab } = useAppContext();
@@ -225,7 +225,7 @@ export function TutorSchedule() {
                     </div>
                     {req.meeting_type && (
                       <div className="text-[10px] bg-bg-2 border border-border px-2 py-0.5 rounded text-text-sub font-mono inline-block">
-                        {req.meeting_type === 'online' ? '🌐 Online' : `📍 Offline: ${req.location || '-'}`}
+                        {req.meeting_type === 'online' ? '🌐 Online' : `📍 Offline: ${parseLocationField(req.location).text || '-'}`}
                       </div>
                     )}
                   </div>
