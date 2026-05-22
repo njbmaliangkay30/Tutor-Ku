@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Calendar, Video, FileText, Star, Clock, Edit3, X, Loader2 } from "lucide-react";
+import { Calendar, Video, FileText, Star, Clock, Edit3, X, Loader2, MapPin } from "lucide-react";
 import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
 import { getAvatarColor } from '../data';
@@ -514,9 +514,29 @@ export function TutorSessions() {
 
                       <div className="flex gap-2">
                         {session.meeting_type === 'offline' ? (
-                          <div className="flex-1 bg-bg-2 border border-border text-center text-text-main font-bold py-2.5 rounded-lg text-sm flex items-center justify-center gap-2">
-                            <span>📍 Lokasi: {session.location || 'Menunggu Info'}</span>
-                          </div>
+                          (() => {
+                            const urlRegex = /(https?:\/\/[^\s]+)/;
+                            const match = session.location?.match(urlRegex);
+                            const mapsUrl = match ? match[0] : (session.location ? `https://www.google.com/maps?q=${encodeURIComponent(session.location)}` : null);
+
+                            if (mapsUrl) {
+                              return (
+                                <a 
+                                  href={mapsUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2"
+                                >
+                                  <MapPin size={16} /> Buka Google Maps 📍
+                                </a>
+                              );
+                            }
+                            return (
+                              <div className="flex-1 bg-bg-2 border border-border text-center text-text-sub font-medium py-2.5 rounded-lg text-xs flex items-center justify-center gap-2">
+                                <span>Belum ada lokasi pertemuan</span>
+                              </div>
+                            );
+                          })()
                         ) : (
                           session.meeting_link ? (
                             <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">

@@ -1,4 +1,4 @@
-import { Calendar, Video, FileText, Star, Clock, AlertOctagon, Upload, Copy, Check, Info, CreditCard, X, ChevronRight } from 'lucide-react';
+import { Calendar, Video, FileText, Star, Clock, AlertOctagon, Upload, Copy, Check, Info, CreditCard, X, ChevronRight, MapPin } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
@@ -585,9 +585,29 @@ export function StudentSessions() {
                           </button>
                         </div>
                       ) : session.meeting_type === 'offline' ? (
-                        <div className="flex-1 bg-bg-2 border border-border text-center text-text-main font-bold py-2.5 rounded-lg text-[13px] flex items-center justify-center gap-2 px-2">
-                          <span className="truncate">📍 Lokasi: {session.location || 'Menunggu Info'}</span>
-                        </div>
+                        (() => {
+                          const urlRegex = /(https?:\/\/[^\s]+)/;
+                          const match = session.location?.match(urlRegex);
+                          const mapsUrl = match ? match[0] : (session.location ? `https://www.google.com/maps?q=${encodeURIComponent(session.location)}` : null);
+
+                          if (mapsUrl) {
+                            return (
+                              <a 
+                                href={mapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2 text-center"
+                              >
+                                <MapPin size={16} /> Buka Google Maps 📍
+                              </a>
+                            );
+                          }
+                          return (
+                            <div className="flex-1 bg-bg-2 border border-border text-center text-text-sub font-medium py-2.5 rounded-lg text-xs flex items-center justify-center gap-2">
+                              <span>Belum ada lokasi pertemuan</span>
+                            </div>
+                          );
+                        })()
                       ) : (
                         session.meeting_link ? (
                           <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">

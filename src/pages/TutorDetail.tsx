@@ -202,28 +202,6 @@ export function TutorDetail() {
         alert("Alamat detail pertemuan wajib diisi jika Anda memilih pertemuan Tatap Muka (Offline).");
         return;
       }
-      
-      // Validasi format lama
-      if (location.includes("Nama Tempat / Cafe / Gedung:")) {
-        const lines = location.split("\n");
-        const placeLine = lines.find(line => line.startsWith("Nama Tempat / Cafe / Gedung:"));
-        const placeNameVal = placeLine ? placeLine.replace("Nama Tempat / Cafe / Gedung:", "").trim() : "";
-        if (!placeNameVal) {
-          alert("Nama Tempat / Cafe / Gedung / Rumah wajib diisi pada peta lokasi sebelum booking.");
-          return;
-        }
-      }
-
-      // Validasi format baru (Lokasi & Detail Pertemuan)
-      if (location.includes("Lokasi & Detail Pertemuan:")) {
-        const lines = location.split("\n");
-        const locLine = lines.find(line => line.startsWith("Lokasi & Detail Pertemuan:"));
-        const locVal = locLine ? locLine.replace("Lokasi & Detail Pertemuan:", "").trim() : "";
-        if (!locVal) {
-          alert("Lokasi, detail alamat & patokan wajib diisi sebelum melakukan booking.");
-          return;
-        }
-      }
     }
 
     setIsSubmitting(true);
