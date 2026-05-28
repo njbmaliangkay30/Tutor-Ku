@@ -7,7 +7,7 @@ import {
   getAvatarColor,
   formatRupiah,
 } from "../data";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "../lib/supabase";
 import MapPicker from "../components/MapPicker";
 
@@ -163,10 +163,11 @@ export function TutorDetail() {
 
   if (!tutor) return null;
 
-  const getAvailableDates = () => {
+  const availableDates = useMemo(() => {
     if (!tutor.activeDays || tutor.activeDays.length === 0) return [];
     const dates = [];
     let d = new Date();
+    d.setHours(0, 0, 0, 0); // Normalize time
     d.setDate(d.getDate() + 1); // Start from tomorrow
     while (dates.length < 14) {
       if (tutor.activeDays.includes(d.getDay())) {
@@ -175,9 +176,8 @@ export function TutorDetail() {
       d.setDate(d.getDate() + 1);
     }
     return dates;
-  };
+  }, [tutor.activeDays]);
 
-  const availableDates = getAvailableDates();
   const availableHours = (selectedDate && tutor.schedule) ? (tutor.schedule[selectedDate.getDay()] || []) : [];
 
   const handleBook = async () => {
@@ -767,7 +767,7 @@ export function TutorDetail() {
           
           <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar mb-2">
             {availableDates.length > 0 ? availableDates.map(d => {
-              const isSelected = selectedDate?.toISOString() === d.toISOString();
+              const isSelected = selectedDate?.getTime() === d.getTime();
               return (
                 <div 
                   key={d.toISOString()} 
@@ -872,35 +872,6 @@ export function TutorDetail() {
               : isSubmitting ? "Memproses..." : userRole === "guest"
                 ? "Login untuk Booking"
                 : "Booking Sekarang"}
-          </button>
-          
-          <button
-            onClick={async () => {
-              if (userRole === 'guest') {
-                setSelectedTutorId(null);
-                setActiveTab('login');
-              } else {
-                try {
-                  // Check if there is already a chat with this tutor
-                  const { data } = await supabase.from('messages')
-                    .select('id')
-                    .or(`and(sender_id.eq.${userProfile?.id},receiver_id.eq.${tutor.id}),and(sender_id.eq.${tutor.id},receiver_id.eq.${userProfile?.id})`)
-                    .limit(1);
-                  
-                  if (!data || data.length === 0) {
-                    alert('Fitur pesan baru bisa digunakan setelah Anda mengajukan booking pada tutor.');
-                    return;
-                  }
-                } catch(e) {
-                  console.error(e);
-                }
-                setSelectedTutorId(null);
-                setActiveTab('chat');
-              }
-            }}
-            className="w-full bg-bg-2 text-text-main border-[2px] border-border rounded-lg py-[11px] px-[18px] font-display font-bold text-[13px] flex items-center justify-center gap-1.5 transition-all hover:border-lime/50 active:scale-[0.97] mt-1"
-          >
-            💬 Chat dengan Tutor
           </button>
         </div>
       </div>
