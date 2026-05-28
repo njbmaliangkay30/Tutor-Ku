@@ -49,7 +49,11 @@ const updateFavicon = (theme: string) => {
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [activeTab, setActiveTab] = useState("home");
+  const [activeTab, setActiveTabInternal] = useState(() => {
+    const path = window.location.pathname;
+    const tabFromUrl = path.split('/').filter(Boolean)[0];
+    return tabFromUrl || "home";
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("Semua");
   const [genderFilter, setGenderFilter] = useState("all");
@@ -65,6 +69,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [theme, setTheme] = useState("light");
   const [targetSessionId, setTargetSessionId] = useState<string | null>(null);
+
+  const setActiveTab = (tab: string) => {
+    setActiveTabInternal(tab);
+    window.history.pushState(null, '', '/' + tab);
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      const tabFromUrl = path.split('/').filter(Boolean)[0];
+      setActiveTabInternal(tabFromUrl || "home");
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const fetchTutors = async () => {
     try {
