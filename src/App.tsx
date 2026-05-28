@@ -58,6 +58,7 @@ export default function App() {
     userProfile,
     tutorProfileData,
     isLoadingProfile,
+    unreadChatCount,
   } = useAppContext();
 
   const [showDesktopSidebar, setShowDesktopSidebar] = useState(true);
@@ -223,8 +224,11 @@ export default function App() {
                   title="Pesan"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "chat" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
-                  <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
+                  <span className="flex items-center justify-center shrink-0 w-[22px] transition-all relative">
                     <MessageSquare size={22} />
+                    {unreadChatCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full border-2 border-bg-1 flex items-center justify-center">{unreadChatCount}</span>
+                    )}
                   </span>
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
@@ -413,8 +417,11 @@ export default function App() {
                     title="Pesan"
                     className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "chat" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                   >
-                    <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
+                    <span className="flex items-center justify-center shrink-0 w-[22px] transition-all relative">
                       <MessageSquare size={22} />
+                      {unreadChatCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full border-2 border-bg-1 flex items-center justify-center">{unreadChatCount}</span>
+                      )}
                     </span>
                     <span
                       className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
@@ -616,9 +623,12 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "chat" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "chat" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all relative ${activeTab === "chat" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <MessageSquare size={22} />
+                    {unreadChatCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full border-[1.5px] border-bg-1 flex items-center justify-center">{unreadChatCount}</span>
+                    )}
                   </span>
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "chat" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Pesan</span>
                 </button>
@@ -766,9 +776,12 @@ export default function App() {
                     className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "chat" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                   >
                     <span
-                      className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "chat" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                      className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all relative ${activeTab === "chat" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                     >
                       <MessageSquare size={22} />
+                      {unreadChatCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full border-[1.5px] border-bg-1 flex items-center justify-center">{unreadChatCount}</span>
+                      )}
                     </span>
                     <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "chat" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Pesan</span>
                   </button>

@@ -33,6 +33,7 @@ type AppContextType = {
   isLoadingProfile: boolean;
   targetSessionId: string | null;
   setTargetSessionId: (id: string | null) => void;
+  unreadChatCount: number;
   fetchTutors: () => Promise<void>;
 };
 
@@ -69,11 +70,96 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [theme, setTheme] = useState("light");
   const [targetSessionId, setTargetSessionId] = useState<string | null>(null);
+  
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
 
   const setActiveTab = (tab: string) => {
     setActiveTabInternal(tab);
     window.history.pushState(null, '', '/' + tab);
   };
+
+  useEffect(() => {
+    // Sound playback function
+    const playNotificationSound = () => {
+      // WA-like notification sound (short soft ping). Using an oscillator for simplicity so we don't need external assets
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(600, audioCtx.currentTime); // High pitch
+        oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.5);
+      } catch (e) {
+        console.error("Audio playback error", e);
+      }
+    };
+
+    if (user) {
+      if (typeof window !== "undefined" && "Notification" in window) {
+        if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+          Notification.requestPermission();
+        }
+      }
+
+      const showBrowserNotification = (content: string) => {
+        if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+          let text = content || 'Pesan baru masuk';
+          if (text.includes('[SESSION_ID:')) {
+            text = "Ada pengajuan/perubahan event jadwal baru.";
+          }
+          new Notification('TutorKampus', {
+            body: text
+          });
+        }
+      };
+
+      // Fetch initial unread count
+      supabase.from("messages").select("id", { count: "exact" }).eq("receiver_id", user.id).eq("is_read", false)
+        .then(({ count }) => {
+          if (count !== null) setUnreadChatCount(count);
+        });
+
+      // Subscribe to unread messages globally
+      const msgSub = supabase
+        .channel('global-messages')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
+          (payload: any) => {
+             // Avoid playing sound / incrementing if the user is already on the chat tab for this contact
+             // But globally, it's safer to just increment and let the Chat component handle marking it as read
+             setUnreadChatCount((prev) => prev + 1);
+             // Play sound unless activeTab is chat maybe? Play sound generally.
+             playNotificationSound();
+             showBrowserNotification(payload.new.content);
+          }
+        )
+        // Also listen for UPDATE so count decreases when read
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
+          (payload: any) => {
+             if (payload.new.is_read && !payload.old.is_read) {
+               setUnreadChatCount((prev) => Math.max(0, prev - 1));
+             }
+          }
+        )
+        .subscribe();
+      
+      return () => {
+        supabase.removeChannel(msgSub);
+      };
+    } else {
+      setUnreadChatCount(0);
+    }
+  }, [user]);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -379,6 +465,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isLoadingProfile,
         targetSessionId,
         setTargetSessionId,
+        unreadChatCount,
         fetchTutors,
       }}
     >
