@@ -5,7 +5,7 @@ import { Send, ChevronLeft, Search } from "lucide-react";
 import { getAvatarColor } from "../data";
 
 export function Chat() {
-  const { userProfile, user, setActiveTab, tutors } = useAppContext();
+  const { userProfile, user, userRole, setActiveTab, tutors } = useAppContext();
   const [conversations, setConversations] = useState<any[]>([]);
   const [activeContactId, setActiveContactId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -316,9 +316,10 @@ export function Chat() {
                       className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-2.5 text-[13.5px] ${isMe ? 'bg-lime text-black rounded-tr-sm' : 'bg-bg-2 border border-border text-text-main rounded-tl-sm'}`}
                     >
                       {(() => {
-                        const match = m.content.match(/\[SESSION_ID:([a-zA-Z0-9-]+)\]/);
+                        const rawContent = m.content || '';
+                        const match = rawContent.match(/\[SESSION_ID:([a-zA-Z0-9-]+)\]/);
                         const sessionId = match ? match[1] : null;
-                        const cleanContent = m.content.replace(/\[SESSION_ID:[a-zA-Z0-9-]+\]/, '');
+                        const cleanContent = rawContent.replace(/\[SESSION_ID:[a-zA-Z0-9-]+\]/, '');
                         
                         return (
                           <div className="flex flex-col">
