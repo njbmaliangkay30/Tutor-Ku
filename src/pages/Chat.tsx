@@ -4,6 +4,8 @@ import { useAppContext } from "../AppContext";
 import { Send, ChevronLeft, Search } from "lucide-react";
 import { getAvatarColor } from "../data";
 
+import { SessionBookingCard } from "../components/SessionBookingCard";
+
 export function Chat() {
   const { userProfile, user, userRole, setActiveTab, tutors } = useAppContext();
   const [conversations, setConversations] = useState<any[]>([]);
@@ -312,51 +314,29 @@ export function Chat() {
                 
                 return (
                   <div key={m.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} animate-pgIn`}>
-                    <div 
-                      className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-2.5 text-[13.5px] ${isMe ? 'bg-lime text-black rounded-tr-sm' : 'bg-bg-2 border border-border text-text-main rounded-tl-sm'}`}
-                    >
-                      {(() => {
-                        const rawContent = m.content || '';
-                        const match = rawContent.match(/\[SESSION_ID:([a-zA-Z0-9-]+)\]/);
-                        const sessionId = match ? match[1] : null;
-                        const cleanContent = rawContent.replace(/\[SESSION_ID:[a-zA-Z0-9-]+\]/, '');
-                        
+                    {(() => {
+                      const rawContent = m.content || '';
+                      const match = rawContent.match(/\[SESSION_ID:([a-zA-Z0-9-]+)\]/);
+                      const sessionId = match ? match[1] : null;
+                      const cleanContent = rawContent.replace(/\[SESSION_ID:[a-zA-Z0-9-]+\]/, '');
+                      
+                      if (sessionId) {
                         return (
-                          <div className="flex flex-col">
-                            <span className="whitespace-pre-wrap">{cleanContent}</span>
-                            {sessionId && (
-                              <div className={`mt-3 p-3 rounded-lg border ${isMe ? 'border-black/10 bg-black/5' : 'border-border bg-card'}`}>
-                                <div className="text-[11px] font-bold font-mono tracking-wider uppercase mb-2 opacity-70">Pengajuan Jadwal</div>
-                                {userRole === 'tutor' && !isMe ? (
-                                  <div className="flex gap-2">
-                                     <button 
-                                       onClick={async () => {
-                                         try {
-                                           await supabase.from('sessions').update({ status: 'confirmed' }).eq('id', sessionId);
-                                           alert('Jadwal diterima!');
-                                         } catch(e) { alert('Gagal memproses'); }
-                                       }} 
-                                       className="flex-1 bg-lime-dim text-black py-1.5 rounded-md text-xs font-bold"
-                                     >Terima</button>
-                                     <button 
-                                       onClick={async () => {
-                                         try {
-                                           await supabase.from('sessions').update({ status: 'cancelled' }).eq('id', sessionId);
-                                           alert('Jadwal ditolak.');
-                                         } catch(e) { alert('Gagal memproses'); }
-                                       }} 
-                                       className="flex-1 bg-red-500/10 text-red-500 py-1.5 rounded-md text-xs font-bold"
-                                     >Tolak</button>
-                                  </div>
-                                ) : (
-                                  <div className="text-[11px] italic opacity-80">Jadwal menunggu konfirmasi. {isMe ? 'Anda' : 'Siswa'} dapat memantau status di halaman Sesi.</div>
-                                )}
-                              </div>
-                            )}
-                          </div>
+                          <SessionBookingCard 
+                            sessionId={sessionId} 
+                            messageContent={cleanContent} 
+                            isMe={isMe} 
+                            userRole={userRole} 
+                          />
                         );
-                      })()}
-                    </div>
+                      }
+                      
+                      return (
+                        <div className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-2.5 text-[13.5px] ${isMe ? 'bg-lime text-black rounded-tr-sm' : 'bg-bg-2 border border-border text-text-main rounded-tl-sm'}`}>
+                          <span className="whitespace-pre-wrap">{cleanContent}</span>
+                        </div>
+                      );
+                    })()}
                     <div className="text-[9px] text-text-muted mt-1 font-mono tracking-wide px-1">
                       {new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                     </div>
