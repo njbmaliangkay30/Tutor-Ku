@@ -877,6 +877,7 @@ export function TutorDetail() {
           <button
             onClick={async () => {
               if (userRole === 'guest') {
+                setSelectedTutorId(null);
                 setActiveTab('login');
               } else {
                 try {
@@ -893,6 +894,7 @@ export function TutorDetail() {
                 } catch(e) {
                   console.error(e);
                 }
+                setSelectedTutorId(null);
                 setActiveTab('chat');
               }
             }}
