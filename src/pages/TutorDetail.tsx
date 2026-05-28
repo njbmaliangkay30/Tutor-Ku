@@ -415,6 +415,19 @@ export function TutorDetail() {
         }
       }
 
+      // Kirim pesan otomatis dari siswa ke tutor terkait booking ini
+      try {
+         const sysMsg = `Halo kak, saya baru saja mengajukan jadwal untuk tanggal ${selectedDate.toLocaleDateString("id-ID")} jam ${selectedTime}. ${notes ? `Materi/Catatan: "${notes}"` : 'Mohon dikonfirmasi.'}`;
+         await supabase.from("messages").insert({
+           sender_id: userProfile.id,
+           receiver_id: tutor.id,
+           content: sysMsg,
+           is_read: false
+         });
+      } catch (err) {
+         console.error("Gagal mengirim pesan booking perdana", err);
+      }
+
       setBookingSuccess(true);
       setTimeout(() => {
         setBookingSuccess(false);
@@ -874,12 +887,8 @@ export function TutorDetail() {
                     .limit(1);
                   
                   if (!data || data.length === 0) {
-                    await supabase.from('messages').insert({
-                       sender_id: userProfile?.id,
-                       receiver_id: tutor.id,
-                       content: 'Halo kak, saya ingin berdiskusi...',
-                       is_read: false
-                    });
+                    alert('Fitur pesan baru bisa digunakan setelah Anda mengajukan booking pada tutor.');
+                    return;
                   }
                 } catch(e) {
                   console.error(e);

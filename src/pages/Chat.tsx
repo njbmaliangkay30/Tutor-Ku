@@ -130,7 +130,10 @@ export function Chat() {
            (newMsg.sender_id === user.id && newMsg.receiver_id === activeContactId) ||
            (newMsg.sender_id === activeContactId && newMsg.receiver_id === user.id)
          ) {
-           setMessages(prev => [...prev, newMsg]);
+           setMessages(prev => {
+             if (prev.some(m => m.id === newMsg.id)) return prev;
+             return [...prev, newMsg];
+           });
            setTimeout(() => {
              messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
            }, 100);
@@ -155,20 +158,45 @@ export function Chat() {
     e.preventDefault();
     if (!newMessage.trim() || !user || !activeContactId) return;
 
+    const sentContent = newMessage.trim();
+    const tempId = "temp-" + Date.now();
+    const tempMsg = {
+      id: tempId,
+      sender_id: user.id,
+      receiver_id: activeContactId,
+      content: sentContent,
+      is_read: false,
+      created_at: new Date().toISOString()
+    };
+    
+    // Tampilkan duluan di UI agar tidak terasa lag/ngebug
+    setMessages(prev => [...prev, tempMsg]);
+    setNewMessage("");
+
     try {
-      const { error } = await supabase.from("messages").insert({
+      const { data, error } = await supabase.from("messages").insert({
         sender_id: user.id,
         receiver_id: activeContactId,
-        content: newMessage.trim(),
+        content: sentContent,
         is_read: false
-      });
-      if (!error) {
-        setNewMessage("");
-      } else {
+      }).select().single();
+      
+      if (error) {
         alert("Gagal mengirim pesan: " + error.message);
+        // Hapus pesan temp jika gagal
+        setMessages(prev => prev.filter(m => m.id !== tempId));
+      } else if (data) {
+        // Replace tempMsg dengan data asli dari database
+        setMessages(prev => {
+          if (prev.some(m => m.id === data.id)) {
+            return prev.filter(m => m.id !== tempId);
+          }
+          return prev.map(m => m.id === tempId ? data : m);
+        });
       }
     } catch (e) {
       console.error(e);
+      setMessages(prev => prev.filter(m => m.id !== tempId));
     }
   };
 

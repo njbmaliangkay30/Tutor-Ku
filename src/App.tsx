@@ -51,6 +51,7 @@ export default function App() {
     theme,
     toggleTheme,
     selectedTutorId,
+    setSelectedTutorId,
     userRole,
     setUserRole,
     user,
@@ -60,6 +61,13 @@ export default function App() {
   } = useAppContext();
 
   const [showDesktopSidebar, setShowDesktopSidebar] = useState(true);
+
+  const handleNav = (tab: string) => {
+    setActiveTab(tab);
+    if (selectedTutorId) {
+      setSelectedTutorId(null);
+    }
+  };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (window.innerWidth >= 768) {
@@ -123,7 +131,7 @@ export default function App() {
           <div className="h-[72px] px-5 border-b-[2px] border-border/60 shrink-0 flex items-center justify-between overflow-hidden relative">
             <div
               className="flex items-center w-full relative cursor-pointer group hover:opacity-90 transition-opacity"
-              onClick={() => setActiveTab("home")}
+              onClick={() => handleNav("home")}
               title="Dashboard"
             >
               <div
@@ -169,7 +177,7 @@ export default function App() {
             {userRole === "tutor" ? (
               <>
                 <button
-                  onClick={() => setActiveTab("home")}
+                  onClick={() => handleNav("home")}
                   title="Dashboard"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "home" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -183,7 +191,7 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("schedule")}
+                  onClick={() => handleNav("schedule")}
                   title="Jadwal"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "schedule" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -197,7 +205,7 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("sessions")}
+                  onClick={() => handleNav("sessions")}
                   title="Sesi"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "sessions" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -211,7 +219,7 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("chat")}
+                  onClick={() => handleNav("chat")}
                   title="Pesan"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "chat" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -225,7 +233,7 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("history")}
+                  onClick={() => handleNav("history")}
                   title="History"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "history" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -242,7 +250,7 @@ export default function App() {
             ) : userRole === "admin" ? (
               <>
                 <button
-                  onClick={() => setActiveTab("home")}
+                  onClick={() => handleNav("home")}
                   title="Overview"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "home" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -257,7 +265,7 @@ export default function App() {
                 </button>
                 
                 <button
-                  onClick={() => setActiveTab("admin-tutors")}
+                  onClick={() => handleNav("admin-tutors")}
                   title="Data Tutor"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-tutors" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -271,7 +279,7 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-verifications")}
+                  onClick={() => handleNav("admin-verifications")}
                   title="Data Verifikasi"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-verifications" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -285,7 +293,7 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-rate-requests")}
+                  onClick={() => handleNav("admin-rate-requests")}
                   title="Pengajuan Harga"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-rate-requests" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -299,7 +307,7 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-students")}
+                  onClick={() => handleNav("admin-students")}
                   title="Data Student"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-students" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -313,7 +321,7 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-transactions")}
+                  onClick={() => handleNav("admin-transactions")}
                   title="Transaksi"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-transactions" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -327,7 +335,7 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-packages")}
+                  onClick={() => handleNav("admin-packages")}
                   title="Package"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-packages" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -341,7 +349,7 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-sessions")}
+                  onClick={() => handleNav("admin-sessions")}
                   title="Sesi Belajar"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-sessions" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -355,7 +363,7 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-reviews")}
+                  onClick={() => handleNav("admin-reviews")}
                   title="Review Tutor"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-reviews" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -372,7 +380,7 @@ export default function App() {
             ) : (
               <>
                 <button
-                  onClick={() => setActiveTab("home")}
+                  onClick={() => handleNav("home")}
                   title="Explore"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "home" || activeTab === "search" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -386,7 +394,7 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("student_sessions")}
+                  onClick={() => handleNav("student_sessions")}
                   title="Sesi Saya"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "student_sessions" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -401,7 +409,7 @@ export default function App() {
                 </button>
                 {userRole !== "guest" && (
                   <button
-                    onClick={() => setActiveTab("chat")}
+                    onClick={() => handleNav("chat")}
                     title="Pesan"
                     className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "chat" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                   >
@@ -416,7 +424,7 @@ export default function App() {
                   </button>
                 )}
                 <button
-                  onClick={() => setActiveTab("progress")}
+                  onClick={() => handleNav("progress")}
                   title="Progress"
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "progress" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
@@ -440,7 +448,7 @@ export default function App() {
               <NotificationBell id="sidebar" />
             </div>
             <button
-              onClick={() => setActiveTab(user ? "profile" : "login")}
+              onClick={() => handleNav(user ? "profile" : "login")}
               title={userRole === "guest" ? "Masuk / Daftar" : "Profil"}
               className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] min-w-0 flex-1 text-left text-xs tracking-[0.01em] relative ${showDesktopSidebar ? "overflow-hidden" : "w-[44px]"} ${activeTab === "login" || activeTab === "profile" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
             >
@@ -478,7 +486,7 @@ export default function App() {
           <div className="flex md:hidden h-[60px] py-2 bg-bg-2/80 backdrop-blur-xl items-center justify-between px-4 shrink-0 border-b border-border/60 relative z-50">
             <div
               className="font-display text-[22px] font-extrabold text-lime tracking-[-1px] select-none cursor-pointer"
-              onClick={() => setActiveTab("home")}
+              onClick={() => handleNav("home")}
               style={{ textShadow: "2px 2px 0 rgba(0,0,0,0.3)" }}
             >
               tutorku
@@ -571,7 +579,7 @@ export default function App() {
             {userRole === "tutor" ? (
               <>
                 <button
-                  onClick={() => setActiveTab("home")}
+                  onClick={() => handleNav("home")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "home" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -582,7 +590,7 @@ export default function App() {
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Dash</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("schedule")}
+                  onClick={() => handleNav("schedule")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "schedule" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -593,7 +601,7 @@ export default function App() {
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "schedule" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Jadwal</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("sessions")}
+                  onClick={() => handleNav("sessions")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "sessions" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -604,7 +612,7 @@ export default function App() {
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "sessions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Sesi</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("chat")}
+                  onClick={() => handleNav("chat")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "chat" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -615,7 +623,7 @@ export default function App() {
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "chat" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Pesan</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("history")}
+                  onClick={() => handleNav("history")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "history" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -629,7 +637,7 @@ export default function App() {
             ) : userRole === "admin" ? (
               <>
                 <button
-                  onClick={() => setActiveTab("home")}
+                  onClick={() => handleNav("home")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "home" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -640,7 +648,7 @@ export default function App() {
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Info</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-tutors")}
+                  onClick={() => handleNav("admin-tutors")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-tutors" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -651,7 +659,7 @@ export default function App() {
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-tutors" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Tutor</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-verifications")}
+                  onClick={() => handleNav("admin-verifications")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-verifications" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -662,7 +670,7 @@ export default function App() {
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-verifications" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Verif</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-rate-requests")}
+                  onClick={() => handleNav("admin-rate-requests")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-rate-requests" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -673,7 +681,7 @@ export default function App() {
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-rate-requests" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Harga</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-students")}
+                  onClick={() => handleNav("admin-students")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-students" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -684,7 +692,7 @@ export default function App() {
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-students" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Siswa</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-sessions")}
+                  onClick={() => handleNav("admin-sessions")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-sessions" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -695,7 +703,7 @@ export default function App() {
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-sessions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Sesi</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-transactions")}
+                  onClick={() => handleNav("admin-transactions")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-transactions" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -706,7 +714,7 @@ export default function App() {
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-transactions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Bayar</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-packages")}
+                  onClick={() => handleNav("admin-packages")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-packages" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -717,7 +725,7 @@ export default function App() {
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-packages" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Paket</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("admin-reviews")}
+                  onClick={() => handleNav("admin-reviews")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-reviews" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -731,7 +739,7 @@ export default function App() {
             ) : (
               <>
                 <button
-                  onClick={() => setActiveTab("home")}
+                  onClick={() => handleNav("home")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "home" || activeTab === "search" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -742,7 +750,7 @@ export default function App() {
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" || activeTab === "search" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Explore</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("student_sessions")}
+                  onClick={() => handleNav("student_sessions")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "student_sessions" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -754,7 +762,7 @@ export default function App() {
                 </button>
                 {userRole !== "guest" && (
                   <button
-                    onClick={() => setActiveTab("chat")}
+                    onClick={() => handleNav("chat")}
                     className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "chat" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                   >
                     <span
@@ -766,7 +774,7 @@ export default function App() {
                   </button>
                 )}
                 <button
-                  onClick={() => setActiveTab("progress")}
+                  onClick={() => handleNav("progress")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "progress" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
@@ -779,7 +787,7 @@ export default function App() {
               </>
             )}
             <button
-              onClick={() => setActiveTab(user ? "profile" : "login")}
+              onClick={() => handleNav(user ? "profile" : "login")}
               className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all ${userRole === "admin" ? "shrink-0 min-w-[72px]" : "flex-1 min-w-[70px]"} ${activeTab === "login" || activeTab === "profile" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
             >
               <span
