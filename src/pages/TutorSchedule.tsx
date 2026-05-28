@@ -175,19 +175,25 @@ export function TutorSchedule() {
   const renderWeekView = () => {
     const startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
     const endDate = endOfWeek(currentDate, { weekStartsOn: 1 });
-    const dateFormat = "EEE, d MMM";
+    const dateFormat = "EEEE, d MMMM";
     
     const days = [];
     let day = startDate;
     while (day <= endDate) {
       const cloneDay = day;
       days.push(
-        <div key={day.toString()} className="flex-1 min-w-[200px] border-r border-border last:border-0 flex flex-col">
-          <div className={`p-3 text-center border-b border-border sticky top-0 z-10 font-bold text-sm ${isSameDay(day, new Date()) ? 'bg-lime text-black border-lime' : 'bg-bg-2 text-text-main'}`}>
+        <div key={day.toString()} className="flex flex-col sm:flex-row border-b border-border last:border-0">
+          <div className={`p-4 sm:w-48 flex-shrink-0 font-bold text-[13px] border-b sm:border-b-0 sm:border-r border-border sm:flex sm:items-center ${isSameDay(day, new Date()) ? 'bg-lime/10 text-lime border-l-4 border-l-lime' : 'bg-bg-2 text-text-main border-l-4 border-l-transparent'}`}>
             {format(day, dateFormat, { locale: id })}
           </div>
-          <div className="flex-1 p-2 bg-card min-h-[400px]">
-             {renderEvents(cloneDay)}
+          <div className="flex-1 p-4 bg-card min-h-[80px]">
+             {allSessions.filter(s => s.session_date === format(cloneDay, "yyyy-MM-dd") && s.status !== "cancelled").length === 0 ? (
+               <div className="text-text-sub text-xs italic opacity-50 py-2">Tidak ada kelas terjadwal.</div>
+             ) : (
+               <div className="flex flex-wrap gap-3">
+                  {renderEvents(cloneDay)}
+               </div>
+             )}
           </div>
         </div>
       );
@@ -195,10 +201,8 @@ export function TutorSchedule() {
     }
     
     return (
-       <div className="flex flex-col bg-card rounded-xl border-[1.5px] border-border shadow-sh1 overflow-hidden">
-         <div className="flex overflow-x-auto w-full custom-scrollbar hide-scrollbar-sm">
-            {days}
-         </div>
+       <div className="flex flex-col bg-card rounded-xl border-[1.5px] border-border shadow-sh1 overflow-hidden w-full">
+          {days}
        </div>
     );
   };
