@@ -558,8 +558,9 @@ export function TutorDetail() {
             HARI AKTIF MENGAJAR
           </div>
           <div className="grid grid-cols-7 gap-[5px] mb-1.5">
-            {DAYS.map((d, i) => {
-              const isActive = (tutor.activeDays || []).includes(i);
+            {[1, 2, 3, 4, 5, 6, 0].map((dayIndex) => {
+              const d = DAYS[dayIndex];
+              const isActive = (tutor.activeDays || []).includes(dayIndex);
               return (
                 <div
                   key={d}
@@ -847,17 +848,50 @@ export function TutorDetail() {
           ></textarea>
         </div>
 
-        <button
-          onClick={handleBook}
-          disabled={bookingSuccess || isSubmitting}
-          className="w-full bg-lime text-black border-[2px] border-lime rounded-lg py-[11px] px-[18px] font-display font-bold text-[13px] flex items-center justify-center gap-1.5 shadow-sh1 transition-all hover:shadow-sh2 hover:-translate-x-px hover:-translate-y-px active:scale-[0.97] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
-        >
-          {bookingSuccess
-            ? "Booking Berhasil! Mengalihkan..."
-            : isSubmitting ? "Memproses..." : userRole === "guest"
-              ? "Login untuk Booking"
-              : "Booking Sekarang"}
-        </button>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={handleBook}
+            disabled={bookingSuccess || isSubmitting}
+            className="w-full bg-lime text-black border-[2px] border-lime rounded-lg py-[11px] px-[18px] font-display font-bold text-[13px] flex items-center justify-center gap-1.5 shadow-sh1 transition-all hover:shadow-sh2 hover:-translate-x-px hover:-translate-y-px active:scale-[0.97] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            {bookingSuccess
+              ? "Booking Berhasil! Mengalihkan..."
+              : isSubmitting ? "Memproses..." : userRole === "guest"
+                ? "Login untuk Booking"
+                : "Booking Sekarang"}
+          </button>
+          
+          <button
+            onClick={async () => {
+              if (userRole === 'guest') {
+                setActiveTab('login');
+              } else {
+                try {
+                  // Check if there is already a chat with this tutor
+                  const { data } = await supabase.from('messages')
+                    .select('id')
+                    .or(`and(sender_id.eq.${userProfile?.id},receiver_id.eq.${tutor.id}),and(sender_id.eq.${tutor.id},receiver_id.eq.${userProfile?.id})`)
+                    .limit(1);
+                  
+                  if (!data || data.length === 0) {
+                    await supabase.from('messages').insert({
+                       sender_id: userProfile?.id,
+                       receiver_id: tutor.id,
+                       content: 'Halo kak, saya ingin berdiskusi...',
+                       is_read: false
+                    });
+                  }
+                } catch(e) {
+                  console.error(e);
+                }
+                setActiveTab('chat');
+              }
+            }}
+            className="w-full bg-bg-2 text-text-main border-[2px] border-border rounded-lg py-[11px] px-[18px] font-display font-bold text-[13px] flex items-center justify-center gap-1.5 transition-all hover:border-lime/50 active:scale-[0.97] mt-1"
+          >
+            💬 Chat dengan Tutor
+          </button>
+        </div>
       </div>
 
       {/* Success ModalOverlay */}

@@ -18,7 +18,8 @@ import {
   Package,
   DollarSign,
   Clock,
-  Star
+  Star,
+  MessageSquare
 } from "lucide-react";
 import { PageHome } from "./pages/Home";
 import { Search as PageSearch } from "./pages/Search";
@@ -36,6 +37,7 @@ import { AdminDashboard } from "./pages/AdminDashboard";
 import { AdminPanel } from "./pages/admin/AdminPanel";
 import { AdminOverview } from "./pages/admin/AdminOverview";
 import { AdminRateRequests } from "./pages/admin/AdminRateRequests";
+import { Chat } from "./pages/Chat";
 import { OnboardingForm } from "./components/OnboardingForm";
 import { UnverifiedTutorView } from "./components/UnverifiedTutorView";
 import { VerificationForm } from "./components/VerificationForm";
@@ -206,6 +208,20 @@ export default function App() {
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
                     Sessions
+                  </span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("chat")}
+                  title="Pesan"
+                  className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "chat" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
+                >
+                  <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
+                    <MessageSquare size={22} />
+                  </span>
+                  <span
+                    className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
+                  >
+                    Pesan
                   </span>
                 </button>
                 <button
@@ -383,6 +399,22 @@ export default function App() {
                     Sessions
                   </span>
                 </button>
+                {userRole !== "guest" && (
+                  <button
+                    onClick={() => setActiveTab("chat")}
+                    title="Pesan"
+                    className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "chat" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
+                  >
+                    <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
+                      <MessageSquare size={22} />
+                    </span>
+                    <span
+                      className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
+                    >
+                      Pesan
+                    </span>
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveTab("progress")}
                   title="Progress"
@@ -494,6 +526,9 @@ export default function App() {
                 {activeTab === "progress" && userRole !== "tutor" && userRole !== "admin" && (
                   <StudentProgress />
                 )}
+                {activeTab === "chat" && (
+                  <Chat />
+                )}
 
                 {activeTab === "daftar-tutor" && <PageDaftarTutor />}
                 {(activeTab === "login" || activeTab === "profile") && (
@@ -567,6 +602,17 @@ export default function App() {
                     <BookOpen size={22} />
                   </span>
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "sessions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Sesi</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("chat")}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "chat" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
+                >
+                  <span
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "chat" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                  >
+                    <MessageSquare size={22} />
+                  </span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "chat" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Pesan</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("history")}
@@ -706,6 +752,19 @@ export default function App() {
                   </span>
                   <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "student_sessions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Sesi</span>
                 </button>
+                {userRole !== "guest" && (
+                  <button
+                    onClick={() => setActiveTab("chat")}
+                    className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "chat" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
+                  >
+                    <span
+                      className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "chat" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    >
+                      <MessageSquare size={22} />
+                    </span>
+                    <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "chat" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Pesan</span>
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveTab("progress")}
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "progress" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}

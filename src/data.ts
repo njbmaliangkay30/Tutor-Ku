@@ -1,4 +1,4 @@
-export const DAYS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+export const DAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
 export const SUBJECTS = [
   'Matematika', 'Fisika', 'Kimia', 'Biologi', 
