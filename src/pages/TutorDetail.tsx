@@ -214,6 +214,7 @@ export function TutorDetail() {
       endDateTime.setHours(h + 1, m + 30, 0, 0);
 
       const subjectName = selectedSubject;
+      let generatedSessionId: string | null = null;
 
       if (usePackageSession && activePackage) {
         // BOOK USING PREPAID BUNDLE SESSION
@@ -266,12 +267,12 @@ export function TutorDetail() {
         });
 
         // 4. Notify tutor
-        const sessionId = sessionData?.id;
+        generatedSessionId = sessionData?.id;
         await supabase.from("notifications").insert({
           user_id: tutor.id,
           title: "Sesi Paket Baru!",
           message: `${userProfile.full_name} memesan 1 sesi baru menggunakan kuota paket langganan mereka untuk subjek ${subjectName}.`,
-          link: sessionId ? `sessions:${sessionId}` : "sessions"
+          link: generatedSessionId ? `sessions:${generatedSessionId}` : "sessions"
         });
 
       } else {
@@ -319,12 +320,12 @@ export function TutorDetail() {
           });
 
           // Notify tutor of upcoming request (pending payment, can be approved/pending)
-          const sessionId = sessionData?.id;
+          generatedSessionId = sessionData?.id;
           await supabase.from("notifications").insert({
             user_id: tutor.id,
             title: "Sesi Baru Dipesan (Menunggu Pembayaran)!",
             message: `${userProfile.full_name} memesan 1 sesi pelajaran subjek ${subjectName}. Sesi akan aktif setelah pembayaran dikonfirmasi.`,
-            link: sessionId ? `sessions:${sessionId}` : "sessions"
+            link: generatedSessionId ? `sessions:${generatedSessionId}` : "sessions"
           });
 
         } else {
@@ -405,19 +406,19 @@ export function TutorDetail() {
           });
 
           // 4. Notify tutor
-          const sessionId = sessionData?.id;
+          generatedSessionId = sessionData?.id;
           await supabase.from("notifications").insert({
             user_id: tutor.id,
             title: "Paket Belajar Baru Dipesan (Menunggu Pembayaran)!",
             message: `${userProfile.full_name} memesan ${pkgInfo.name} (${sessionsCount} sesi) untuk subjek ${subjectName}. Sesi akan berjalan jika pembayaran dikonfirmasi.`,
-            link: sessionId ? `sessions:${sessionId}` : "sessions"
+            link: generatedSessionId ? `sessions:${generatedSessionId}` : "sessions"
           });
         }
       }
 
       // Kirim pesan otomatis dari siswa ke tutor terkait booking ini
       try {
-         const sysMsg = `Halo kak, saya baru saja mengajukan jadwal untuk tanggal ${selectedDate.toLocaleDateString("id-ID")} jam ${selectedTime}. ${notes ? `Materi/Catatan: "${notes}"` : 'Mohon dikonfirmasi.'}`;
+         const sysMsg = `Halo kak, saya baru saja mengajukan jadwal untuk tanggal ${selectedDate.toLocaleDateString("id-ID")} jam ${selectedTime}. ${notes ? `Materi/Catatan: "${notes}"` : 'Mohon dikonfirmasi.'}[SESSION_ID:${generatedSessionId}]`;
          await supabase.from("messages").insert({
            sender_id: userProfile.id,
            receiver_id: tutor.id,
