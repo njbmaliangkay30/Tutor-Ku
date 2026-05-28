@@ -62,84 +62,96 @@ export function SessionBookingCard({ sessionId, messageContent, isMe, userRole }
     return timeStr.substring(0, 5);
   };
 
+  const baseBubbleClass = `flex flex-col shadow-sh1 w-full max-w-[320px] md:max-w-[350px] ${
+    isMe 
+      ? 'bg-lime text-black border-[2px] border-lime/80 rounded-2xl rounded-tr-sm' 
+      : 'bg-bg-2 border-[2px] border-border text-text-main rounded-2xl rounded-tl-sm'
+  }`;
+
   if (loading) {
     return (
-      <div className={`p-4 rounded-xl border opacity-70 ${isMe ? 'border-black/10 bg-black/5' : 'border-border bg-bg-2'}`}>
-        <span className="text-xs">Memuat informasi jadwal...</span>
+      <div className={`${baseBubbleClass} p-4 opacity-70`}>
+        <span className="text-xs font-medium">Memuat informasi jadwal...</span>
       </div>
     );
   }
 
-  // If no session info is found (maybe deleted)
   if (!sessionInfo) {
     return (
-      <div className={`flex flex-col p-4 rounded-xl border ${isMe ? 'border-black/10 bg-black/5 text-black' : 'border-border bg-bg-2 text-text-main'}`}>
-        <span className="whitespace-pre-wrap">{messageContent}</span>
+      <div className={`${baseBubbleClass} p-4`}>
+        <span className="whitespace-pre-wrap text-[13px]">{messageContent}</span>
       </div>
     );
   }
 
   const isPending = sessionInfo.status === 'pending';
   const isConfirmed = sessionInfo.status === 'confirmed';
-  const isCancelled = sessionInfo.status === 'cancelled';
   
   const parsedNotes = parseSessionNotes(sessionInfo.material_notes);
   const notesText = parsedNotes.notes ? `"${parsedNotes.notes}"` : "-";
 
   return (
-    <div className={`flex flex-col rounded-xl overflow-hidden border ${isMe ? 'border-black/10' : 'border-border'} w-full max-w-[320px] md:max-w-[350px]`}>
-      <div className={`p-4 ${isMe ? 'bg-black/5' : 'bg-bg-1'}`}>
-        <div className="flex items-center gap-2 mb-3">
+    <div className={baseBubbleClass}>
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-4">
           <Calendar size={16} className={isMe ? 'text-black/60' : 'text-lime'} />
-          <div className="text-xs font-bold font-mono tracking-wider uppercase opacity-70 border-b border-black/10 pb-1 flex-1">Pengajuan Jadwal</div>
+          <div className={`text-xs font-bold font-mono tracking-wider uppercase border-b pb-1 flex-1 ${isMe ? 'opacity-70 border-black/10' : 'opacity-70 border-border'}`}>
+            Pengajuan Jadwal
+          </div>
         </div>
         
-        <div className="flex items-start gap-3 mb-3">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isMe ? 'bg-black/10' : 'bg-lime/20 text-lime'}`}>
-             {sessionInfo.meeting_type === 'online' ? <Video size={18} /> : <MapPin size={18} />}
+        <div className="flex items-start gap-4 mb-4">
+          <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 border ${
+            isMe ? 'bg-black/10 border-black/5 text-black' : 'bg-lime/10 border-lime/20 text-lime'
+          }`}>
+             {sessionInfo.meeting_type === 'online' ? <Video size={20} /> : <MapPin size={20} />}
           </div>
-          <div className="flex flex-col">
-            <span className={`text-[13px] font-bold ${isMe ? 'text-black/80' : 'text-text-main'}`}>
+          <div className="flex flex-col pt-0.5">
+            <span className={`text-[14px] font-bold ${isMe ? 'text-black' : 'text-text-main'}`}>
               {new Date(sessionInfo.session_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
             </span>
-            <span className={`text-xs font-mono mt-0.5 ${isMe ? 'text-black/60' : 'text-text-sub'}`}>
+            <span className={`text-[13px] font-mono mt-1 font-medium ${isMe ? 'text-black/70' : 'text-text-sub'}`}>
               {formatTime(sessionInfo.start_time)} - {formatTime(sessionInfo.end_time)}
             </span>
           </div>
         </div>
 
-        <div className={`space-y-1.5 p-3 rounded-lg border ${isMe ? 'bg-black/5 border-black/10' : 'bg-bg-2 border-border/50'}`}>
+        <div className={`space-y-2 p-3.5 rounded-xl border ${
+          isMe ? 'bg-black/5 border-black/10 text-black' : 'bg-bg-1 border-border/50 text-text-main'
+        }`}>
           <div className="flex justify-between items-start gap-2">
-            <span className={`text-[10px] font-mono uppercase tracking-wider ${isMe ? 'text-black/50' : 'text-text-muted'}`}>Subjek</span>
-            <span className={`text-xs font-bold text-right ${isMe ? 'text-black/80' : 'text-text-main'}`}>{sessionInfo.subject}</span>
+            <span className={`text-[10.5px] font-mono uppercase tracking-wider ${isMe ? 'text-black/50' : 'text-text-muted'}`}>Subjek</span>
+            <span className="text-xs font-bold text-right">{sessionInfo.subject}</span>
           </div>
           <div className="flex justify-between items-start gap-2">
-            <span className={`text-[10px] font-mono uppercase tracking-wider ${isMe ? 'text-black/50' : 'text-text-muted'}`}>Tipe</span>
-            <span className={`text-xs font-bold text-right ${isMe ? 'text-black/80' : 'text-text-main'}`}>
+            <span className={`text-[10.5px] font-mono uppercase tracking-wider ${isMe ? 'text-black/50' : 'text-text-muted'}`}>Tipe</span>
+            <span className="text-xs font-bold text-right">
               {sessionInfo.meeting_type === 'online' ? 'Online' : 'Offline'}
             </span>
           </div>
           <div className="flex justify-between items-start gap-2">
-            <span className={`text-[10px] font-mono uppercase tracking-wider pt-1 ${isMe ? 'text-black/50' : 'text-text-muted'}`}>Catatan</span>
+            <span className={`text-[10.5px] font-mono uppercase tracking-wider pt-0.5 ${isMe ? 'text-black/50' : 'text-text-muted'}`}>Catatan</span>
             <span className={`text-xs italic text-right ${isMe ? 'text-black/70' : 'text-text-sub'}`}>{notesText}</span>
           </div>
         </div>
       </div>
       
-      <div className={`p-4 border-t flex flex-col gap-2 ${isMe ? 'bg-black/10 border-black/5' : 'bg-bg-2 border-border/50'}`}>
+      <div className={`p-4 border-t flex flex-col gap-2 ${
+        isMe ? 'bg-black/5 border-black/10' : 'bg-bg-1 border-border/50'
+      }`}>
         {isPending ? (
           <>
             {userRole === 'tutor' && !isMe ? (
               <div className="flex gap-2 w-full">
                 <button 
                   onClick={() => handleAction('confirmed')}
-                  className="flex-1 bg-lime text-black py-2.5 rounded-lg text-[13px] font-bold hover:bg-[rgb(var(--color-lime-dim))] transition-colors flex items-center justify-center gap-1.5"
+                  className="flex-1 bg-lime text-black py-2.5 rounded-lg text-[13px] font-bold hover:bg-[rgb(var(--color-lime-dim))] transition-colors flex items-center justify-center gap-1.5 shadow-sm border border-black/10"
                 >
                   <CheckCircle2 size={16} /> Terima
                 </button>
                 <button 
                   onClick={() => handleAction('cancelled')}
-                  className="flex-1 border-[1.5px] border-red-500/30 text-red-500 hover:bg-red-500/10 py-2.5 rounded-lg text-[13px] font-bold transition-colors flex items-center justify-center gap-1.5"
+                  className="flex-1 bg-red-500/10 border-[1.5px] border-red-500/30 text-red-500 hover:bg-red-500/20 py-2.5 rounded-lg text-[13px] font-bold transition-colors flex items-center justify-center gap-1.5"
                 >
                   <XCircle size={16} /> Tolak
                 </button>
