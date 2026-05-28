@@ -102,11 +102,65 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
 
     if (user) {
-      if (typeof window !== "undefined" && "Notification" in window) {
-        if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-          Notification.requestPermission();
+      const registerPushNotification = async (userId: string) => {
+        if (typeof window === "undefined" || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+          return;
         }
-      }
+
+        try {
+          // Register the Service Worker
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          await navigator.serviceWorker.ready;
+
+          // Ask for browser push notifications permission
+          if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") return;
+          }
+
+          if (Notification.permission === "granted") {
+            // Retrieve server VAPID public key
+            const resKey = await fetch('/api/push/key');
+            if (!resKey.ok) throw new Error("Gagal mengambil kunci VAPID");
+            const { publicKey } = await resKey.json();
+            if (!publicKey) return;
+
+            // Convert base64 VAPID key to Uint8Array
+            const urlBase64ToUint8Array = (base64String: string) => {
+              const padding = '='.repeat((4 - base64String.length % 4) % 4);
+              const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+              const rawData = window.atob(base64);
+              const outputArray = new Uint8Array(rawData.length);
+              for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+              }
+              return outputArray;
+            };
+
+            const convertedKey = urlBase64ToUint8Array(publicKey);
+
+            // Subscribe via the device's PushManager
+            const subscription = await registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: convertedKey
+            });
+
+            // Store subscription in our Express server database
+            await fetch('/api/push/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                user_id: userId,
+                subscription: subscription
+              })
+            });
+          }
+        } catch (err) {
+          console.warn("PWA Push Setup Warning:", err);
+        }
+      };
+
+      registerPushNotification(user.id);
 
       const showBrowserNotification = (content: string) => {
         if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
