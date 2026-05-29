@@ -169,13 +169,39 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
               right: popupPos.right
             }}
           >
-            <div className="flex justify-between items-center p-4 border-b border-border bg-bg-2">
-              <h3 className="font-bold font-display text-sm">Notifikasi</h3>
-              {unreadCount > 0 && (
-                <button onClick={markAllAsRead} className="text-[10px] text-lime hover:underline font-mono uppercase font-bold">
-                  Tandai semua dibaca
+            <div className="flex flex-col border-b border-border bg-bg-2">
+              <div className="flex justify-between items-center p-4 pb-2">
+                <h3 className="font-bold font-display text-sm">Notifikasi</h3>
+                {unreadCount > 0 && (
+                  <button onClick={markAllAsRead} className="text-[10px] text-lime hover:underline font-mono uppercase font-bold">
+                    Tandai semua dibaca
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-2 px-4 pb-3">
+                <button 
+                  onClick={async () => {
+                    await Notification.requestPermission();
+                    alert("Izin push notification diminta. Coba aktifkan/refresh.");
+                  }}
+                  className="text-[9px] bg-bg-3 hover:bg-border px-2 py-1 rounded-md text-text-main font-mono transition-colors"
+                >
+                  Izinkan Notifikasi Di Browser
                 </button>
-              )}
+                <button 
+                  onClick={async () => {
+                     await fetch('/api/push/test', {
+                       method: 'POST',
+                       headers: { 'Content-Type': 'application/json' },
+                       body: JSON.stringify({ user_id: userProfile?.id })
+                     });
+                     alert("Pesan uji coba dikirim ke server! Jika kamu belum menerima PWA Push, pastikan kamu membuka aplikasi di Tab Baru (bukan iframe AI Studio) dan sudah mengizinkan notifikasi.");
+                  }}
+                  className="text-[9px] bg-lime hover:opacity-80 px-2 py-1 rounded-md text-black font-mono font-bold transition-opacity"
+                >
+                  Uji Push Notifikasi
+                </button>
+              </div>
             </div>
             <div className="overflow-y-auto flex-1 p-2 custom-scrollbar">
               {notifications.length === 0 ? (

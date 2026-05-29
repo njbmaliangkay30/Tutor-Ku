@@ -7,7 +7,7 @@ import { getAvatarColor } from "../data";
 import { SessionBookingCard } from "../components/SessionBookingCard";
 
 export function Chat() {
-  const { userProfile, user, userRole, setActiveTab, tutors } = useAppContext();
+  const { userProfile, user, userRole, setActiveTab, tutors, targetSessionId, setTargetSessionId } = useAppContext();
   const [conversations, setConversations] = useState<any[]>([]);
   const [activeContactId, setActiveContactId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -18,6 +18,15 @@ export function Chat() {
   // Fallback to fetch profiles if needed
   const [profilesMap, setProfilesMap] = useState<Record<string, any>>({});
   
+  useEffect(() => {
+    // If targetSessionId exists and it's a UUID (not our mock single-session logic if it overlaps), use it
+    if (targetSessionId) {
+      // Assuming targetSessionId passed from link is the contact Id
+      setActiveContactId(targetSessionId);
+      setTargetSessionId(null); // clear after using
+    }
+  }, [targetSessionId, setTargetSessionId]);
+
   useEffect(() => {
     if (!user) return;
     
@@ -188,6 +197,15 @@ export function Chat() {
         // Hapus pesan temp jika gagal
         setMessages(prev => prev.filter(m => m.id !== tempId));
       } else if (data) {
+        // Send notification
+        supabase.from('notifications').insert({
+          user_id: activeContactId,
+          title: `Pesan baru dari ${userProfile?.full_name || 'Pengguna'}`,
+          message: sentContent.substring(0, 50) + (sentContent.length > 50 ? '...' : ''),
+          type: 'chat',
+          link: `chat:${user.id}`
+        }).then();
+
         // Replace tempMsg dengan data asli dari database
         setMessages(prev => {
           if (prev.some(m => m.id === data.id)) {

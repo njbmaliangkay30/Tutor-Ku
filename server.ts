@@ -235,6 +235,20 @@ async function startServer() {
     res.json({ success: true });
   });
 
+  // PWA Web Push Test Endpoint
+  app.post("/api/push/test", async (req, res) => {
+    const { user_id } = req.body;
+    if (!user_id) return res.status(400).json({ error: "User ID kosong" });
+    
+    await sendPushNotification(user_id, {
+      title: "Uji Notifikasi TutorKu",
+      body: "Jika kamu melihat ini, PWA Push Notification kamu sudah berfungsi!",
+      url: "/"
+    });
+    
+    res.json({ success: true });
+  });
+
   // Initialize server database subscription for background notifications
   try {
     setupRealtimePushNotifications();
