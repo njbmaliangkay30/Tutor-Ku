@@ -1,5 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="22" fill="#0A0A0B"/>
-  <text x="53" y="72" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="58" letter-spacing="-3" fill="rgba(0,0,0,0.5)" text-anchor="middle">tk</text>
-  <text x="50" y="69" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="58" letter-spacing="-3" fill="#C8FF00" text-anchor="middle">tk</text>
+  <defs>
+    <g id="tk-logo">
+      <rect x="20" y="33" width="14" height="39" />
+      <rect x="10" y="44" width="31" height="12" />
+      <rect x="44" y="27" width="14" height="45" />
+      <polygon points="61,58 75,44 89,44 75,58 89,72 75,72" />
+    </g>
+  </defs>
+  <rect width="100" height="100" rx="22" fill="#0A0A0B" />
+  <use href="#tk-logo" x="2" y="2" fill="#333333" />
+  <use href="#tk-logo" x="0" y="0" fill="#C8FF00" />
 </svg>
