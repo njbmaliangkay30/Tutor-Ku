@@ -17,30 +17,8 @@ const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_A
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Initialize VAPID Keys for Web Push
-const VAPID_KEYS_FILE = path.join(process.cwd(), "vapid_keys.json");
-let vapidPublicKey = "";
-let vapidPrivateKey = "";
-
-if (fs.existsSync(VAPID_KEYS_FILE)) {
-  try {
-    const keys = JSON.parse(fs.readFileSync(VAPID_KEYS_FILE, "utf-8"));
-    vapidPublicKey = keys.publicKey;
-    vapidPrivateKey = keys.privateKey;
-  } catch (e) {
-    console.error("Gagal membaca file vapid_keys.json", e);
-  }
-}
-
-if (!vapidPublicKey || !vapidPrivateKey) {
-  const keys = webpush.generateVAPIDKeys();
-  vapidPublicKey = keys.publicKey;
-  vapidPrivateKey = keys.privateKey;
-  try {
-    fs.writeFileSync(VAPID_KEYS_FILE, JSON.stringify(keys, null, 2), "utf-8");
-  } catch (e) {
-    console.error("Gagal menyimpan file vapid_keys.json", e);
-  }
-}
+let vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "BIMeGpOzRPQ9Ios0j8B7JkAHpf63riIWv8Z8oL_moiWbvnaZBADs8XWeSDUXmQ3vsAX0wgOK-oc4uh4j96os7q8";
+let vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "RN0Docyp4IlIp4FXbA2bns4zjbo-Z-zWZokV13s_EDs";
 
 webpush.setVapidDetails(
   "mailto:njbmaliangkay30@gmail.com",
