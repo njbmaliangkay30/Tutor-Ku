@@ -218,7 +218,19 @@ export function Chat() {
           message: sentContent.substring(0, 50) + (sentContent.length > 50 ? '...' : ''),
           type: 'chat',
           link: `chat:${user.id}`
-        }).then();
+        }).then(() => {
+          // Trigger web push via our API
+          fetch('/api/push/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: activeContactId,
+              title: `Pesan baru dari ${userProfile?.full_name || 'Pengguna'}`,
+              message: sentContent.substring(0, 50) + (sentContent.length > 50 ? '...' : ''),
+              link: `/chat`
+            })
+          }).catch(console.error);
+        });
 
         // Replace tempMsg dengan data asli dari database
         setMessages(prev => {
