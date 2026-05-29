@@ -90,17 +90,16 @@ export function Chat() {
     }
     fetchContacts();
 
-    // Setup realtime listener for messages globally using notifications
+    // Setup realtime listener for messages globally
     const globalSub = supabase
-      .channel('public_notifications_for_chat')
+      .channel('public:messages')
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
-        table: 'notifications',
-        filter: `user_id=eq.${user.id}`
+        table: 'messages',
       }, (payload) => {
-         const newNotif = payload.new;
-         if (newNotif.type === 'chat' || newNotif.link?.startsWith('chat:')) {
+         const newMsg = payload.new;
+         if (newMsg.sender_id === user.id || newMsg.receiver_id === user.id) {
            fetchContacts(); // Refetch to update sidebar
          }
       })
@@ -143,20 +142,29 @@ export function Chat() {
 
     if (!user || !activeContactId) return;
 
-    // Specific room subscription using notifications table to detect chat event
+    // Specific room subscription using messages table
     const roomSub = supabase
-      .channel(`chat_notifications_${activeContactId}`)
+      .channel(`chat_${activeContactId}`)
       .on('postgres_changes', { 
          event: 'INSERT', 
          schema: 'public', 
-         table: 'notifications',
-         filter: `user_id=eq.${user.id}`
+         table: 'messages',
       }, (payload) => {
-         const newNotif = payload.new;
-         if (newNotif.type === 'chat' || newNotif.link?.startsWith('chat:')) {
-           const senderId = newNotif.link?.split(':')[1];
-           if (senderId === activeContactId) {
-             fetchActiveMessages();
+         const newMsg = payload.new;
+         if (
+           (newMsg.sender_id === user.id && newMsg.receiver_id === activeContactId) ||
+           (newMsg.sender_id === activeContactId && newMsg.receiver_id === user.id)
+         ) {
+           setMessages(prev => {
+             if (prev.some(m => m.id === newMsg.id)) return prev;
+             return [...prev, newMsg];
+           });
+           setTimeout(() => {
+             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+           }, 100);
+
+           if (newMsg.receiver_id === user.id) {
+             supabase.from("messages").update({ is_read: true }).eq("id", newMsg.id).then();
            }
          }
       })

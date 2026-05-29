@@ -48,66 +48,51 @@ webpush.setVapidDetails(
   vapidPrivateKey
 );
 
-const SUBS_FILE = path.join(process.cwd(), "push_subscriptions.json");
-
-function getSubscriptions(): Record<string, any[]> {
-  if (!fs.existsSync(SUBS_FILE)) return {};
+async function addSubscription(userId: string, subscription: any) {
   try {
-    return JSON.parse(fs.readFileSync(SUBS_FILE, "utf-8"));
-  } catch (e) {
-    return {};
+    // Check if endpoint exists
+    const { data: existing } = await supabase.from('push_subscriptions').select('id').eq('endpoint', subscription.endpoint).single();
+    if (existing) {
+      // Update
+      await supabase.from('push_subscriptions').update({ user_id: userId, keys: subscription.keys }).eq('id', existing.id);
+    } else {
+      // Insert
+      await supabase.from('push_subscriptions').insert({
+        user_id: userId,
+        endpoint: subscription.endpoint,
+        keys: subscription.keys
+      });
+    }
+  } catch(e) {
+    console.error("Gagal menyimpan subscription ke db", e);
   }
-}
-
-function saveSubscriptions(subs: Record<string, any[]>) {
-  try {
-    const dir = path.dirname(SUBS_FILE);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(SUBS_FILE, JSON.stringify(subs, null, 2), "utf-8");
-  } catch (e) {
-    console.error("Gagal menyimpan file push_subscriptions.json", e);
-  }
-}
-
-function addSubscription(userId: string, subscription: any) {
-  const subs = getSubscriptions();
-  if (!subs[userId]) {
-    subs[userId] = [];
-  }
-  const existingIndex = subs[userId].findIndex((s: any) => s.endpoint === subscription.endpoint);
-  if (existingIndex !== -1) {
-    subs[userId][existingIndex] = subscription;
-  } else {
-    subs[userId].push(subscription);
-  }
-  saveSubscriptions(subs);
 }
 
 async function sendPushNotification(userId: string, payload: { title: string; body: string; url: string }) {
-  const subs = getSubscriptions();
-  const userSubs = subs[userId];
-  if (!userSubs || userSubs.length === 0) return;
+  try {
+    const { data: userSubs } = await supabase.from('push_subscriptions').select('*').eq('user_id', userId);
+    if (!userSubs || userSubs.length === 0) return;
 
-  const payloadString = JSON.stringify(payload);
-  const validSubs: any[] = [];
+    const payloadString = JSON.stringify(payload);
 
-  for (const sub of userSubs) {
-    try {
-      await webpush.sendNotification(sub, payloadString);
-      validSubs.push(sub);
-    } catch (err: any) {
-      if (err.statusCode === 410 || err.statusCode === 404) {
-        console.log(`Menghapus subscription kedaluwarsa untuk pengguna ${userId}`);
-      } else {
-        console.error("Gagal mengirimkan notifikasi push:", err);
-        validSubs.push(sub);
+    for (const sub of userSubs) {
+      try {
+        const webPushSub = {
+          endpoint: sub.endpoint,
+          keys: sub.keys
+        };
+        await webpush.sendNotification(webPushSub, payloadString);
+      } catch (err: any) {
+        if (err.statusCode === 410 || err.statusCode === 404) {
+          console.log(`Menghapus subscription kedaluwarsa untuk pengguna ${userId}`);
+          await supabase.from('push_subscriptions').delete().eq('id', sub.id);
+        } else {
+          console.error("Gagal mengirimkan notifikasi push:", err);
+        }
       }
     }
-  }
-
-  if (validSubs.length !== userSubs.length) {
-    subs[userId] = validSubs;
-    saveSubscriptions(subs);
+  } catch(e) {
+    console.error("Gagal membaca sub dari db", e);
   }
 }
 
