@@ -116,7 +116,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
           if (Notification.permission === "granted") {
             // Retrieve server VAPID public key
-            const resKey = await fetch('/api/push/key');
+            const resKey = await fetch(`/api/push/key?t=${Date.now()}`);
             if (!resKey.ok) throw new Error("Gagal mengambil kunci VAPID");
             const { publicKey } = await resKey.json();
             if (!publicKey) return;
