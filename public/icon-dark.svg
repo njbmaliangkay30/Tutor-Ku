@@ -1,13 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <defs>
-    <g id="tk-logo">
-      <rect x="20" y="33" width="14" height="39" />
-      <rect x="10" y="44" width="31" height="12" />
-      <rect x="44" y="27" width="14" height="45" />
-      <polygon points="61,58 75,44 89,44 75,58 89,72 75,72" />
-    </g>
-  </defs>
-  <rect width="100" height="100" rx="22" fill="#0A0A0B" />
-  <use href="#tk-logo" x="2" y="2" fill="#333333" />
-  <use href="#tk-logo" x="0" y="0" fill="#C8FF00" />
+<svg width="124" height="124" viewBox="0 0 124 124" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="124" height="124" rx="28" fill="#0A0A0B"/>
+  <path d="M13.81 51.64H51.442V61.24H13.81V51.64ZM24.946 42.04H40.306V83H24.946V42.04ZM53.6775 38.84H69.0375V83H53.6775V38.84ZM107.95 51.64L82.6055 69.24L82.9255 60.92L110.125 83H90.6695L69.2935 65.144L87.5975 51.64H107.95Z" fill="rgba(0,0,0,0.5)" transform="translate(2, 2)"/>
+  <path d="M13.81 51.64H51.442V61.24H13.81V51.64ZM24.946 42.04H40.306V83H24.946V42.04ZM53.6775 38.84H69.0375V83H53.6775V38.84ZM107.95 51.64L82.6055 69.24L82.9255 60.92L110.125 83H90.6695L69.2935 65.144L87.5975 51.64H107.95Z" fill="#C8FF00"/>
 </svg>
