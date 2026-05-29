@@ -90,67 +90,73 @@ export function Chat() {
     }
     fetchContacts();
 
-    // Setup realtime listener for messages globally
-    const msgSubscription = supabase
-      .channel('public:messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-         const newMsg = payload.new;
-         if (newMsg.sender_id === user.id || newMsg.receiver_id === user.id) {
+    // Setup realtime listener for messages globally using notifications
+    const globalSub = supabase
+      .channel('public_notifications_for_chat')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`
+      }, (payload) => {
+         const newNotif = payload.new;
+         if (newNotif.type === 'chat' || newNotif.link?.startsWith('chat:')) {
            fetchContacts(); // Refetch to update sidebar
          }
       })
       .subscribe();
 
     return () => {
-      supabase.removeChannel(msgSubscription);
+      supabase.removeChannel(globalSub);
     };
   }, [user]);
 
+  // Helper inside component to fetch messages for active room
+  const fetchActiveMessages = async () => {
+    if (!user || !activeContactId) return;
+    try {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .or(`and(sender_id.eq.${user.id},receiver_id.eq.${activeContactId}),and(sender_id.eq.${activeContactId},receiver_id.eq.${user.id})`)
+        .order("created_at", { ascending: true });
+
+      if (!error && data) {
+         setMessages(data);
+         // mark as read
+         const unread = data.filter(m => m.receiver_id === user.id && !m.is_read);
+         if (unread.length > 0) {
+           await supabase.from("messages").update({ is_read: true }).in("id", unread.map(m => m.id));
+         }
+         setTimeout(() => {
+           messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+         }, 100);
+      }
+    } catch (e) {
+      console.error("error fetching chat messages:", e);
+    }
+  };
+
   // Read messages when opening a contact
   useEffect(() => {
+    fetchActiveMessages();
+
     if (!user || !activeContactId) return;
 
-    async function fetchMessages() {
-      try {
-        const { data, error } = await supabase
-          .from("messages")
-          .select("*")
-          .or(`and(sender_id.eq.${user.id},receiver_id.eq.${activeContactId}),and(sender_id.eq.${activeContactId},receiver_id.eq.${user.id})`)
-          .order("created_at", { ascending: true });
-
-        if (!error && data) {
-           setMessages(data);
-           // mark as read
-           const unread = data.filter(m => m.receiver_id === user.id && !m.is_read);
-           if (unread.length > 0) {
-             await supabase.from("messages").update({ is_read: true }).in("id", unread.map(m => m.id));
-           }
-        }
-      } catch (e) {
-        console.error("error fetching chat messages:", e);
-      }
-    }
-    fetchMessages();
-
-    // Specific room subscription
+    // Specific room subscription using notifications table to detect chat event
     const roomSub = supabase
-      .channel(`chat_${activeContactId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-         const newMsg = payload.new;
-         if (
-           (newMsg.sender_id === user.id && newMsg.receiver_id === activeContactId) ||
-           (newMsg.sender_id === activeContactId && newMsg.receiver_id === user.id)
-         ) {
-           setMessages(prev => {
-             if (prev.some(m => m.id === newMsg.id)) return prev;
-             return [...prev, newMsg];
-           });
-           setTimeout(() => {
-             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-           }, 100);
-
-           if (newMsg.receiver_id === user.id) {
-             supabase.from("messages").update({ is_read: true }).eq("id", newMsg.id).then();
+      .channel(`chat_notifications_${activeContactId}`)
+      .on('postgres_changes', { 
+         event: 'INSERT', 
+         schema: 'public', 
+         table: 'notifications',
+         filter: `user_id=eq.${user.id}`
+      }, (payload) => {
+         const newNotif = payload.new;
+         if (newNotif.type === 'chat' || newNotif.link?.startsWith('chat:')) {
+           const senderId = newNotif.link?.split(':')[1];
+           if (senderId === activeContactId) {
+             fetchActiveMessages();
            }
          }
       })

@@ -176,28 +176,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (count !== null) setUnreadChatCount(count);
         });
 
-      // Subscribe to unread messages globally
+      // Subscribe to unread messages globally using notifications
       const msgSub = supabase
         .channel('global-messages')
         .on(
           'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
+          { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
           (payload: any) => {
-             // Avoid playing sound / incrementing if the user is already on the chat tab for this contact
-             // But globally, it's safer to just increment and let the Chat component handle marking it as read
-             setUnreadChatCount((prev) => prev + 1);
-             // Play sound unless activeTab is chat maybe? Play sound generally.
-             playNotificationSound();
-             showBrowserNotification(payload.new.content);
-          }
-        )
-        // Also listen for UPDATE so count decreases when read
-        .on(
-          'postgres_changes',
-          { event: 'UPDATE', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
-          (payload: any) => {
-             if (payload.new.is_read && !payload.old.is_read) {
-               setUnreadChatCount((prev) => Math.max(0, prev - 1));
+             if (payload.new.type === 'chat' || payload.new.link?.startsWith('chat:')) {
+               setUnreadChatCount((prev) => prev + 1);
+               playNotificationSound();
+               showBrowserNotification(payload.new.message || 'Pesan baru diterima');
              }
           }
         )
@@ -210,6 +199,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setUnreadChatCount(0);
     }
   }, [user]);
+
+  // Refetch unread counts when activeTab is changed (so we can clear them when the user enters the chat tab)
+  useEffect(() => {
+    if (user && activeTab) {
+      supabase.from("messages").select("id", { count: "exact" }).eq("receiver_id", user.id).eq("is_read", false)
+        .then(({ count }) => {
+          if (count !== null) setUnreadChatCount(count);
+        });
+    }
+  }, [user, activeTab]);
 
   useEffect(() => {
     const handlePopState = () => {

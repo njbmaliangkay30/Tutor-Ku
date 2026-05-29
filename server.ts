@@ -113,95 +113,24 @@ async function sendPushNotification(userId: string, payload: { title: string; bo
 
 // Setup Realtime Database Listener for Web Push Notifications on Server Side
 function setupRealtimePushNotifications() {
-  // 1. Listen for new messages
+  // 1. Listen for new notifications
   supabase
-    .channel("server-messages-push")
+    .channel("server-notifications-push")
     .on(
       "postgres_changes",
-      { event: "INSERT", schema: "public", table: "messages" },
+      { event: "INSERT", schema: "public", table: "notifications" },
       async (payload: any) => {
-        const newMsg = payload.new;
-        if (!newMsg || !newMsg.receiver_id) return;
+        const newNotif = payload.new;
+        if (!newNotif || !newNotif.user_id) return;
 
-        const receiverId = newMsg.receiver_id;
-        const senderId = newMsg.sender_id;
-
-        // Fetch sender name
-        let senderName = "Seseorang";
-        try {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("full_name")
-            .eq("id", senderId)
-            .single();
-          if (profile?.full_name) {
-            senderName = profile.full_name;
-          }
-        } catch (e) {
-          console.error("Gagal mengambil info pengirim:", e);
-        }
-
-        let bodyText = newMsg.content || "";
-        if (bodyText.includes("[SESSION_ID:")) {
-          bodyText = "Mengirim pengajuan bimbingan belajar baru.";
-        }
+        // Skip sending push if the user already read it? Not available since it just got inserted.
+        const receiverId = newNotif.user_id;
 
         sendPushNotification(receiverId, {
-          title: `Pesan baru dari ${senderName}`,
-          body: bodyText,
-          url: "/chat"
+          title: newNotif.title || "TutorKu",
+          body: newNotif.message || "Anda memiliki notifikasi baru",
+          url: newNotif.link || "/"
         });
-      }
-    )
-    .subscribe();
-
-  // 2. Listen for session updates or inserts
-  supabase
-    .channel("server-sessions-push")
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "sessions" },
-      async (payload: any) => {
-        const oldSession = payload.old;
-        const newSession = payload.new;
-        if (!newSession) return;
-
-        const event = payload.eventType;
-
-        if (event === "INSERT") {
-          const tutorId = newSession.tutor_id;
-          const studentId = newSession.student_id;
-
-          let studentName = "Siswa";
-          try {
-            const { data: p } = await supabase.from("profiles").select("full_name").eq("id", studentId).single();
-            if (p?.full_name) studentName = p.full_name;
-          } catch (e) {}
-
-          sendPushNotification(tutorId, {
-            title: "Pengajuan Jadwal Baru",
-            body: `${studentName} mengajukan bimbingan baru untuk mata kuliah ${newSession.subject || ''}.`,
-            url: "/sessions"
-          });
-        }
-
-        if (event === "UPDATE" && oldSession && newSession.status !== oldSession.status) {
-          const studentId = newSession.student_id;
-
-          if (newSession.status === "confirmed") {
-            sendPushNotification(studentId, {
-              title: "Pertemuan Dijadwalkan! 🎉",
-              body: `Tutor menyetujui jadwal bimbingan pelajaran ${newSession.subject || ''}.`,
-              url: "/sessions"
-            });
-          } else if (newSession.status === "cancelled") {
-            sendPushNotification(studentId, {
-              title: "Pengajuan Ditangguhkan",
-              body: `Tutor menolak/membatalkan sesi pelajaran ${newSession.subject || ''}.`,
-              url: "/sessions"
-            });
-          }
-        }
       }
     )
     .subscribe();
