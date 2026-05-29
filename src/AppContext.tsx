@@ -168,7 +168,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (text.includes('[SESSION_ID:')) {
             text = "Ada pengajuan/perubahan event jadwal baru.";
           }
-          new Notification('TutorKampus', {
+          new Notification('TutorKu', {
             body: text
           });
         }

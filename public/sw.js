@@ -1,4 +1,4 @@
-// Service Worker for TutorKampus PWA
+// Service Worker for TutorKu PWA
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
@@ -8,13 +8,13 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  let data = { title: 'TutorKampus', body: 'Anda menerima pesan baru' };
+  let data = { title: 'TutorKu', body: 'Anda menerima pesan baru' };
   
   if (event.data) {
     try {
       data = event.data.json();
     } catch (e) {
-      data = { title: 'TutorKampus', body: event.data.text() };
+      data = { title: 'TutorKu', body: event.data.text() };
     }
   }
 
