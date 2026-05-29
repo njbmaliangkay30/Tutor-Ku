@@ -43,10 +43,10 @@ const updateFavicon = (theme: string) => {
   const favicon = document.getElementById("app-favicon") as HTMLLinkElement;
   if (!favicon) return;
   const bgColor = theme === "dark" ? "%230A0A0B" : "%23F2F7F4";
-  const shadowColor = theme === "dark" ? "rgba(0,0,0,0.8)" : "rgba(0,0,0,0.3)";
+  const shadowColor = "rgba(0,0,0,0.5)";
   const textColor = theme === "dark" ? "%23C8FF00" : "%231D8A4C";
   
-  favicon.href = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cstyle%3E@import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&amp;display=swap'); .tk-text { font-family: 'Syne', system-ui, sans-serif; font-weight: 800; font-size: 55px; letter-spacing: -3px; }%3C/style%3E%3Crect width='100' height='100' rx='22' fill='${bgColor}'/%3E%3Ctext x='52' y='70' class='tk-text' fill='${shadowColor}' text-anchor='middle'%3Etk%3C/text%3E%3Ctext x='50' y='68' class='tk-text' fill='${textColor}' text-anchor='middle'%3Etk%3C/text%3E%3C/svg%3E`;
+  favicon.href = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cstyle%3E@import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&amp;display=swap'); .tk-text { font-family: 'Syne', system-ui, sans-serif; font-weight: 800; font-size: 55px; letter-spacing: -2px; }%3C/style%3E%3Crect width='100' height='100' rx='22' fill='${bgColor}'/%3E%3Ctext x='54' y='70' class='tk-text' fill='${shadowColor}' text-anchor='middle'%3Etk%3C/text%3E%3Ctext x='50' y='66' class='tk-text' fill='${textColor}' text-anchor='middle'%3Etk%3C/text%3E%3C/svg%3E`;
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
