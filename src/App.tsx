@@ -21,6 +21,7 @@ import {
   Star,
   MessageSquare
 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { PageHome } from "./pages/Home";
 import { Search as PageSearch } from "./pages/Search";
 import { DaftarTutor as PageDaftarTutor } from "./pages/DaftarTutor";
@@ -533,68 +534,78 @@ export default function App() {
                  <div className="w-8 h-8 rounded-full border-4 border-lime/30 border-t-lime animate-spin"></div>
               </div>
             ) : (
-              <>
-                {userRole === "tutor" && tutorProfileData?.is_verified !== true ? (
-                  <>
-                    {activeTab === "home" && <VerificationForm />}
-                    {["schedule", "sessions", "history"].includes(activeTab) && <UnverifiedTutorView />}
-                  </>
-                ) : (
-                  <>
-                    {activeTab === "home" && userRole === "tutor" && <TutorDashboard />}
-                    {activeTab === "schedule" && userRole === "tutor" && <TutorSchedule />}
-                    {activeTab === "sessions" && userRole === "tutor" && <TutorSessions />}
-                    {activeTab === "history" && userRole === "tutor" && <TutorHistory />}
-                  </>
-                )}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-full h-full"
+                >
+                  {userRole === "tutor" && tutorProfileData?.is_verified !== true ? (
+                    <>
+                      {activeTab === "home" && <VerificationForm />}
+                      {["schedule", "sessions", "history"].includes(activeTab) && <UnverifiedTutorView />}
+                    </>
+                  ) : (
+                    <>
+                      {activeTab === "home" && userRole === "tutor" && <TutorDashboard />}
+                      {activeTab === "schedule" && userRole === "tutor" && <TutorSchedule />}
+                      {activeTab === "sessions" && userRole === "tutor" && <TutorSessions />}
+                      {activeTab === "history" && userRole === "tutor" && <TutorHistory />}
+                    </>
+                  )}
 
-                {activeTab === "home" && userRole === "guest" && <PageHome />}
-                {activeTab === "home" && userRole === "siswa" && <StudentDashboard />}
-                
-                {(activeTab === "search" || activeTab === "explore") && userRole !== "tutor" && userRole !== "admin" && <PageSearch />}
-                {activeTab === "student_sessions" && userRole !== "tutor" && userRole !== "admin" && (
-                  <StudentSessions />
-                )}
-                {activeTab === "progress" && userRole !== "tutor" && userRole !== "admin" && (
-                  <StudentProgress />
-                )}
-                {activeTab === "chat" && (
-                  <Chat />
-                )}
+                  {/* Other roles */}
+                  {activeTab === "home" && userRole === "guest" && <PageHome />}
+                  {activeTab === "home" && userRole === "siswa" && <StudentDashboard />}
+                  
+                  {(activeTab === "search" || activeTab === "explore") && userRole !== "tutor" && userRole !== "admin" && <PageSearch />}
+                  {activeTab === "student_sessions" && userRole !== "tutor" && userRole !== "admin" && (
+                    <StudentSessions />
+                  )}
+                  {activeTab === "progress" && userRole !== "tutor" && userRole !== "admin" && (
+                    <StudentProgress />
+                  )}
+                  {activeTab === "chat" && (
+                    <Chat />
+                  )}
 
-                {activeTab === "daftar-tutor" && <PageDaftarTutor />}
-                {(activeTab === "login" || activeTab === "profile") && (
-                  userRole === "guest" ? <PageLogin /> : <PageProfile />
-                )}
+                  {activeTab === "daftar-tutor" && <PageDaftarTutor />}
+                  {(activeTab === "login" || activeTab === "profile") && (
+                    userRole === "guest" ? <PageLogin /> : <PageProfile />
+                  )}
 
-                {activeTab === "home" && userRole === "admin" && (
-                  <AdminOverview />
-                )}
-                {activeTab === "admin-tutors" && userRole === "admin" && (
-                  <AdminPanel activeSubTab="tutors" />
-                )}
-                {activeTab === "admin-verifications" && userRole === "admin" && (
-                  <AdminDashboard /> 
-                )}
-                {activeTab === "admin-rate-requests" && userRole === "admin" && (
-                  <AdminRateRequests /> 
-                )}
-                {activeTab === "admin-students" && userRole === "admin" && (
-                  <AdminPanel activeSubTab="students" />
-                )}
-                {activeTab === "admin-transactions" && userRole === "admin" && (
-                  <AdminPanel activeSubTab="transactions" />
-                )}
-                {activeTab === "admin-sessions" && userRole === "admin" && (
-                  <AdminPanel activeSubTab="sessions" />
-                )}
-                {activeTab === "admin-packages" && userRole === "admin" && (
-                  <AdminPanel activeSubTab="packages" />
-                )}
-                {activeTab === "admin-reviews" && userRole === "admin" && (
-                  <AdminPanel activeSubTab="reviews" />
-                )}
-              </>
+                  {activeTab === "home" && userRole === "admin" && (
+                    <AdminOverview />
+                  )}
+                  {activeTab === "admin-tutors" && userRole === "admin" && (
+                    <AdminPanel activeSubTab="tutors" />
+                  )}
+                  {activeTab === "admin-verifications" && userRole === "admin" && (
+                    <AdminDashboard /> 
+                  )}
+                  {activeTab === "admin-rate-requests" && userRole === "admin" && (
+                    <AdminRateRequests /> 
+                  )}
+                  {activeTab === "admin-students" && userRole === "admin" && (
+                    <AdminPanel activeSubTab="students" />
+                  )}
+                  {activeTab === "admin-transactions" && userRole === "admin" && (
+                    <AdminPanel activeSubTab="transactions" />
+                  )}
+                  {activeTab === "admin-sessions" && userRole === "admin" && (
+                    <AdminPanel activeSubTab="sessions" />
+                  )}
+                  {activeTab === "admin-packages" && userRole === "admin" && (
+                    <AdminPanel activeSubTab="packages" />
+                  )}
+                  {activeTab === "admin-reviews" && userRole === "admin" && (
+                    <AdminPanel activeSubTab="reviews" />
+                  )}
+                </motion.div>
+              </AnimatePresence>
             )}
           </div>
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
 import { Calendar, Package, ArrowRight, BookOpen, Clock, Activity, Video } from 'lucide-react';
+import { motion } from 'motion/react';
 
 export function StudentDashboard() {
   const { userProfile, setActiveTab, setTargetSessionId } = useAppContext();
@@ -77,25 +78,52 @@ export function StudentDashboard() {
     setActiveTab('student_sessions');
   };
 
+  const contentVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+       opacity: 1,
+       transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="p-6 md:p-10 animate-fade-in w-full max-w-5xl mx-auto">
-      <h1 className="text-2xl md:text-[32px] font-display font-bold text-text-main mb-2 tracking-tight">
+    <div className="p-6 md:p-10 w-full max-w-5xl mx-auto">
+      <motion.h1 
+        initial={{ opacity: 0, x: -10 }} 
+        animate={{ opacity: 1, x: 0 }} 
+        className="text-2xl md:text-[32px] font-display font-bold text-text-main mb-2 tracking-tight"
+      >
         Selamat datang, {userProfile?.full_name?.split(' ')[0]} 👋
-      </h1>
-      <p className="text-text-sub font-medium mb-8">
+      </motion.h1>
+      <motion.p 
+        initial={{ opacity: 0, x: -10 }} 
+        animate={{ opacity: 1, x: 0 }} 
+        transition={{ delay: 0.1 }} 
+        className="text-text-sub font-medium mb-8"
+      >
         Siap untuk belajar hari ini?
-      </p>
+      </motion.p>
 
       {isLoading ? (
          <div className="flex items-center justify-center py-20">
              <div className="w-8 h-8 rounded-full border-4 border-lime/30 border-t-lime animate-spin"></div>
          </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <motion.div 
+          variants={contentVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+        >
           <div className="lg:col-span-2 space-y-6">
             
             {/* Sesi Mendatang */}
-            <div>
+            <motion.div variants={itemVariants}>
               <div className="flex items-center justify-between mb-4">
                  <h2 className="text-xl font-bold font-display text-text-main flex items-center gap-2">
                    <Calendar size={20} className="text-blue-500" /> Sesi Terdekat
@@ -158,10 +186,10 @@ export function StudentDashboard() {
                    </button>
                 </div>
               )}
-            </div>
+            </motion.div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-4">
+            <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
                <button 
                   onClick={() => setActiveTab('progress')}
                   className="bg-purple-500/10 border border-purple-500/20 p-4 justify-start rounded-2xl hover:bg-purple-500/20 transition-all flex items-center gap-4 text-left"
@@ -187,11 +215,11 @@ export function StudentDashboard() {
                    <p className="text-[11px] text-text-sub font-medium">Cari pelajaran baru</p>
                  </div>
                </button>
-            </div>
+            </motion.div>
 
           </div>
 
-          <div className="space-y-6">
+          <motion.div variants={itemVariants} className="space-y-6">
             <h2 className="text-xl font-bold font-display text-text-main flex items-center gap-2">
                <Package size={20} className="text-orange-500" /> Paket Aktif
             </h2>
@@ -223,9 +251,8 @@ export function StudentDashboard() {
                 </div>
               )}
             </div>
-            
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );

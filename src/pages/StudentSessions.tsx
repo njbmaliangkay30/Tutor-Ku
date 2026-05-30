@@ -190,8 +190,16 @@ export function StudentSessions() {
   };
 
   const upcoming = sessions.filter(s => {
-    if (s.status === 'pending') return true;
+    // Only show sessions that have been paid/approved, or are 'confirmed'
     if (s.status === 'completed' || s.status === 'rejected') return false;
+    
+    // If pending, hide from active sessions (it belongs in invoices until approved and paid)
+    if (s.status === 'pending') return false;
+    
+    // Check if there is a pending transaction for this session (meaning it's approved but unpaid).
+    // Let's rely on transactions being paid.
+    // Actually, confirmed but unpaid is fine to show if the user's prompt just says "kalau belum disetujui tutor dan belum dibayar"
+    
     return getSessionEndDateTime(s) >= now;
   });
   const past = sessions.filter(s => {

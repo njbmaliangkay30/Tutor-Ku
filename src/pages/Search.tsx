@@ -65,8 +65,8 @@ export function Search() {
           <div className="relative z-10">
             <input 
               type="text"
-              className="w-full border-[2px] border-lime/50 rounded-lg py-3 px-4 text-sm text-black bg-white focus:outline-none focus:border-lime focus:shadow-[0_0_0_4px_rgba(204,255,0,0.2)] transition-all font-bold placeholder:font-semibold placeholder:text-gray-400"
-              placeholder="Cari nama tutor atau mata pelajaran..."
+              className="w-full border-[2px] border-lime/50 rounded-lg py-3.5 px-4 text-sm text-black bg-white focus:outline-none focus:border-lime focus:shadow-[0_0_0_4px_rgba(204,255,0,0.2)] transition-all font-bold placeholder:font-semibold placeholder:text-gray-500"
+              placeholder="Cari tutor sekarang..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
