@@ -174,13 +174,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       };
 
       // Fetch initial unread count
-      supabase.from("messages").select("id", { count: "exact" }).eq("receiver_id", user.id).eq("is_read", false)
+      supabase.from("messages").select("id", { count: "exact", head: true }).eq("receiver_id", user.id).eq("is_read", false)
         .then(({ count }) => {
           if (count !== null) setUnreadChatCount(count);
         });
 
       const updateChatCount = () => {
-        supabase.from("messages").select("id", { count: "exact" }).eq("receiver_id", user.id).eq("is_read", false)
+        supabase.from("messages").select("id", { count: "exact", head: true }).eq("receiver_id", user.id).eq("is_read", false)
           .then(({ count }) => {
             if (count !== null) setUnreadChatCount(count);
           });
@@ -240,7 +240,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Refetch unread counts when activeTab is changed (so we can clear them when the user enters the chat tab)
   useEffect(() => {
     if (user && activeTab) {
-      supabase.from("messages").select("id", { count: "exact" }).eq("receiver_id", user.id).eq("is_read", false)
+      supabase.from("messages").select("id", { count: "exact", head: true }).eq("receiver_id", user.id).eq("is_read", false)
         .then(({ count }) => {
           if (count !== null) setUnreadChatCount(count);
         });
