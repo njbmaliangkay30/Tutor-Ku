@@ -8,6 +8,7 @@ export function StudentDashboard() {
   const { userProfile, setActiveTab, setTargetSessionId } = useAppContext();
   const [upcomingSession, setUpcomingSession] = useState<any | null>(null);
   const [activePackages, setActivePackages] = useState<any[]>([]);
+  const [stats, setStats] = useState({ completedSessions: 0, hoursLearned: 0 });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -66,6 +67,18 @@ export function StudentDashboard() {
 
       const filteredPkgs = (pkgRes.data || []).filter(pkg => paidPackageIds.has(pkg.id));
       setActivePackages(filteredPkgs);
+
+      // 3. Fetch progress stats
+      const { count: completedSessionsCount } = await supabase
+        .from('sessions')
+        .select('*', { count: 'exact', head: true })
+        .eq('student_id', userProfile?.id)
+        .eq('status', 'completed');
+
+      setStats({
+        completedSessions: completedSessionsCount || 0,
+        hoursLearned: (completedSessionsCount || 0) * 1.5 // Each session is ~1.5 hours
+      });
     } catch (e) {
       console.error(e);
     } finally {
@@ -190,6 +203,27 @@ export function StudentDashboard() {
                    </button>
                 </div>
               )}
+            </motion.div>
+
+            {/* Progress Stats */}
+            <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
+               <div className="bg-bg-2 border-[1.5px] border-border/60 p-6 md:p-8 rounded-[2rem] flex flex-col justify-center shadow-sm relative overflow-hidden group">
+                 <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-lime/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+                 <p className="text-text-sub font-mono text-[12px] uppercase tracking-wider font-bold mb-2">Sesi Selesai</p>
+                 <div className="flex items-end gap-2 relative z-10">
+                   <h3 className="font-display text-5xl font-extrabold text-text-main">{stats.completedSessions}</h3>
+                   <span className="text-text-sub text-[15px] font-bold mb-1.5 uppercase font-mono tracking-tight">KALI</span>
+                 </div>
+               </div>
+               
+               <div className="bg-bg-2 border-[1.5px] border-border/60 p-6 md:p-8 rounded-[2rem] flex flex-col justify-center shadow-sm relative overflow-hidden group">
+                 <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-blue-500/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+                 <p className="text-text-sub font-mono text-[12px] uppercase tracking-wider font-bold mb-2">Jam Belajar</p>
+                 <div className="flex items-end gap-2 relative z-10">
+                   <h3 className="font-display text-5xl font-extrabold text-text-main">{stats.hoursLearned}</h3>
+                   <span className="text-text-sub text-[15px] font-bold mb-1.5 uppercase font-mono tracking-tight">JAM</span>
+                 </div>
+               </div>
             </motion.div>
 
             {/* Quick Actions */}
