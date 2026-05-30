@@ -43,6 +43,7 @@ import { UnverifiedTutorView } from "./components/UnverifiedTutorView";
 import { VerificationForm } from "./components/VerificationForm";
 import { useAppContext } from "./AppContext";
 import { NotificationBell } from "./components/NotificationBell";
+import { StudentDashboard } from "./pages/StudentDashboard";
 
 export default function App() {
   const {
@@ -383,10 +384,26 @@ export default function App() {
               </>
             ) : (
               <>
+                {userRole === "siswa" && (
+                  <button
+                    onClick={() => handleNav("home")}
+                    title="Dashboard"
+                    className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "home" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
+                  >
+                    <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
+                      <Home size={22} />
+                    </span>
+                    <span
+                      className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
+                    >
+                      Dashboard
+                    </span>
+                  </button>
+                )}
                 <button
-                  onClick={() => handleNav("home")}
+                  onClick={() => handleNav(userRole === "guest" ? "home" : "search")}
                   title="Explore"
-                  className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "home" || activeTab === "search" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
+                  className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${(activeTab === "search" || (activeTab === "home" && userRole === "guest" && userRole !== "siswa")) ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
                     <Search size={22} />
@@ -532,9 +549,9 @@ export default function App() {
                 )}
 
                 {activeTab === "home" && userRole === "guest" && <PageHome />}
-                {activeTab === "home" && userRole === "siswa" && <PageHome />}
+                {activeTab === "home" && userRole === "siswa" && <StudentDashboard />}
                 
-                {activeTab === "search" && userRole !== "tutor" && userRole !== "admin" && <PageSearch />}
+                {(activeTab === "search" || activeTab === "explore") && userRole !== "tutor" && userRole !== "admin" && <PageSearch />}
                 {activeTab === "student_sessions" && userRole !== "tutor" && userRole !== "admin" && (
                   <StudentSessions />
                 )}
@@ -748,16 +765,29 @@ export default function App() {
               </>
             ) : (
               <>
+                {userRole === "siswa" && (
+                  <button
+                    onClick={() => handleNav("home")}
+                    className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "home" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
+                  >
+                    <span
+                      className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    >
+                      <Home size={22} />
+                    </span>
+                    <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Dash</span>
+                  </button>
+                )}
                 <button
-                  onClick={() => handleNav("home")}
-                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "home" || activeTab === "search" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
+                  onClick={() => handleNav(userRole === "guest" ? "home" : "search")}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${(activeTab === "search" || (activeTab === "home" && userRole === "guest" && userRole !== "siswa")) ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" || activeTab === "search" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${(activeTab === "search" || (activeTab === "home" && userRole === "guest" && userRole !== "siswa")) ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <Search size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" || activeTab === "search" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Explore</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${(activeTab === "search" || (activeTab === "home" && userRole === "guest" && userRole !== "siswa")) ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Explore</span>
                 </button>
                 <button
                   onClick={() => handleNav("student_sessions")}

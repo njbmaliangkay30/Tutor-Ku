@@ -266,14 +266,22 @@ export function TutorDetail() {
           student_package_id: activePackage.id
         });
 
-        // 4. Notify tutor
+        // 4. Notify tutor and student
         generatedSessionId = sessionData?.id;
-        await supabase.from("notifications").insert({
-          user_id: tutor.id,
-          title: "Sesi Paket Baru!",
-          message: `${userProfile.full_name} memesan 1 sesi baru menggunakan kuota paket langganan mereka untuk subjek ${subjectName}.`,
-          link: generatedSessionId ? `sessions:${generatedSessionId}` : "sessions"
-        });
+        await supabase.from("notifications").insert([
+          {
+            user_id: tutor.id,
+            title: "Sesi Paket Baru!",
+            message: `${userProfile.full_name} memesan 1 sesi baru menggunakan kuota paket langganan mereka untuk subjek ${subjectName}.`,
+            link: generatedSessionId ? `sessions:${generatedSessionId}` : "sessions"
+          },
+          {
+            user_id: user.id,
+            title: "Sesi Berhasil Diajukan!",
+            message: `Jadwal sesi tambahan menggunakan paket langganan telah berhasil diajukan untuk subjek ${subjectName}. Menunggu konfirmasi dari tutor.`,
+            link: "student_sessions"
+          }
+        ]);
 
       } else {
         // BOOK SINGLE SESSION OR PURCHASE A NEW PACKAGE
@@ -319,14 +327,22 @@ export function TutorDetail() {
             session_id: sessionData?.id
           });
 
-          // Notify tutor of upcoming request (pending payment, can be approved/pending)
+          // Notify tutor and student
           generatedSessionId = sessionData?.id;
-          await supabase.from("notifications").insert({
-            user_id: tutor.id,
-            title: "Sesi Baru Dipesan (Menunggu Pembayaran)!",
-            message: `${userProfile.full_name} memesan 1 sesi pelajaran subjek ${subjectName}. Sesi akan aktif setelah pembayaran dikonfirmasi.`,
-            link: generatedSessionId ? `sessions:${generatedSessionId}` : "sessions"
-          });
+          await supabase.from("notifications").insert([
+            {
+              user_id: tutor.id,
+              title: "Sesi Baru Dipesan (Menunggu Pembayaran)!",
+              message: `${userProfile.full_name} memesan 1 sesi pelajaran subjek ${subjectName}. Sesi akan aktif setelah pembayaran dikonfirmasi.`,
+              link: generatedSessionId ? `sessions:${generatedSessionId}` : "sessions"
+            },
+            {
+              user_id: user.id,
+              title: "Pesanan Sesi Berhasil!",
+              message: `Kamu telah berhasil memesan 1 sesi untuk subjek ${subjectName}. Silakan segera melakukan pembayaran di halaman tagihan agar jadwal dapat dikonfirmasi tutor.`,
+              link: "student_transactions"
+            }
+          ]);
 
         } else {
           // Multi-session Package Purchase
@@ -405,14 +421,22 @@ export function TutorDetail() {
             student_package_id: spInsertData?.id
           });
 
-          // 4. Notify tutor
+          // 4. Notify tutor and student
           generatedSessionId = sessionData?.id;
-          await supabase.from("notifications").insert({
-            user_id: tutor.id,
-            title: "Paket Belajar Baru Dipesan (Menunggu Pembayaran)!",
-            message: `${userProfile.full_name} memesan ${pkgInfo.name} (${sessionsCount} sesi) untuk subjek ${subjectName}. Sesi akan berjalan jika pembayaran dikonfirmasi.`,
-            link: generatedSessionId ? `sessions:${generatedSessionId}` : "sessions"
-          });
+          await supabase.from("notifications").insert([
+            {
+              user_id: tutor.id,
+              title: "Paket Belajar Baru Dipesan (Menunggu Pembayaran)!",
+              message: `${userProfile.full_name} memesan ${pkgInfo.name} (${sessionsCount} sesi) untuk subjek ${subjectName}. Sesi akan berjalan jika pembayaran dikonfirmasi.`,
+              link: generatedSessionId ? `sessions:${generatedSessionId}` : "sessions"
+            },
+            {
+              user_id: user.id,
+              title: "Pesanan Paket Berhasil!",
+              message: `Kamu telah memesan ${pkgInfo.name} untuk subjek ${subjectName}. Silakan segera melakukan pembayaran di halaman tagihan agar jadwal dapat dikonfirmasi tutor.`,
+              link: "student_transactions"
+            }
+          ]);
         }
       }
 
