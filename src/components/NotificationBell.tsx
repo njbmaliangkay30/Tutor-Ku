@@ -25,7 +25,7 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
           .from('notifications')
           .select('*')
           .eq('user_id', userProfile.id)
-          .neq('type', 'chat')
+          .or('type.neq.chat,type.is.null')
           .order('created_at', { ascending: false })
           .limit(15);
           
