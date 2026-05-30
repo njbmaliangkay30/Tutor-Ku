@@ -131,11 +131,14 @@ export function Chat() {
         .order("created_at", { ascending: true });
 
       if (!error && data) {
-         setMessages(data);
          // mark as read
          const unread = data.filter(m => m.receiver_id === user.id && !m.is_read);
          if (unread.length > 0) {
            await supabase.from("messages").update({ is_read: true }).in("id", unread.map(m => m.id));
+           // Update local state directly to reflect read status immediately
+           setMessages(data.map(m => unread.some(u => u.id === m.id) ? { ...m, is_read: true } : m));
+         } else {
+           setMessages(data);
          }
          setTimeout(() => {
            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -176,7 +179,9 @@ export function Chat() {
            }, 100);
 
            if (newMsg.receiver_id === user.id && !newMsg.is_read) {
-             supabase.from("messages").update({ is_read: true }).eq("id", newMsg.id).then();
+             supabase.from("messages").update({ is_read: true }).eq("id", newMsg.id).then(() => {
+                setMessages(prev => prev.map(m => m.id === newMsg.id ? { ...m, is_read: true } : m));
+             });
            }
          }
       })

@@ -25,6 +25,7 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
           .from('notifications')
           .select('*')
           .eq('user_id', userProfile.id)
+          .neq('type', 'chat')
           .order('created_at', { ascending: false })
           .limit(15);
           
@@ -50,6 +51,7 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
         table: 'notifications',
         filter: `user_id=eq.${userProfile.id}`
       }, (payload) => {
+        if (payload.new.type === 'chat' || payload.new.link?.startsWith('chat:')) return;
         console.log('Realtime notification received:', payload);
         setNotifications(prev => [payload.new, ...prev].slice(0, 15));
         setUnreadCount(prev => prev + 1);
