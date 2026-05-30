@@ -92,22 +92,23 @@ export function StudentDashboard() {
   };
 
   return (
-    <div className="p-6 md:p-10 w-full max-w-5xl mx-auto">
-      <motion.h1 
-        initial={{ opacity: 0, x: -10 }} 
-        animate={{ opacity: 1, x: 0 }} 
-        className="text-2xl md:text-[32px] font-display font-bold text-text-main mb-2 tracking-tight"
+    <div className="p-4 md:p-8 w-full max-w-5xl mx-auto pb-24">
+      {/* Decorative Hero Banner */}
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        className="mb-8 rounded-3xl p-6 md:p-10 bg-primary border-[2px] border-primary-bright relative overflow-hidden shadow-green"
       >
-        Selamat datang, {userProfile?.full_name?.split(' ')[0]} 👋
-      </motion.h1>
-      <motion.p 
-        initial={{ opacity: 0, x: -10 }} 
-        animate={{ opacity: 1, x: 0 }} 
-        transition={{ delay: 0.1 }} 
-        className="text-text-sub font-medium mb-8"
-      >
-        Siap untuk belajar hari ini?
-      </motion.p>
+        <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 1px, transparent 22px), repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 1px, transparent 22px)'}}></div>
+        <div className="absolute w-[300px] h-[300px] -top-[100px] -right-[50px] rounded-full pointer-events-none" style={{background: 'radial-gradient(circle, var(--color-lime-mid) 0%, transparent 70%)'}}></div>
+        
+        <h1 className="text-2xl md:text-[36px] font-display font-extrabold text-white mb-2 tracking-tight relative z-10">
+          Selamat datang, <span className="text-lime">{userProfile?.full_name?.split(' ')[0]}! 👋</span>
+        </h1>
+        <p className="text-white/80 font-medium text-[15px] relative z-10 max-w-md">
+          Sudah siap untuk mengejar mimpimu hari ini? Mari mulai belajar dan capai targetmu!
+        </p>
+      </motion.div>
 
       {isLoading ? (
          <div className="flex items-center justify-center py-20">
@@ -124,65 +125,68 @@ export function StudentDashboard() {
             
             {/* Sesi Mendatang */}
             <motion.div variants={itemVariants}>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 px-2">
                  <h2 className="text-xl font-bold font-display text-text-main flex items-center gap-2">
                    <Calendar size={20} className="text-blue-500" /> Sesi Terdekat
                  </h2>
-                 <button onClick={() => goToSesi()} className="text-sm font-bold text-lime hover:opacity-80 transition-opacity">
+                 <button onClick={() => goToSesi()} className="text-[13px] font-bold text-lime hover:opacity-80 transition-opacity bg-lime/10 px-3 py-1.5 rounded-full uppercase tracking-wide">
                    Lihat Semua
                  </button>
               </div>
 
               {upcomingSession ? (
                 <div 
-                   className="bg-bg-2 border-[1.5px] border-border p-5 rounded-2xl cursor-pointer hover:border-lime transition-all"
-                   onClick={() => goToSesi(upcomingSession.id)}
+                   className="bg-bg-2 border-[2px] border-border/60 p-6 md:p-8 rounded-[2rem] cursor-pointer hover:border-lime transition-all relative overflow-hidden group shadow-lg"
                 >
-                   <div className="flex items-start gap-4">
-                     <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
-                       <Clock size={24} className="text-blue-500" />
+                   <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
+                   <div className="flex flex-col sm:flex-row sm:items-center gap-5 relative z-10">
+                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 flex items-center justify-center shrink-0 border border-blue-500/20 shadow-inner">
+                       <Clock size={32} className="text-blue-500" strokeWidth={1.5} />
                      </div>
                      <div className="flex-1">
-                        <h3 className="font-bold text-text-main text-lg mb-1">{upcomingSession.subject}</h3>
-                        <p className="text-sm text-text-sub flex items-center gap-2 font-medium">
-                          Tutor: {upcomingSession.tutor_profiles?.profiles?.full_name || 'Tutor'}
+                        <h3 className="font-extrabold font-display text-text-main text-2xl mb-1.5 tracking-tight group-hover:text-lime transition-colors">{upcomingSession.subject}</h3>
+                        <p className="text-[15px] text-text-sub flex items-center gap-2 font-medium">
+                          Tutor: <span className="text-text-main shrink-0">{upcomingSession.tutor_profiles?.profiles?.full_name || 'Tutor'}</span>
                         </p>
-                        <div className="flex items-center gap-4 mt-4">
-                           <span className="text-[13px] font-mono text-blue-400 font-bold bg-blue-500/10 px-2.5 py-1 rounded-md">
-                             {new Date(upcomingSession.session_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' })}
+                     </div>
+                     
+                     <div className="flex sm:flex-col items-center sm:items-end gap-3 mt-4 sm:mt-0">
+                        <div className="flex items-center gap-3">
+                           <span className="text-[14px] font-mono text-blue-400 font-bold bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-lg">
+                             {new Date(upcomingSession.session_date).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })}
                            </span>
-                           <span className="text-[13px] font-mono text-lime font-bold bg-lime/10 px-2.5 py-1 rounded-md flex items-center gap-1.5">
+                           <span className="text-[14px] font-mono text-lime font-bold bg-lime/10 border border-lime/20 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
                              {new Date(upcomingSession.start_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                            </span>
                         </div>
                      </div>
                    </div>
                    {upcomingSession.meeting_link && (
-                     <div className="mt-4 pt-4 border-t border-border/60">
+                     <div className="mt-6 pt-6 border-t border-border/40 relative z-10">
                         <a 
                           href={upcomingSession.meeting_link} 
                           target="_blank" 
                           rel="noreferrer"
                           onClick={e => e.stopPropagation()}
-                          className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-lg text-sm transition-colors"
+                          className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 shadow-[0_0_20px_rgba(59,130,246,0.3)] text-white font-extrabold tracking-wide py-3.5 rounded-xl text-[15px] transition-all hover:-translate-y-0.5"
                         >
-                          <Video size={18} /> Masuk Kelas Online
+                          <Video size={20} strokeWidth={2.5} /> MASUK KELAS ONLINE
                         </a>
                      </div>
                    )}
                 </div>
               ) : (
-                <div className="bg-bg-2/50 border-[1.5px] border-border border-dashed p-8 rounded-2xl flex flex-col items-center justify-center text-center">
-                   <div className="w-14 h-14 bg-bg-3 rounded-full flex items-center justify-center mb-4">
-                     <Calendar size={28} className="text-text-sub opacity-50" />
+                <div className="bg-bg-2/50 border-[2px] border-border/50 border-dashed p-10 py-16 rounded-[2rem] flex flex-col items-center justify-center text-center group hover:bg-bg-2/80 transition-colors">
+                   <div className="w-20 h-20 bg-bg-3 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                     <Calendar size={36} className="text-text-sub opacity-50" strokeWidth={1.5} />
                    </div>
-                   <h3 className="font-bold text-text-main mb-2">Belum ada sesi di depan</h3>
-                   <p className="text-sm text-text-sub mb-4">Kamu tidak memiliki jadwal kelas dalam waktu dekat.</p>
+                   <h3 className="text-xl font-bold font-display text-text-main mb-3">Belum ada sesi jadwalan</h3>
+                   <p className="text-[15px] text-text-sub mb-8 max-w-sm">Jadwalmu saat ini kosong. Ayo mulai langkah barumu dengan mencari tutor pilihan.</p>
                    <button 
                      onClick={() => setActiveTab('explore')}
-                     className="px-5 py-2.5 bg-lime text-black font-bold text-sm rounded-lg hover:opacity-90 flex items-center gap-2"
+                     className="px-6 py-3.5 bg-lime text-black font-extrabold tracking-wide text-[15px] rounded-xl hover:opacity-90 flex items-center gap-2 shadow-[0_0_20px_var(--color-lime-dim)] hover:-translate-y-0.5 transition-all uppercase"
                    >
-                     Cari Tutor <ArrowRight size={16} />
+                     Cari Tutor Sekarang <ArrowRight size={18} strokeWidth={2.5} />
                    </button>
                 </div>
               )}
@@ -192,27 +196,27 @@ export function StudentDashboard() {
             <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
                <button 
                   onClick={() => setActiveTab('progress')}
-                  className="bg-purple-500/10 border border-purple-500/20 p-4 justify-start rounded-2xl hover:bg-purple-500/20 transition-all flex items-center gap-4 text-left"
+                  className="bg-purple-500/10 border-[1.5px] border-purple-500/20 p-5 md:p-6 justify-start rounded-[2rem] hover:bg-purple-500/15 hover:border-purple-500/30 transition-all flex items-center gap-4 md:gap-5 text-left group"
                >
-                 <div className="w-10 h-10 bg-purple-500 text-white rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/20">
-                   <Activity size={20} />
+                 <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/25 group-hover:scale-105 transition-transform">
+                   <Activity size={24} strokeWidth={2} />
                  </div>
                  <div>
-                   <h4 className="font-bold text-text-main text-sm">Lihat Progress</h4>
-                   <p className="text-[11px] text-text-sub font-medium">Pantau perkembanganmu</p>
+                   <h4 className="font-bold text-text-main text-[16px] md:text-lg mb-1 tracking-tight">Lihat Progress</h4>
+                   <p className="text-[12px] md:text-[13px] text-text-sub font-medium leading-tight">Pantau seluruh perkembangan</p>
                  </div>
                </button>
 
                <button 
                   onClick={() => setActiveTab('explore')}
-                  className="bg-lime/10 border border-lime/20 p-4 justify-start rounded-2xl hover:bg-lime/20 transition-all flex items-center gap-4 text-left"
+                  className="bg-lime/10 border-[1.5px] border-lime/20 p-5 md:p-6 justify-start rounded-[2rem] hover:bg-lime/15 hover:border-lime/30 transition-all flex items-center gap-4 md:gap-5 text-left group"
                >
-                 <div className="w-10 h-10 bg-lime text-black rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-lime/20">
-                   <BookOpen size={20} />
+                 <div className="w-14 h-14 bg-gradient-to-br from-lime to-lime-mid text-black rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-lime/20 group-hover:scale-105 transition-transform">
+                   <BookOpen size={24} strokeWidth={2} />
                  </div>
                  <div>
-                   <h4 className="font-bold text-text-main text-sm">Eksplor Tutor</h4>
-                   <p className="text-[11px] text-text-sub font-medium">Cari pelajaran baru</p>
+                   <h4 className="font-bold text-text-main text-[16px] md:text-lg mb-1 tracking-tight">Eksplor Tutor</h4>
+                   <p className="text-[12px] md:text-[13px] text-text-sub font-medium leading-tight">Cari pelajaran favormitu</p>
                  </div>
                </button>
             </motion.div>
@@ -220,34 +224,47 @@ export function StudentDashboard() {
           </div>
 
           <motion.div variants={itemVariants} className="space-y-6">
-            <h2 className="text-xl font-bold font-display text-text-main flex items-center gap-2">
+            <h2 className="text-xl font-bold font-display text-text-main flex items-center gap-2 px-2">
                <Package size={20} className="text-orange-500" /> Paket Aktif
             </h2>
             
             <div className="space-y-4">
               {activePackages.length > 0 ? (
                 activePackages.map(pkg => (
-                  <div key={pkg.id} className="bg-bg-2 border hover:border-orange-500/50 transition-colors border-border p-4 rounded-2xl relative overflow-hidden">
-                     <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-bl-full pointer-events-none"></div>
-                     <h3 className="font-bold text-text-main text-sm mb-1">{pkg.packages?.name || 'Paket'}</h3>
-                     <p className="text-xs text-text-sub font-medium mb-3">Tutor: {pkg.tutor_profiles?.profiles?.full_name}</p>
-                     
-                     <div className="flex justify-between items-end">
-                       <span className="text-[11px] bg-bg-3 font-mono px-2 py-1 rounded text-text-sub">
-                         Sisa {pkg.remaining_sessions} sesi
-                       </span>
-                       <button
-                         onClick={() => setActiveTab('explore')}
-                         className="text-orange-500 font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all"
-                       >
-                         Pakai Jadwal <ArrowRight size={14} />
-                       </button>
+                  <div key={pkg.id} className="bg-bg-2 border-[1.5px] hover:border-orange-500/50 transition-colors border-border p-5 rounded-2xl relative overflow-hidden group">
+                     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-500/10 to-transparent rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
+                     <div className="relative z-10 flex flex-col h-full">
+                       <h3 className="font-extrabold text-text-main text-lg mb-1">{pkg.packages?.name || 'Paket'}</h3>
+                       <p className="text-[13px] text-text-sub font-medium mb-5 flex items-center gap-2">
+                         <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Tutor: {pkg.tutor_profiles?.profiles?.full_name}
+                       </p>
+                       
+                       <div className="flex justify-between items-end mt-auto pt-4 border-t border-border/60">
+                         <span className="text-[12px] bg-orange-500/10 border border-orange-500/20 text-orange-500 font-bold font-mono px-3 py-1.5 rounded-lg">
+                           Sisa {pkg.remaining_sessions} sesi
+                         </span>
+                         <button
+                           onClick={() => setActiveTab('explore')}
+                           className="text-text-main hover:text-orange-500 font-bold text-xs flex items-center gap-1.5 hover:gap-2.5 transition-all uppercase tracking-wider"
+                         >
+                           PAKAI <ArrowRight size={14} strokeWidth={2.5} />
+                         </button>
+                       </div>
                      </div>
                   </div>
                 ))
               ) : (
-                <div className="bg-bg-2 border border-border p-6 rounded-2xl text-center">
-                   <p className="text-sm text-text-sub mb-3 font-medium">Kamu belum memiliki paket yang aktif saat ini.</p>
+                <div className="bg-bg-2/50 border-[1.5px] border-border border-dashed p-8 rounded-2xl text-center">
+                   <div className="w-12 h-12 bg-bg-3 rounded-full flex items-center justify-center mx-auto mb-3">
+                     <Package size={20} className="text-text-sub opacity-50" />
+                   </div>
+                   <p className="text-sm text-text-sub mb-4 font-medium">Kamu belum memiliki paket<br/>yang aktif saat ini.</p>
+                   <button 
+                     onClick={() => setActiveTab('search')}
+                     className="text-[13px] font-bold text-lime hover:underline underline-offset-4"
+                   >
+                     Lihat Penawaran
+                   </button>
                 </div>
               )}
             </div>
