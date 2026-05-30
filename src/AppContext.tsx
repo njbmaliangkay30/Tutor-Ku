@@ -106,6 +106,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         try {
           // Register the Service Worker
           const registration = await navigator.serviceWorker.register('/sw.js');
+          await registration.update();
           await navigator.serviceWorker.ready;
 
           // Ask for browser push notifications permission
@@ -176,6 +177,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (count !== null) setUnreadChatCount(count);
         });
 
+      const updateChatCount = () => {
+        supabase.from("messages").select("id", { count: "exact" }).eq("receiver_id", user.id).eq("is_read", false)
+          .then(({ count }) => {
+            if (count !== null) setUnreadChatCount(count);
+          });
+      };
+
       // Subscribe to unread messages globally using notifications
       const msgSub = supabase
         .channel('global-messages')
@@ -184,10 +192,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
           { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
           (payload: any) => {
              if (payload.new.type === 'chat' || payload.new.link?.startsWith('chat:')) {
-               setUnreadChatCount((prev) => prev + 1);
+               updateChatCount();
                playNotificationSound();
                showBrowserNotification(payload.new.message || 'Pesan baru diterima');
              }
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
+          () => {
+             updateChatCount();
           }
         )
         .subscribe();
