@@ -30,37 +30,8 @@ export function PageHome() {
 
   return (
     <div className="p-0 animate-pgIn pb-5 max-w-5xl mx-auto w-full">
-      {/* Hero */}
-      <div className="m-3.5 rounded-2xl px-5 py-[26px] bg-primary border-[2px] border-primary-bright relative overflow-hidden shadow-green md:p-10 md:py-12">
-        <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 1px, transparent 22px), repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 1px, transparent 22px)'}}></div>
-        <div className="absolute w-[200px] h-[200px] -top-[60px] -right-[40px] rounded-full pointer-events-none" style={{background: 'radial-gradient(circle, var(--color-lime-mid) 0%, transparent 70%)'}}></div>
-        
-        <div className="absolute top-[14px] right-[14px] font-mono text-[9px] font-bold text-white/20 tracking-[0.12em] uppercase whitespace-pre pointer-events-none select-none text-right">
-          TUTORKU{'\n'}V5.0
-        </div>
-
-        <div className="text-[9px] font-bold text-lime tracking-[0.15em] uppercase mb-2.5 flex items-center gap-2 relative z-10 font-mono">
-          <span>◆</span> PLATFORM TUTOR TERVERIFIKASI
-        </div>
-        
-        <div className="font-display text-[28px] font-extrabold text-white leading-[1.1] mb-2.5 tracking-[-0.5px] relative z-10">
-          Belajar lebih<br/>cerdas dengan <span className="text-lime">tutor terbaik</span>
-        </div>
-        
-        <div className="text-[13px] text-white/65 leading-[1.6] mb-[18px] relative z-10 max-w-[400px]">
-          Temukan tutor mahasiswa terverifikasi untuk pelajaran favoritmu. Fleksibel, terjangkau, efektif.
-        </div>
-        
-        <button 
-          onClick={handleSearchClick}
-          className="inline-flex items-center gap-2 bg-lime text-black rounded-lg px-[18px] py-2.5 text-[13px] font-extrabold cursor-pointer font-display transition-all relative z-10 border-[2px] border-lime shadow-sh1 tracking-[0.01em] hover:shadow-[4px_4px_0_#000] hover:-translate-y-px hover:-translate-x-px uppercase"
-        >
-          <Search size={16} strokeWidth={3} /> Cari tutor sekarang
-        </button>
-      </div>
-
       {/* Quick Cats */}
-      <div className="pt-4 px-3.5 pb-0">
+      <div className="pt-6 px-3.5 pb-0">
         <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">
           KATEGORI POPULER
         </div>

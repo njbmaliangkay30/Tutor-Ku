@@ -38,19 +38,33 @@ export function StudentDashboard() {
         
       setUpcomingSession(sessionData || null);
 
-      // 2. Fetch active packages
-      const { data: pkgData } = await supabase
-        .from('student_packages')
-        .select(`
-          *,
-          packages(name),
-          tutor_profiles(id, profiles(full_name))
-        `)
-        .eq('student_id', userProfile?.id)
-        .gt('remaining_sessions', 0)
-        .order('valid_until', { ascending: true });
-        
-      setActivePackages(pkgData || []);
+      // 2. Fetch active packages and their transactions
+      const [pkgRes, trxRes] = await Promise.all([
+        supabase
+          .from('student_packages')
+          .select(`
+            *,
+            packages(name),
+            tutor_profiles(id, profiles(full_name))
+          `)
+          .eq('student_id', userProfile?.id)
+          .gt('remaining_sessions', 0)
+          .order('valid_until', { ascending: true }),
+        supabase
+          .from('transactions')
+          .select('student_package_id, status')
+          .eq('user_id', userProfile?.id)
+          .eq('transaction_type', 'bundle_purchase')
+      ]);
+
+      const paidPackageIds = new Set(
+        (trxRes.data || [])
+          .filter(t => t.status === 'success')
+          .map(t => t.student_package_id)
+      );
+
+      const filteredPkgs = (pkgRes.data || []).filter(pkg => paidPackageIds.has(pkg.id));
+      setActivePackages(filteredPkgs);
     } catch (e) {
       console.error(e);
     } finally {

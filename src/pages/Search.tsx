@@ -40,51 +40,78 @@ export function Search() {
 
   return (
     <div className="animate-pgIn w-full max-w-5xl mx-auto">
-      <div className="sticky top-0 bg-bg-base/80 backdrop-blur-xl z-[5] border-b-[1.5px] border-border/60 pt-4 px-3.5 pb-2 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
-        <input 
-          type="text"
-          className="w-full border-[1.5px] border-border/60 rounded-lg py-2.5 px-[13px] text-sm text-text-main bg-bg-2/70 focus:bg-bg-2 font-body transition-all focus:outline-none focus:border-lime focus:shadow-[0_0_0_2px_var(--color-lime-dim)] mb-2.5 backdrop-blur-sm"
-          placeholder="Cari nama tutor atau mata pelajaran..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <div className="flex gap-2 items-center mb-3">
-           <div className="text-[10px] font-bold text-text-sub font-mono uppercase whitespace-nowrap opacity-60">Gender:</div>
-           <div className="flex-1 flex gap-1.5">
-             {['all', 'F', 'M'].map(st => {
-                const label = st === 'all' ? 'SEMUA' : st === 'F' ? 'WANITA' : 'PRIA';
-                const active = genderFilter === st;
-                return (
-                  <button
-                    key={st}
-                    onClick={() => setGenderFilter(st)}
-                    className={`flex-1 border-[1.5px] rounded-lg py-[7px] text-[10px] font-bold cursor-pointer font-mono whitespace-nowrap transition-all ${
-                      active 
-                        ? 'border-lime bg-lime-mid text-lime' 
-                        : 'border-border bg-card text-text-sub hover:text-text-main'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                )
-             })}
-           </div>
+      <div className="sticky top-0 bg-bg-base z-[5] border-b-[1.5px] border-border/60 pb-2 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+        {/* Banner with Search Input */}
+        <div className="m-3.5 rounded-2xl px-5 py-[26px] bg-primary border-[2px] border-primary-bright relative overflow-hidden shadow-green md:p-8 md:py-10">
+          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 1px, transparent 22px), repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 1px, transparent 22px)'}}></div>
+          <div className="absolute w-[200px] h-[200px] -top-[60px] -right-[40px] rounded-full pointer-events-none" style={{background: 'radial-gradient(circle, var(--color-lime-mid) 0%, transparent 70%)'}}></div>
+          
+          <div className="absolute top-[14px] right-[14px] font-mono text-[9px] font-bold text-white/20 tracking-[0.12em] uppercase whitespace-pre pointer-events-none select-none text-right">
+            TUTORKU{'\n'}V5.0
+          </div>
+
+          <div className="text-[9px] font-bold text-lime tracking-[0.15em] uppercase mb-2.5 flex items-center gap-2 relative z-10 font-mono">
+            <span>◆</span> PLATFORM TUTOR TERVERIFIKASI
+          </div>
+          
+          <div className="font-display text-[24px] md:text-[28px] font-extrabold text-white leading-[1.1] mb-2.5 tracking-[-0.5px] relative z-10">
+            Belajar lebih<br/>cerdas dengan <span className="text-lime">tutor terbaik</span>
+          </div>
+          
+          <div className="text-[13px] text-white/65 leading-[1.6] mb-[18px] relative z-10 max-w-[400px]">
+            Temukan tutor mahasiswa terverifikasi untuk pelajaran favoritmu. Fleksibel, terjangkau, efektif.
+          </div>
+          
+          <div className="relative z-10">
+            <input 
+              type="text"
+              className="w-full border-[2px] border-lime/50 rounded-lg py-3 px-4 text-sm text-black bg-white focus:outline-none focus:border-lime focus:shadow-[0_0_0_4px_rgba(204,255,0,0.2)] transition-all font-bold placeholder:font-semibold placeholder:text-gray-400"
+              placeholder="Cari nama tutor atau mata pelajaran..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
         </div>
-        <div className="flex gap-1.5 overflow-x-auto pb-1.5 custom-scrollbar">
-           {allSubjects.map(s => {
-             const active = (s === 'Semua' && !subjectFilter) || subjectFilter === s;
-             return (
-               <button
-                 key={s}
-                 onClick={() => setSubjectFilter(s === 'Semua' ? '' : s)}
-                 className={`border-[1.5px] rounded-lg px-[14px] py-[7px] text-[10px] cursor-pointer whitespace-nowrap font-mono transition-all font-bold tracking-tight uppercase ${
-                   active ? 'border-lime bg-lime-mid text-lime' : 'border-border bg-card text-text-sub hover:text-text-main hover:bg-bg-3'
-                 }`}
-               >
-                 {s}
-               </button>
-             )
-           })}
+
+        <div className="px-3.5 space-y-3">
+          <div className="flex gap-2 items-center">
+             <div className="text-[10px] font-bold text-text-sub font-mono uppercase whitespace-nowrap opacity-60">Gender:</div>
+             <div className="flex-1 flex gap-1.5">
+               {['all', 'F', 'M'].map(st => {
+                  const label = st === 'all' ? 'SEMUA' : st === 'F' ? 'WANITA' : 'PRIA';
+                  const active = genderFilter === st;
+                  return (
+                    <button
+                      key={st}
+                      onClick={() => setGenderFilter(st)}
+                      className={`flex-1 border-[1.5px] rounded-lg py-[7px] text-[10px] font-bold cursor-pointer font-mono whitespace-nowrap transition-all ${
+                        active 
+                          ? 'border-lime bg-lime-mid text-lime' 
+                          : 'border-border bg-card text-text-sub hover:text-text-main'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  )
+               })}
+             </div>
+          </div>
+          <div className="flex gap-1.5 overflow-x-auto pb-1.5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+             {allSubjects.map(s => {
+               const active = (s === 'Semua' && !subjectFilter) || subjectFilter === s;
+               return (
+                 <button
+                   key={s}
+                   onClick={() => setSubjectFilter(s === 'Semua' ? '' : s)}
+                   className={`border-[1.5px] rounded-lg px-[14px] py-[7px] text-[10px] cursor-pointer whitespace-nowrap font-mono transition-all font-bold tracking-tight uppercase ${
+                     active ? 'border-lime bg-lime-mid text-lime' : 'border-border bg-card text-text-sub hover:text-text-main hover:bg-bg-3'
+                   }`}
+                 >
+                   {s}
+                 </button>
+               )
+             })}
+          </div>
         </div>
       </div>
 
