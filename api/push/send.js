@@ -36,7 +36,9 @@ export default async function handler(req, res) {
     const payloadString = JSON.stringify({
         title: notificationRecord.title || "TutorKu",
         body: notificationRecord.message || "Anda memiliki notifikasi baru",
-        url: notificationRecord.link || "/"
+        url: notificationRecord.link || "/",
+        icon: notificationRecord.icon || "/icon.svg",
+        badge: "/icon.svg"
     });
 
     for (const sub of userSubs) {

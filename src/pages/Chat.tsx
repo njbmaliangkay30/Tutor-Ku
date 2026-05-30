@@ -103,6 +103,16 @@ export function Chat() {
            fetchContacts(); // Refetch to update sidebar
          }
       })
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'messages',
+      }, (payload) => {
+         const updatedMsg = payload.new;
+         if (updatedMsg.sender_id === user.id || updatedMsg.receiver_id === user.id) {
+           fetchContacts(); // Refetch to update sidebar read status
+         }
+      })
       .subscribe();
 
     return () => {
@@ -156,16 +166,31 @@ export function Chat() {
            (newMsg.sender_id === activeContactId && newMsg.receiver_id === user.id)
          ) {
            setMessages(prev => {
-             if (prev.some(m => m.id === newMsg.id)) return prev;
+             if (prev.some(m => m.id === newMsg.id)) {
+               return prev.map(m => m.id === newMsg.id ? newMsg : m);
+             }
              return [...prev, newMsg];
            });
            setTimeout(() => {
              messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
            }, 100);
 
-           if (newMsg.receiver_id === user.id) {
+           if (newMsg.receiver_id === user.id && !newMsg.is_read) {
              supabase.from("messages").update({ is_read: true }).eq("id", newMsg.id).then();
            }
+         }
+      })
+      .on('postgres_changes', { 
+         event: 'UPDATE', 
+         schema: 'public', 
+         table: 'messages',
+      }, (payload) => {
+         const updatedMsg = payload.new;
+         if (
+           (updatedMsg.sender_id === user.id && updatedMsg.receiver_id === activeContactId) ||
+           (updatedMsg.sender_id === activeContactId && updatedMsg.receiver_id === user.id)
+         ) {
+           setMessages(prev => prev.map(m => m.id === updatedMsg.id ? updatedMsg : m));
          }
       })
       .subscribe();
@@ -214,7 +239,7 @@ export function Chat() {
         // Send notification
         supabase.from('notifications').insert({
           user_id: activeContactId,
-          title: `Pesan baru dari ${userProfile?.full_name || 'Pengguna'}`,
+          title: userProfile?.full_name || 'Pengguna',
           message: sentContent.substring(0, 50) + (sentContent.length > 50 ? '...' : ''),
           type: 'chat',
           link: `chat:${user.id}`
@@ -225,9 +250,10 @@ export function Chat() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               user_id: activeContactId,
-              title: `Pesan baru dari ${userProfile?.full_name || 'Pengguna'}`,
+              title: userProfile?.full_name || 'Pengguna',
               message: sentContent.substring(0, 50) + (sentContent.length > 50 ? '...' : ''),
-              link: `/chat`
+              link: `/chat`,
+              icon: userProfile?.avatar_url || '/icon.svg'
             })
           }).catch(console.error);
         });
@@ -381,8 +407,15 @@ export function Chat() {
                         </div>
                       );
                     })()}
-                    <div className="text-[9px] text-text-muted mt-1 font-mono tracking-wide px-1">
-                      {new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    <div className="flex items-center gap-1 mt-1 px-1 justify-end">
+                      <div className="text-[9px] text-text-muted font-mono tracking-wide">
+                        {new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      </div>
+                      {isMe && (
+                        <div className={`text-[10px] ${m.is_read ? 'text-[#3b82f6]' : 'text-text-muted'}`}>
+                          {m.is_read ? '✓✓' : '✓'}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

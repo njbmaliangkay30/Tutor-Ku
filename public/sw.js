@@ -20,8 +20,8 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    icon: '/icon.svg',
-    badge: '/icon.svg',
+    icon: data.icon || '/icon.svg',
+    badge: data.badge || '/icon.svg',
     vibrate: [200, 100, 200],
     data: {
       url: data.url || '/chat'

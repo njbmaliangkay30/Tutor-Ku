@@ -46,7 +46,7 @@ async function addSubscription(userId: string, subscription: any) {
   }
 }
 
-async function sendPushNotification(userId: string, payload: { title: string; body: string; url: string }) {
+async function sendPushNotification(userId: string, payload: { title: string; body: string; url: string; icon?: string; badge?: string }) {
   try {
     const { data: userSubs } = await supabase.from('push_subscriptions').select('*').eq('user_id', userId);
     if (!userSubs || userSubs.length === 0) return;
@@ -85,6 +85,9 @@ function setupRealtimePushNotifications() {
       async (payload: any) => {
         const newNotif = payload.new;
         if (!newNotif || !newNotif.user_id) return;
+        
+        // Skip chat type since Chat.tsx handles it directly via API to include profile pictures
+        if (newNotif.type === 'chat') return;
 
         // Skip sending push if the user already read it? Not available since it just got inserted.
         const receiverId = newNotif.user_id;
@@ -124,6 +127,22 @@ async function startServer() {
       return res.status(400).json({ error: "Kolom nama/subscriptions kosong" });
     }
     addSubscription(user_id, subscription);
+    res.json({ success: true });
+  });
+
+  // PWA Web Push Send Endpoint (Client Trigger)
+  app.post("/api/push/send", async (req, res) => {
+    const { user_id, title, message, link, icon } = req.body;
+    if (!user_id) return res.status(400).json({ error: "User ID kosong" });
+    
+    await sendPushNotification(user_id, {
+      title: title || "TutorKu",
+      body: message || "Anda memiliki notifikasi baru",
+      url: link || "/",
+      icon: icon || "/icon.svg",
+      badge: "/icon.svg"
+    });
+    
     res.json({ success: true });
   });
 
