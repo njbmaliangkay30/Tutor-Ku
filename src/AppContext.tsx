@@ -224,6 +224,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
              // Avoid double notifying for chats if they somehow still insert
              if (payload.new.type === 'chat' || payload.new.link?.startsWith('chat:')) return;
              playNotificationSound();
+             
              showBrowserNotification(payload.new.title || 'TutorKu', payload.new.message || 'Anda memiliki notifikasi baru');
           }
         )
