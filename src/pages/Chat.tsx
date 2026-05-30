@@ -134,7 +134,9 @@ export function Chat() {
          // mark as read
          const unread = data.filter(m => m.receiver_id === user.id && !m.is_read);
          if (unread.length > 0) {
-           await supabase.from("messages").update({ is_read: true }).in("id", unread.map(m => m.id));
+           await supabase.from("messages").update({ is_read: true }).in("id", unread.map(m => m.id)).then(({error}) => {
+             if (error) console.error("Error marking messages as read:", error);
+           });
            // Update local state directly to reflect read status immediately
            setMessages(data.map(m => unread.some(u => u.id === m.id) ? { ...m, is_read: true } : m));
          } else {
@@ -179,7 +181,8 @@ export function Chat() {
            }, 100);
 
            if (newMsg.receiver_id === user.id && !newMsg.is_read) {
-             supabase.from("messages").update({ is_read: true }).eq("id", newMsg.id).then(() => {
+             supabase.from("messages").update({ is_read: true }).eq("id", newMsg.id).then(({error}) => {
+                if (error) console.error("Error marking msg real-time as read", error);
                 setMessages(prev => prev.map(m => m.id === newMsg.id ? { ...m, is_read: true } : m));
              });
            }
@@ -241,27 +244,18 @@ export function Chat() {
         // Hapus pesan temp jika gagal
         setMessages(prev => prev.filter(m => m.id !== tempId));
       } else if (data) {
-        // Send notification
-        supabase.from('notifications').insert({
-          user_id: activeContactId,
-          title: userProfile?.full_name || 'Pengguna',
-          message: sentContent.substring(0, 50) + (sentContent.length > 50 ? '...' : ''),
-          type: 'chat',
-          link: `chat:${user.id}`
-        }).then(() => {
-          // Trigger web push via our API
-          fetch('/api/push/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              user_id: activeContactId,
-              title: userProfile?.full_name || 'Pengguna',
-              message: sentContent.substring(0, 50) + (sentContent.length > 50 ? '...' : ''),
-              link: `/chat`,
-              icon: userProfile?.avatar_url || '/icon.svg'
-            })
-          }).catch(console.error);
-        });
+        // Trigger web push via our API
+        fetch('/api/push/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: activeContactId,
+            title: userProfile?.full_name || 'Pengguna',
+            message: sentContent.substring(0, 50) + (sentContent.length > 50 ? '...' : ''),
+            link: `/chat`,
+            icon: userProfile?.avatar_url || '/icon.svg'
+          })
+        }).catch(console.error);
 
         // Replace tempMsg dengan data asli dari database
         setMessages(prev => {

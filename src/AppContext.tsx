@@ -159,14 +159,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       registerPushNotification(user.id);
 
-      const showBrowserNotification = (content: string) => {
+      const showBrowserNotification = (title: string, content: string, iconUrl?: string) => {
         if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
           let text = content || 'Pesan baru masuk';
           if (text.includes('[SESSION_ID:')) {
             text = "Ada pengajuan/perubahan event jadwal baru.";
           }
-          new Notification('TutorKu', {
-            body: text
+          new Notification(title || 'TutorKu', {
+            body: text,
+            icon: iconUrl || '/icon.svg',
+            badge: '/icon.svg'
           });
         }
       };
@@ -184,18 +186,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
           });
       };
 
-      // Subscribe to unread messages globally using notifications
+      // Subscribe to unread messages globally
       const msgSub = supabase
         .channel('global-messages')
         .on(
           'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
-          (payload: any) => {
-             if (payload.new.type === 'chat' || payload.new.link?.startsWith('chat:')) {
-               updateChatCount();
-               playNotificationSound();
-               showBrowserNotification(payload.new.message || 'Pesan baru diterima');
-             }
+          { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
+          async (payload: any) => {
+             updateChatCount();
+             playNotificationSound();
+             
+             // Fetch sender profile for notification
+             const { data: senderProfile } = await supabase
+               .from('profiles')
+               .select('full_name, avatar_url')
+               .eq('id', payload.new.sender_id)
+               .single();
+               
+             showBrowserNotification(
+               senderProfile?.full_name || 'Pengguna', 
+               payload.new.content || 'Pesan baru diterima',
+               senderProfile?.avatar_url || undefined
+             );
           }
         )
         .on(
@@ -203,6 +215,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
           { event: 'UPDATE', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
           () => {
              updateChatCount();
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+          (payload: any) => {
+             // Avoid double notifying for chats if they somehow still insert
+             if (payload.new.type === 'chat' || payload.new.link?.startsWith('chat:')) return;
+             playNotificationSound();
+             showBrowserNotification(payload.new.title || 'TutorKu', payload.new.message || 'Anda memiliki notifikasi baru');
           }
         )
         .subscribe();
