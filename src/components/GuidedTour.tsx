@@ -42,17 +42,21 @@ export function GuidedTour() {
       if (!tourState.ready) return;
 
       if (!tourState.mainDone) {
-          if (activeTab === 'home' && !selectedTutorId && subStep !== 'main_explore') {
-              setSubStep('main_explore');
+          if (activeTab === 'home' && !selectedTutorId) {
+              if (subStep !== 'main_explore') setSubStep('main_explore');
           } else if (activeTab === 'search' && !selectedTutorId) {
               if (subStep !== 'main_filter' && subStep !== 'main_card') {
                   setSubStep('main_filter');
               }
+          } else {
+              setSubStep(null);
           }
       } else if (!tourState.bookingDone) {
-          if (selectedTutorId && subStep !== 'booking_start') {
-              setSubStep('booking_start');
-          } else if (!selectedTutorId && subStep === 'booking_start') {
+          if (selectedTutorId) {
+              if (subStep !== 'booking_start' && subStep !== 'booking_fields' && subStep !== 'booking_submit') {
+                  setSubStep('booking_start');
+              }
+          } else {
               setSubStep(null);
           }
       } else {
