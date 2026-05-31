@@ -46,8 +46,6 @@ import { useAppContext } from "./AppContext";
 import { NotificationBell } from "./components/NotificationBell";
 import { StudentDashboard } from "./pages/StudentDashboard";
 
-import { AppTour } from "./components/AppTour";
-
 export default function App() {
   const {
     activeTab,
@@ -103,7 +101,6 @@ export default function App() {
       className="flex h-screen overflow-hidden bg-bg-base text-text-main font-body flex-col md:flex-row"
       onMouseMove={handleMouseMove}
     >
-      <AppTour />
       <div
         id="brand-blob-br"
         className="fixed pointer-events-none z-0 w-[500px] h-[500px] rounded-full -bottom-[100px] -right-[100px] blur-[80px]"
