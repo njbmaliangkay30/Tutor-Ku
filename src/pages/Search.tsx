@@ -145,12 +145,12 @@ export function Search() {
                        <Medal size={10} className="inline mr-1 -mt-0.5" /> {tutor.tier}
                      </span>
                    </div>
-                   <div className="text-[11px] text-text-sub mt-px font-mono">{tutor.major} · {tutor.university}</div>
+                   <div className="text-[11px] text-text-sub mt-px font-mono">{(t(`subjects.${tutor.major}`) !== `subjects.${tutor.major}`) ? t(`subjects.${tutor.major}`) : tutor.major} · {tutor.university}</div>
                    <div className="flex gap-1.5 items-center mt-[5px] flex-wrap">
                      <span className="text-warning text-[12px] font-bold font-mono whitespace-nowrap"><Star size={12} className="inline fill-warning -mt-0.5"/> {tutor.rating.toFixed(1)}</span>
                      <span className="text-[10px] text-text-sub font-mono whitespace-nowrap">{tutor.sessions} {t('explore.sessions')}</span>
                      <span className={`inline-flex items-center gap-[3px] px-2 py-[2px] rounded-sm text-[10px] font-bold font-mono border whitespace-nowrap ${tutor.genderClass}`}>
-                       <span className="-mb-[1px]">{tutor.genderIcon}</span> {tutor.gender}
+                       <span className="-mb-[1px]">{tutor.genderIcon}</span> {tutor.genderCode === 'F' ? t('explore.gender_female') : t('explore.gender_male')}
                      </span>
                      {tutor.learningStyles && Array.isArray(tutor.learningStyles) && tutor.learningStyles.includes('Bisa Bahasa Inggris') && (
                        <span className="border border-border/60 bg-bg-2 px-1.5 py-[2px] rounded-sm text-[9px] font-mono text-violet-300 font-medium tracking-wider w-fit whitespace-nowrap">{t('explore.bilingual')}</span>
@@ -167,7 +167,7 @@ export function Search() {
                  {(tutor.tags || []).filter(Boolean).map((tag: string) => {
                    const st = getTagStyle(tag);
                    return (
-                     <span key={tag} className="rounded px-[9px] py-[3px] text-[11px] font-semibold border border-border font-mono" style={{backgroundColor: st.bg, color: st.c, borderColor: st.c + '33'}}>{tag}</span>
+                     <span key={tag} className="rounded px-[9px] py-[3px] text-[11px] font-semibold border border-border font-mono" style={{backgroundColor: st.bg, color: st.c, borderColor: st.c + '33'}}>{(t(`subjects.${tag}`) !== `subjects.${tag}`) ? t(`subjects.${tag}`) : tag}</span>
                    )
                  })}
                </div>
@@ -182,9 +182,20 @@ export function Search() {
          if (level === 'SD') dotColor = "bg-rose-400";
          else if (level === 'SMP') dotColor = "bg-sky-400";
          else if (level === 'SMA') dotColor = "bg-slate-400";
+         let levelMap: Record<string, string> = {
+            'SD': 'Elementary School (SD)',
+            'SMP': 'Middle School (SMP)',
+            'SMA': 'High School (SMA)',
+            'Mahasiswa/Umum': 'College/General'
+         };
+
+         let trLevel = level;
+         // It might be better to just extract it cleanly. If language is 'en', we translate it. We can add to `i18n.ts` but doing condition here is simpler for `app-level` state if we don't have access to current lang directly, but wait `t` does that if we add it to `explore` dict.
+         trLevel = t(`explore.level_${level.replace('/', '_').toLowerCase()}`) !== `explore.level_${level.replace('/', '_').toLowerCase()}` ? t(`explore.level_${level.replace('/', '_').toLowerCase()}`) : level;
+
          return (
            <span key={s} className="border border-border/60 bg-bg-2 px-1.5 py-[2px] rounded-sm text-[9px] font-mono text-text-main font-medium tracking-wider flex items-center gap-1.5 whitespace-nowrap w-fit">
-             <span className={`w-1 h-1 rounded-full shrink-0 ${dotColor}`}></span> {level}
+             <span className={`w-1 h-1 rounded-full shrink-0 ${dotColor}`}></span> {trLevel}
            </span>
          );
        })}

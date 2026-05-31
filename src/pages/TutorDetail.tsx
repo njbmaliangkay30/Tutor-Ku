@@ -11,8 +11,11 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "../lib/supabase";
 import MapPicker from "../components/MapPicker";
 
+import { useTranslation } from "../hooks/useTranslation";
+
 export function TutorDetail() {
-  const { selectedTutorId, setSelectedTutorId, setActiveTab, userRole, tutors, user, userProfile } =
+  const { t } = useTranslation();
+  const { selectedTutorId, setSelectedTutorId, setActiveTab, userRole, tutors, user, userProfile, lang } =
     useAppContext();
   const [dbPackages, setDbPackages] = useState<any[]>([]);
   const [selectedPkg, setSelectedPkg] = useState<string>("");
@@ -72,7 +75,7 @@ export function TutorDetail() {
 
   const handleFetchGps = () => {
     if (!navigator.geolocation) {
-      setGpsError("Browser tidak mendukung GPS Geolocation.");
+      setGpsError(t('booking.gps_unsupported'));
       return;
     }
     setIsFetchingGps(true);
@@ -83,13 +86,13 @@ export function TutorDetail() {
         const mapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
         setLocation((prev) => {
           const base = prev.trim() ? prev + "\n" : "";
-          return `${base}Titik GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${mapsLink})`;
+          return `${base}${t('booking.gps_success')}: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${mapsLink})`;
         });
         setIsFetchingGps(false);
       },
       (error) => {
         console.error("GPS error:", error);
-        setGpsError("Gagal mendeteksi lokasi. Mohon izinkan akses GPS / lokasi.");
+        setGpsError(t('booking.gps_error'));
         setIsFetchingGps(false);
       },
       { enableHighAccuracy: true, timeout: 8000 }
@@ -534,7 +537,7 @@ export function TutorDetail() {
             {tutor.name}
           </h2>
           <div className="text-xs text-text-sub mb-2 font-mono">
-            {tutor.major} · {tutor.university}
+            {(t(`subjects.${tutor.major}`) !== `subjects.${tutor.major}`) ? t(`subjects.${tutor.major}`) : tutor.major} · {tutor.university}
           </div>
 
           <div className="flex gap-2 items-center justify-center flex-wrap mt-[5px]">
@@ -571,16 +574,16 @@ export function TutorDetail() {
               className={`inline-flex items-center gap-[3px] px-2 py-[2px] rounded-sm text-[10px] font-bold font-mono border whitespace-nowrap ${tutor.genderClass}`}
             >
               <span className="-mb-[1px]">{tutor.genderIcon}</span>{" "}
-              {tutor.gender}
+              {tutor.genderCode === 'F' ? t('explore.gender_female') : t('explore.gender_male')}
             </span>
             <span className="text-[11px] text-text-sub font-mono whitespace-nowrap">
-              {tutor.sessions} sesi
+              {tutor.sessions} {t('explore.sessions')}
             </span>
           </div>
 
           <div className="flex justify-center flex-wrap gap-1 mt-2.5">
             {tutor.learningStyles?.includes('Bisa Bahasa Inggris') && (
-              <span className="border border-border/60 bg-bg-2 px-2 py-[2px] rounded-sm text-[9px] font-mono text-violet-300 font-medium tracking-wider w-fit whitespace-nowrap">BILINGUAL</span>
+              <span className="border border-border/60 bg-bg-2 px-2 py-[2px] rounded-sm text-[9px] font-mono text-violet-300 font-medium tracking-wider w-fit whitespace-nowrap">{t('explore.bilingual')}</span>
             )}
              {(tutor.learningStyles || []).filter((s: string) => s.startsWith('Jenjang')).sort((a: string, b: string) => {
                  const order: any = { 'Jenjang: SD': 1, 'Jenjang: SMP': 2, 'Jenjang: SMA': 3, 'Jenjang: Mahasiswa/Umum': 4 };
@@ -591,9 +594,13 @@ export function TutorDetail() {
          if (level === 'SD') dotColor = "bg-rose-400";
          else if (level === 'SMP') dotColor = "bg-sky-400";
          else if (level === 'SMA') dotColor = "bg-slate-400";
+         
+         let trLevel = level;
+         trLevel = t(`explore.level_${level.replace('/', '_').toLowerCase()}`) !== `explore.level_${level.replace('/', '_').toLowerCase()}` ? t(`explore.level_${level.replace('/', '_').toLowerCase()}`) : level;
+
          return (
            <span key={s} className="border border-border/60 bg-bg-2 px-1.5 py-[2px] rounded-sm text-[9px] font-mono text-text-main font-medium tracking-wider flex items-center gap-1.5 whitespace-nowrap w-fit">
-             <span className={`w-1 h-1 rounded-full shrink-0 ${dotColor}`}></span> {level}
+             <span className={`w-1 h-1 rounded-full shrink-0 ${dotColor}`}></span> {trLevel}
            </span>
          );
        })}
@@ -608,14 +615,14 @@ export function TutorDetail() {
 
         <div className="bg-card rounded-xl p-4 border-[1.5px] border-border mb-2.5 transition-colors hover:border-border-2">
           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">
-            BIO
+            {t('booking.bio')}
           </div>
           <p className="text-[13px] text-text-sub leading-[1.6]">{tutor.bio}</p>
         </div>
 
         <div className="bg-card rounded-xl p-4 border-[1.5px] border-border mb-2.5 transition-colors hover:border-border-2">
           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">
-            HARI AKTIF MENGAJAR
+            {t('booking.active_days')}
           </div>
           <div className="grid grid-cols-7 gap-[5px] mb-1.5">
             {[1, 2, 3, 4, 5, 6, 0].map((dayIndex) => {
@@ -632,16 +639,16 @@ export function TutorDetail() {
             })}
           </div>
           <div className="text-[11px] text-text-sub font-mono">
-            Aktif: {(tutor.activeDays || []).map((d: number) => DAYS[d]).join(", ")}
+            {lang === 'en' ? 'Active: ' : 'Aktif: '} {(tutor.activeDays || []).map((d: number) => DAYS[d]).join(", ")}
           </div>
         </div>
 
         <div className="bg-card rounded-xl p-4 border-[1.5px] border-border mb-2.5 transition-colors hover:border-border-2">
           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">
-            MATA PELAJARAN
+            {t('booking.teaching_subjects')}
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {(tutor.tags || []).map((tag: string) => {
+            {(tutor.tags || []).filter(Boolean).map((tag: string) => {
               const st = getTagStyle(tag);
               return (
                 <span
@@ -653,7 +660,7 @@ export function TutorDetail() {
                     borderColor: st.c + "33",
                   }}
                 >
-                  {tag}
+                  {(t(`subjects.${tag}`) !== `subjects.${tag}`) ? t(`subjects.${tag}`) : tag}
                 </span>
               );
             })}
@@ -663,33 +670,33 @@ export function TutorDetail() {
         {/* Tutor Selected Featured Reviews */}
         <div className="bg-card rounded-xl p-4 border-[1.5px] border-border mb-2.5 transition-colors hover:border-border-2">
           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">
-            ULASAN SISWA ({reviews.filter(r => r.show_on_profile !== false).length})
+            {t('booking.student_reviews')} ({reviews.filter(r => r.show_on_profile !== false).length})
           </div>
           {isLoadingReviews ? (
-            <div className="text-xs text-text-sub font-mono py-2">Memuat ulasan...</div>
+            <div className="text-xs text-text-sub font-mono py-2">{t('booking.loading_reviews')}</div>
           ) : reviews.filter(r => r.show_on_profile !== false).length === 0 ? (
-            <p className="text-xs text-text-sub italic py-2">Belum ada ulasan yang ditampilkan oleh tutor.</p>
+            <p className="text-xs text-text-sub italic py-2">{t('booking.no_reviews')}</p>
           ) : (
             <div className="space-y-3 pt-1">
               {reviews.filter(r => r.show_on_profile !== false).map((r) => (
                 <div key={r.id} className="bg-bg-2/30 border border-border/60 rounded-xl p-3 text-xs space-y-2">
                   <div className="flex justify-between items-center text-[11px]">
                     <span className="font-bold text-text-main">
-                      {r.student?.profiles?.full_name || "Siswa"}
+                      {r.student?.profiles?.full_name || t('booking.student')}
                     </span>
                     <div className="flex items-center gap-0.5 text-warning font-mono font-bold">
                        ⭐ {r.rating} / 5
                     </div>
                   </div>
                   <p className="text-[10px] text-text-sub font-mono -mt-1">
-                    {new Date(r.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {new Date(r.created_at).toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                   {r.review_text ? (
                     <p className="text-xs italic text-text-main bg-bg-base/70 py-2 px-2.5 border-l border-lime rounded-r">
                       "{r.review_text}"
                     </p>
                   ) : (
-                    <p className="text-[11px] text-text-sub/70 italic">Siswa memberikan rating bintang tanpa ulasan tertulis.</p>
+                    <p className="text-[11px] text-text-sub/70 italic">{t('booking.no_text_review')}</p>
                   )}
                 </div>
               ))}
@@ -702,13 +709,13 @@ export function TutorDetail() {
             <div className="flex justify-between items-start">
               <div>
                 <span className="bg-lime text-black font-mono text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">
-                  Paket Aktif Anda
+                  Paket Aktif
                 </span>
                 <h4 className="font-bold text-sm text-text-main mt-1.5">
-                  Anda memiliki paket aktif dengan {tutor.name}
+                  {t('booking.you_have_active_package')} {tutor.name}
                 </h4>
                 <p className="text-xs text-text-sub mt-1 font-mono">
-                  Sisa kuota: <span className="text-lime font-bold">{activePackage.remaining_sessions} sesi</span> lagi
+                  {t('booking.remaining_sessions')}: <span className="text-lime font-bold">{activePackage.remaining_sessions} {t('explore.sessions')}</span>
                 </p>
               </div>
             </div>
@@ -722,7 +729,7 @@ export function TutorDetail() {
                 className="w-4 h-4 accent-lime rounded cursor-pointer"
               />
               <label htmlFor="use-package" className="text-xs text-text-main font-semibold cursor-pointer select-none">
-                Gunakan kuota paket (Biaya Sesi Rp 0)
+                {t('booking.use_package_toggle')}
               </label>
             </div>
           </div>
@@ -731,7 +738,7 @@ export function TutorDetail() {
         {!usePackageSession ? (
           <div className="mb-3.5 tour-package">
             <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">
-              PILIH PAKET
+              {t('booking.buy_package')}
             </div>
             <div className="flex flex-col gap-2">
               {dbPackages.map((pkg) => {
@@ -774,7 +781,7 @@ export function TutorDetail() {
                         </div>
                         {pkg.session_count > 1 ? (
                           <div className="text-[10px] text-text-sub font-mono">
-                            {formatRupiah(perSesi)}/sesi{" "}
+                            {formatRupiah(perSesi)}{t('booking.price_per_session')}{" "}
                             {discount > 0 && (
                               <span className="text-online font-bold">
                                 hemat {discount}%
@@ -783,12 +790,12 @@ export function TutorDetail() {
                           </div>
                         ) : (
                           <div className="text-[10px] text-text-sub font-mono">
-                            per sesi
+                            {t('booking.price_per_session').replace('/', '')}
                           </div>
                         )}
                       </div>
                       <div className="text-[12px] text-text-sub font-mono">
-                        {pkg.session_count} sesi
+                        {pkg.session_count} {t('explore.sessions')}
                       </div>
                     </div>
                   </div>
@@ -796,20 +803,20 @@ export function TutorDetail() {
               })}
               {dbPackages.length === 0 && (
                 <p className="text-xs text-text-sub text-center py-4 italic border border-dashed border-border rounded-xl">
-                  Memuat penawaran paket...
+                  Memuat...
                 </p>
               )}
             </div>
           </div>
         ) : (
           <div className="bg-lime-dim/10 border-[1.5px] border-lime/20 rounded-xl p-4 mb-3.5 text-xs text-text-sub font-mono">
-            Sesi ini akan dijadwalkan secara individu menggunakan kuota paket Anda.
+            Sesi ini akan dijadwalkan menggunakan kuota paket Anda.
           </div>
         )}
 
         <div className="mb-3.5 tour-schedule">
           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">
-            JADWAL SESI PERTAMA
+            {t('booking.schedule_date')}
           </div>
           
           <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar mb-2">
@@ -853,40 +860,40 @@ export function TutorDetail() {
         <div className="tour-mapel-method">
         <div className="flex flex-col gap-[5px] mb-4">
           <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
-            Mata Pelajaran <span className="text-red-500 font-bold">*</span>
+            {t('booking.subject')} <span className="text-red-500 font-bold">*</span>
           </label>
           <select 
             value={selectedSubject}
             onChange={(e) => setSelectedSubject(e.target.value)}
             className="bg-bg-1 border-[1.5px] border-border rounded-xl p-3 text-[13px] font-bold text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime/50 transition-colors"
           >
-            <option value="">-- Pilih Mata Pelajaran (Wajib) --</option>
+            <option value="">-- {t('booking.select_subject')} --</option>
             {tutor.tags && tutor.tags.length > 0 ? (
                tutor.tags.map((tag: string, idx: number) => (
-                 <option key={idx} value={tag}>{tag}</option>
+                 <option key={idx} value={tag}>{(t(`subjects.${tag}`) !== `subjects.${tag}`) ? t(`subjects.${tag}`) : tag}</option>
                ))
             ) : (
-               <option value={tutor.major}>{tutor.major}</option>
+               <option value={tutor.major}>{(t(`subjects.${tutor.major}`) !== `subjects.${tutor.major}`) ? t(`subjects.${tutor.major}`) : tutor.major}</option>
             )}
           </select>
         </div>
 
         <div className="flex flex-col gap-[5px] mb-4">
           <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
-            Metode Pertemuan
+            {t('booking.meeting_type')}
           </label>
           <div className="flex gap-2">
             <button
               onClick={() => setMeetingType('online')}
               className={`flex-1 py-2.5 rounded-lg border-[1.5px] font-bold text-sm transition-colors ${meetingType === 'online' ? 'border-lime bg-lime-dim text-lime' : 'border-border bg-bg-2 text-text-sub hover:border-lime/50'}`}
             >
-              Online (Video Call)
+              Online
             </button>
             <button
               onClick={() => setMeetingType('offline')}
               className={`flex-1 py-2.5 rounded-lg border-[1.5px] font-bold text-sm transition-colors ${meetingType === 'offline' ? 'border-lime bg-lime-dim text-lime' : 'border-border bg-bg-2 text-text-sub hover:border-lime/50'}`}
             >
-              Offline (Tatap Muka)
+              Offline
             </button>
           </div>
         </div>
@@ -900,12 +907,12 @@ export function TutorDetail() {
 
         <div className="flex flex-col gap-[5px] mb-3 tour-notes">
           <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
-            Catatan untuk Tutor (opsional)
+            {t('booking.extra_notes')}
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Ceritakan kebutuhan belajarmu..."
+            placeholder={t('booking.notes_placeholder')}
             className="border-[1.5px] border-border rounded-lg px-[13px] py-2.5 text-[14px] bg-bg-2 text-text-main font-body focus:outline-none focus:border-lime focus:shadow-[0_0_0_2px_var(--color-lime-dim)] transition-all h-[70px] resize-none"
           ></textarea>
         </div>
@@ -917,10 +924,10 @@ export function TutorDetail() {
             className="w-full bg-lime text-black border-[2px] border-lime rounded-lg py-[11px] px-[18px] font-display font-bold text-[13px] flex items-center justify-center gap-1.5 shadow-sh1 transition-all hover:shadow-sh2 hover:-translate-x-px hover:-translate-y-px active:scale-[0.97] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none tour-book-now"
           >
             {bookingSuccess
-              ? "Booking Berhasil! Mengalihkan..."
-              : isSubmitting ? "Memproses..." : userRole === "guest"
-                ? "Login untuk Booking"
-                : "Booking Sekarang"}
+              ? t('booking.success_title')
+              : isSubmitting ? t('booking.submitting') : userRole === "guest"
+                ? "Login"
+                : t('booking.confirm_booking')}
           </button>
         </div>
       </div>
@@ -933,10 +940,10 @@ export function TutorDetail() {
               <Star size={32} />
             </div>
             <h2 className="font-display font-bold text-xl mb-2 text-text-main">
-              Booking Berhasil!
+              {t('booking.success_title')}
             </h2>
             <p className="text-sm text-text-sub">
-              Menunggu konfirmasi dari tutor...
+              {t('booking.success_desc')}
             </p>
           </div>
         </div>, document.body

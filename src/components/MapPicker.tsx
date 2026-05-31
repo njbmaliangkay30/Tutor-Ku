@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Compass, AlertCircle, Map as MapIcon, ChevronDown, ChevronUp, Link as LinkIcon } from "lucide-react";
+import { t } from "../lib/i18n";
+import { useAppContext } from "../AppContext";
 
 interface MapPickerProps {
   value: string;
@@ -7,6 +9,7 @@ interface MapPickerProps {
 }
 
 export default function MapPicker({ value, onChange }: MapPickerProps) {
+  const { lang = 'en' } = useAppContext() || {};
   const mapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
   const userMarkerRef = useRef<any>(null);
@@ -169,7 +172,7 @@ Link Google Maps: ${mapsLink}`;
   // Fetch device geolocation
   const handleCurrentLocation = () => {
     if (!navigator.geolocation) {
-      alert("Browser Anda tidak mendukung deteksi lokasi.");
+      alert(t('booking.gps_unsupported', lang as any));
       return;
     }
     
@@ -213,7 +216,7 @@ Link Google Maps: ${mapsLink}`;
       },
       (err) => {
         console.error("Geolocation error:", err);
-        alert("Gagal mengakses GPS. Pastikan izin lokasi perangkat diaktifkan.");
+        alert(t('booking.gps_error', lang as any));
         setIsLocating(false);
       },
       { enableHighAccuracy: true, timeout: 8000 }
@@ -312,7 +315,7 @@ Link Google Maps: ${mapsLink}`;
       <div className="flex items-center justify-between">
         <label className="text-[10px] font-extrabold text-lime uppercase tracking-[0.08em] font-mono flex items-center gap-1.5">
           <MapIcon size={12} className="animate-pulse" />
-          <span>Interactive Maps & Pin Koordinat</span>
+          <span>{t('booking.map_title', lang as any)}</span>
         </label>
         <button
           type="button"
@@ -321,11 +324,11 @@ Link Google Maps: ${mapsLink}`;
         >
           {isOpen ? (
             <>
-              Sembunyikan Peta <ChevronUp size={12} />
+              {t('booking.hide_map', lang as any)} <ChevronUp size={12} />
             </>
           ) : (
             <>
-              Tampilkan Peta <ChevronDown size={12} />
+              {t('booking.show_map', lang as any)} <ChevronDown size={12} />
             </>
           )}
         </button>
@@ -346,7 +349,7 @@ Link Google Maps: ${mapsLink}`;
             className="w-full bg-bg-3 hover:bg-zinc-900 border border-border hover:border-lime/40 text-text-main hover:text-lime text-xs font-bold py-2 px-3.5 rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-[0.99] disabled:opacity-50"
           >
             <Compass size={14} className={isLocating ? "animate-spin text-lime" : "text-lime-mid"} />
-            {isLocating ? "Menghubungkan GPS..." : "Gunakan GPS Hubungkan Lokasi Saya 📍"}
+            {isLocating ? t('booking.gps_connecting', lang as any) : t('booking.use_gps', lang as any)}
           </button>
         </div>
       )}
@@ -357,28 +360,28 @@ Link Google Maps: ${mapsLink}`;
         <div className="flex flex-col gap-1">
           <label className="text-[10.5px] font-bold text-text-main uppercase tracking-[0.06em] font-mono flex items-center justify-between">
             <span className="flex items-center gap-1">
-              Lokasi, Detail Alamat & Patokan <span className="text-red-500 font-extrabold">*</span>
+              {t('booking.location_details', lang as any)} <span className="text-red-500 font-extrabold">*</span>
             </span>
-            <span className="text-[9px] text-lime font-medium lowercase font-sans">wajib diisi</span>
+            <span className="text-[9px] text-lime font-medium lowercase font-sans">{t('booking.required', lang as any)}</span>
           </label>
           
           <textarea
             required
             value={addressText}
             onChange={(e) => handleTextChange(e.target.value)}
-            placeholder="Tulis nama cafe/rumah, rincian alamat detail, ATAU paste link share Google Maps Anda langsung disini. Aman & tersimpan!"
+            placeholder={t('booking.location_input_placeholder', lang as any)}
             className={`px-3 py-2.5 rounded-lg bg-bg-2 border font-medium text-[12px] text-text-main transition-colors focus:outline-none focus:ring-1 h-[100px] resize-none leading-relaxed ${!addressText.trim() ? "border-amber-500/50 focus:border-amber-500 focus:ring-amber-500/20" : "border-border focus:border-lime focus:ring-lime/20"}`}
           />
 
           {reverseGeocoding && (
             <span className="text-lime animate-pulse font-medium text-[9px] font-mono mt-0.5">
-              Membaca alamat otomatis...
+              {t('booking.auto_reading', lang as any)}
             </span>
           )}
 
           {!addressText.trim() && (
             <p className="text-[9.5px] text-amber-400/95 font-mono leading-none mt-1.5 flex items-center gap-1 animate-pulse">
-              <AlertCircle size={10} /> Mohon tulis nama tempat, alamat, atau link Google Maps pertemuan
+              <AlertCircle size={10} /> {t('booking.please_fill_location', lang as any)}
             </p>
           )}
         </div>
