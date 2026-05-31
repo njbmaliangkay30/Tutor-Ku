@@ -4,7 +4,7 @@ import { useAppContext } from '../AppContext';
 import { X } from 'lucide-react';
 
 export function AppTour() {
-  const { userRole, activeTab, setActiveTab, selectedTutorId } = useAppContext();
+  const { userRole, activeTab, setActiveTab, selectedTutorId, setSelectedTutorId } = useAppContext();
   const [run, setRun] = useState(false);
   const [steps, setSteps] = useState<Step[]>([]);
 
@@ -14,12 +14,15 @@ export function AppTour() {
     const hasSkippedAll = localStorage.getItem('tutorku_tour_skipped');
     if (hasSkippedAll) return;
 
-    const hasSeenMain = localStorage.getItem('tutorku_tour_main');
+    const hasSeenHome = localStorage.getItem('tutorku_tour_home');
+    const hasSeenSearch = localStorage.getItem('tutorku_tour_search');
     const hasSeenDetail = localStorage.getItem('tutorku_tour_detail');
 
     let currentSteps: Step[] = [];
+    const isMobile = window.innerWidth < 768;
+    const exploreTarget = isMobile ? '.tour-explore-mobile' : '.tour-explore-desktop';
 
-    if (!hasSeenMain && !selectedTutorId) {
+    if (!hasSeenHome && activeTab === 'home' && !selectedTutorId) {
       currentSteps = [
         {
           target: 'body',
@@ -29,13 +32,16 @@ export function AppTour() {
           disableBeacon: true,
         },
         {
-          target: '.tour-explore',
+          target: exploreTarget,
           title: 'Cari Tutor',
           content: 'Buka menu pencarian ini untuk melihat daftar semua tutor terbaik yang tersedia.',
-          placement: 'top',
+          placement: isMobile ? 'top' : 'right',
           disableBeacon: true,
           spotlightPadding: 6,
-        },
+        }
+      ];
+    } else if (!hasSeenSearch && (activeTab === 'search' || activeTab === 'explore') && !selectedTutorId) {
+      currentSteps = [
         {
           target: '.tour-filter-gender',
           title: 'Filter Gender',
@@ -108,19 +114,20 @@ export function AppTour() {
   }, [userRole, selectedTutorId]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, action, index, type } = data;
-    const isMainTour = steps.length > 4;
+    const { status, action, step, index, type } = data;
+    
+    // Check if it's the home tour
+    const isHomeTour = steps.length > 0 && steps[1]?.title === 'Cari Tutor';
+    const isSearchTour = steps.length > 0 && steps[0]?.title === 'Filter Gender';
+    const isDetailTour = steps.length > 0 && steps[0]?.title === 'Pilih Jadwal';
 
     if (type === 'step:after') {
       if (action === 'next') {
-        const targetElement = document.querySelector(step.target as string) as HTMLElement;
-        if (targetElement) {
-          targetElement.click();
-        }
-      } else if (action === 'prev') {
-        if (isMainTour && index === 2) {
-          // If going back from feature tour to explore button, explicitly go back to home tab for context
-          setActiveTab('home');
+        if (step.target === '.tour-explore-desktop' || step.target === '.tour-explore-mobile') {
+          setActiveTab('search');
+          // Important: after moving to search, Joyride for Home will end since target disappears? No, 
+          // let Joyride naturally finish this step, and then the next render will have activeTab === search,
+          // so Home tour ends, and Search tour begins!
         }
       }
     }
@@ -133,12 +140,12 @@ export function AppTour() {
       
       if (action === 'close' || status === STATUS.SKIPPED) {
         localStorage.setItem('tutorku_tour_skipped', 'true');
-        if (isMainTour) setActiveTab('home');
       } else {
-        if (isMainTour) {
-          localStorage.setItem('tutorku_tour_main', 'true');
-          setActiveTab('home');
-        } else if (selectedTutorId) {
+        if (isHomeTour) {
+          localStorage.setItem('tutorku_tour_home', 'true');
+        } else if (isSearchTour) {
+          localStorage.setItem('tutorku_tour_search', 'true');
+        } else if (isDetailTour) {
           localStorage.setItem('tutorku_tour_detail', 'true');
         }
       }

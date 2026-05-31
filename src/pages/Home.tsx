@@ -8,7 +8,8 @@ export function PageHome() {
 
   useEffect(() => {
     fetchTutors();
-  }, [fetchTutors]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const categories = [
     { icon: Sigma, label: 'Hitung', keyword: 'Matematika' },

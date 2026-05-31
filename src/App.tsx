@@ -407,7 +407,7 @@ export default function App() {
                 <button
                   onClick={() => handleNav("search")}
                   title="Explore"
-                  className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden tour-explore ${(activeTab === "search" || (activeTab === "home" && userRole === "guest" && userRole !== "siswa")) ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
+                  className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden tour-explore-desktop ${(activeTab === "search" || (activeTab === "home" && userRole === "guest" && userRole !== "siswa")) ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
                     <Search size={22} />
@@ -794,7 +794,7 @@ export default function App() {
                 )}
                 <button
                   onClick={() => handleNav(userRole === "guest" ? "home" : "search")}
-                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] tour-explore ${(activeTab === "search" || (activeTab === "home" && userRole === "guest" && userRole !== "siswa")) ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
+                  className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] tour-explore-mobile ${(activeTab === "search" || (activeTab === "home" && userRole === "guest" && userRole !== "siswa")) ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
                     className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${(activeTab === "search" || (activeTab === "home" && userRole === "guest" && userRole !== "siswa")) ? "bg-lime-mid text-lime" : "text-text-sub"}`}

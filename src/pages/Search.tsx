@@ -20,7 +20,8 @@ export function Search() {
 
   useEffect(() => {
     fetchTutors();
-  }, [fetchTutors]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const allSubjects = ["Semua", ...SUBJECTS];
 
