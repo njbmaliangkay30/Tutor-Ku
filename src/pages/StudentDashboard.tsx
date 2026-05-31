@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
-import { Calendar, Package, ArrowRight, BookOpen, Clock, Activity, Video } from 'lucide-react';
+import { Calendar, Package, ArrowRight, BookOpen, Clock, Activity, Video, MessageSquare, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function StudentDashboard() {
   const { userProfile, setActiveTab, setTargetSessionId } = useAppContext();
   const [upcomingSession, setUpcomingSession] = useState<any | null>(null);
   const [activePackages, setActivePackages] = useState<any[]>([]);
+  const [latestReport, setLatestReport] = useState<any | null>(null);
   const [stats, setStats] = useState({ completedSessions: 0, hoursLearned: 0 });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -68,7 +69,22 @@ export function StudentDashboard() {
       const filteredPkgs = (pkgRes.data || []).filter(pkg => paidPackageIds.has(pkg.id));
       setActivePackages(filteredPkgs);
 
-      // 3. Fetch progress stats
+      // 3. Fetch latest session report
+      const { data: reportData } = await supabase
+        .from('session_reports')
+        .select(`
+          *,
+          sessions!inner(subject, session_date, student_id),
+          tutor_profiles(profiles(full_name))
+        `)
+        .eq('sessions.student_id', userProfile?.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      setLatestReport(reportData || null);
+
+      // 4. Fetch progress stats
       const { count: completedSessionsCount } = await supabase
         .from('sessions')
         .select('*', { count: 'exact', head: true })
@@ -77,7 +93,7 @@ export function StudentDashboard() {
 
       setStats({
         completedSessions: completedSessionsCount || 0,
-        hoursLearned: (completedSessionsCount || 0) * 1.5 // Each session is ~1.5 hours
+        hoursLearned: (completedSessionsCount || 0) * 1.5
       });
     } catch (e) {
       console.error(e);
@@ -204,6 +220,43 @@ export function StudentDashboard() {
                 </div>
               )}
             </motion.div>
+
+            {/* Latest Session Report */}
+            {latestReport && (
+              <motion.div variants={itemVariants} className="bg-bg-2 border-[1.5px] border-border/60 p-6 md:p-8 rounded-[2rem] shadow-sm relative overflow-hidden group">
+                 <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-lime/5 rounded-full blur-2xl group-hover:bg-lime/10 transition-colors duration-700"></div>
+                 <div className="flex items-center justify-between mb-4 relative z-10">
+                   <h2 className="text-xl font-bold font-display text-text-main flex items-center gap-2">
+                     <MessageSquare size={20} className="text-lime" /> Catatan Tutor Terakhir
+                   </h2>
+                   <div className="flex text-lime">
+                     {[...Array(5)].map((_, i) => (
+                       <Star key={i} size={16} fill={i < (latestReport.student_understanding_level || 5) ? 'currentColor' : 'none'} className={i < (latestReport.student_understanding_level || 5) ? 'text-lime' : 'text-border'} />
+                     ))}
+                   </div>
+                 </div>
+                 <div className="relative z-10">
+                   <div className="flex items-center gap-2 mb-3">
+                     <span className="text-text-sub font-medium text-sm">Review dari:</span>
+                     <span className="text-text-main font-bold text-sm bg-bg-3 px-2 py-1 rounded-md">
+                       {latestReport.tutor_profiles?.profiles?.full_name || 'Tutor'}
+                     </span>
+                     <span className="text-text-sub text-xs ml-auto">
+                       {new Date(latestReport.sessions?.session_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                     </span>
+                   </div>
+                   <p className="text-[15px] leading-relaxed text-text-main/90 italic border-l-4 border-lime/50 pl-4 py-1 mb-4">
+                     "{latestReport.summary}"
+                   </p>
+                   {latestReport.homework && (
+                     <div className="bg-lime/5 border border-lime/10 rounded-xl p-4">
+                       <p className="text-[12px] font-mono text-lime uppercase font-bold mb-1 tracking-wider">Tugas / Catatan Tambahan:</p>
+                       <p className="text-sm text-text-main">{latestReport.homework}</p>
+                     </div>
+                   )}
+                 </div>
+              </motion.div>
+            )}
 
             {/* Progress Stats */}
             <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
