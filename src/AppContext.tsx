@@ -299,6 +299,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           bio: t.bio,
           schedule: t.schedule,
           activeDays: t.available_days || [],
+          learningStyles: t.learning_styles || [],
         };
       });
 

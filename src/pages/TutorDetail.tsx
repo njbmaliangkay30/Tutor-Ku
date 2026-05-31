@@ -577,6 +577,16 @@ export function TutorDetail() {
               {tutor.sessions} sesi
             </span>
           </div>
+
+          <div className="flex justify-center flex-wrap gap-1 mt-2.5">
+            {tutor.learningStyles?.includes('Bisa Bahasa Inggris') && (
+              <span className="bg-blue-500/10 text-blue-500 px-2 py-0.5 border border-blue-500/30 rounded font-bold uppercase tracking-widest text-[9px]">English OK</span>
+            )}
+             {tutor.learningStyles?.filter((s: string) => s.startsWith('Jenjang')).map((s: string) => (
+                <span key={s} className="bg-white/5 text-text-sub border border-border px-2 py-0.5 rounded font-bold uppercase tracking-widest text-[9px]">{s.replace('Jenjang: ', '')}</span>
+             ))}
+          </div>
+
           <div
             className={`mt-1.5 text-[11px] font-bold font-mono ${tutor.online ? "text-online" : "text-text-light"}`}
           >

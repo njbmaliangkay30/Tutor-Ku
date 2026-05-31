@@ -76,7 +76,7 @@ export function TutorSessions() {
          .from('sessions')
          .select(`
            *,
-           student_profiles(id, profiles(full_name))
+           student_profiles(id, school_level, profiles(full_name))
          `)
          .eq('tutor_id', userProfile.id)
          .order('session_date', { ascending: false });
@@ -216,8 +216,11 @@ export function TutorSessions() {
                             {(session.student_profiles?.profiles?.full_name || 'S').substring(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <div className="font-bold text-text-main font-display">
+                            <div className="font-bold text-text-main font-display flex items-center gap-2">
                               {session.student_profiles?.profiles?.full_name || 'Siswa'}
+                              {session.student_profiles?.school_level && (
+                                <span className="text-[9px] bg-lime/10 text-lime px-1.5 py-0.5 rounded font-mono border border-lime/30 uppercase tracking-widest">{session.student_profiles.school_level}</span>
+                              )}
                             </div>
                             <div className="text-xs text-text-sub font-mono">
                               {session.subject}
@@ -319,8 +322,11 @@ export function TutorSessions() {
                             {(session.student_profiles?.profiles?.full_name || 'S').substring(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <div className="font-bold text-text-main font-display">
+                            <div className="font-bold text-text-main font-display flex items-center gap-2">
                               {session.student_profiles?.profiles?.full_name || 'Siswa'}
+                              {session.student_profiles?.school_level && (
+                                <span className="text-[9px] bg-lime/10 text-lime px-1.5 py-0.5 rounded font-mono border border-lime/30 uppercase tracking-widest">{session.student_profiles.school_level}</span>
+                              )}
                             </div>
                             <div className="text-xs text-text-sub font-mono">
                               {session.subject}
@@ -377,8 +383,11 @@ export function TutorSessions() {
                             {(session.student_profiles?.profiles?.full_name || 'S').substring(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <div className="font-bold text-text-main font-display">
+                            <div className="font-bold text-text-main font-display flex items-center gap-2">
                               {session.student_profiles?.profiles?.full_name || 'Siswa'}
+                              {session.student_profiles?.school_level && (
+                                <span className="text-[9px] bg-lime/10 text-lime px-1.5 py-0.5 rounded font-mono border border-lime/30 uppercase tracking-widest">{session.student_profiles.school_level}</span>
+                              )}
                             </div>
                             <div className="text-xs text-text-sub font-mono">
                               {session.subject}
@@ -426,8 +435,11 @@ export function TutorSessions() {
                             {(session.student_profiles?.profiles?.full_name || 'S').substring(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <div className="font-bold text-text-main font-display">
+                            <div className="font-bold text-text-main font-display flex items-center gap-2">
                               {session.student_profiles?.profiles?.full_name || 'Siswa'}
+                              {session.student_profiles?.school_level && (
+                                <span className="text-[9px] bg-lime/10 text-lime px-1.5 py-0.5 rounded font-mono border border-lime/30 uppercase tracking-widest">{session.student_profiles.school_level}</span>
+                              )}
                             </div>
                             <div className="text-xs text-text-sub font-mono">
                               {session.subject}

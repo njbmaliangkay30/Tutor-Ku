@@ -27,6 +27,7 @@ export function Profile() {
   const [phoneNumber, setPhoneNumber] = useState(userProfile?.phone || "");
   const [address, setAddress] = useState(tutorProfileData?.address || "");
   const [university, setUniversity] = useState(tutorProfileData?.university || "");
+  const [schoolLevel, setSchoolLevel] = useState(userProfile?.school_level || "");
   const [gender, setGender] = useState(userProfile?.gender || tutorProfileData?.gender || "");
   const [birthDate, setBirthDate] = useState(userProfile?.birth_date || "");
   const [avatarObjUrl, setAvatarObjUrl] = useState<string | null>(null);
@@ -198,6 +199,12 @@ export function Profile() {
           schedule: schedule
         });
         if (tutorError) throw tutorError;
+      } else {
+        const { error: studentError } = await supabase.from('student_profiles').upsert({
+          id: user.id,
+          school_level: schoolLevel || null
+        });
+        if (studentError) throw studentError;
       }
       
       window.location.reload();
@@ -290,6 +297,13 @@ export function Profile() {
                </div>
             </div>
 
+            {!isTutor && userProfile?.school_level && (
+              <div className="p-4 border-b border-border/60 bg-bg-2/10">
+                <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-1">Jenjang Tingkat Sekolah</div>
+                <div className="text-sm font-bold text-lime bg-lime/10 border border-lime/20 rounded px-3 py-1.5 inline-block">{userProfile.school_level}</div>
+              </div>
+            )}
+
             <div className="p-4 border-b border-border/60">
               <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-2">Biodata</div>
               <p className="text-[12px] text-text-main leading-relaxed italic opacity-80">
@@ -349,12 +363,17 @@ export function Profile() {
                     <div className="text-[14px] font-bold font-display">
                       Mata Pelajaran
                     </div>
-                    <div className="text-[11px] text-text-sub">
-                      Pilih mapel yang Anda kuasai
+                    <div className="text-[11px] text-text-sub mt-1 flex flex-wrap gap-1">
+                      {tutorProfileData?.learning_styles?.includes('Bisa Bahasa Inggris') && (
+                        <span className="bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded font-bold uppercase tracking-widest text-[9px]">English OK</span>
+                      )}
+                      {tutorProfileData?.learning_styles?.filter((s: string) => s.startsWith('Jenjang')).map((s: string) => (
+                         <span key={s} className="bg-white/5 text-text-sub border border-border px-1.5 py-0.5 rounded font-bold text-[9px]">{s.replace('Jenjang: ', '')}</span>
+                      ))}
                     </div>
                   </div>
                   <span className="bg-lime-mid text-lime text-[10px] font-bold px-2 py-0.5 rounded font-mono border border-lime-dim">
-                    2 Mapel
+                    {tutorProfileData?.target_subjects?.length || 0} Mapel
                   </span>
                 </div>
               </div>
@@ -538,6 +557,24 @@ export function Profile() {
                   </select>
                 </div>
 
+                {!isTutor && userRole !== 'admin' && (
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Jenjang Pendidikan Saat Ini</label>
+                    <select 
+                      value={schoolLevel}
+                      onChange={(e) => setSchoolLevel(e.target.value)}
+                      className="w-full bg-bg-2 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all appearance-none"
+                    >
+                      <option value="">Pilih Jenjang</option>
+                      <option value="SD">SD (Sekolah Dasar)</option>
+                      <option value="SMP">SMP (Sekolah Menengah Pertama)</option>
+                      <option value="SMA/SMK">SMA/SMK</option>
+                      <option value="Mahasiswa">Mahasiswa</option>
+                      <option value="Umum">Umum / Pekerja</option>
+                    </select>
+                  </div>
+                )}
+
                 {isTutor && (
                   <>
                     <div className="flex flex-col gap-1.5">
@@ -591,6 +628,34 @@ export function Profile() {
                             />
                             <span className="text-[13px]">{type}</span>
                           </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Bilingual (Bahasa Inggris)</label>
+                      <label className="flex items-center gap-2 cursor-pointer border border-border p-3 rounded-xl bg-bg-2">
+                        <input 
+                          type="checkbox" 
+                          checked={learningStyles.includes("Bisa Bahasa Inggris")}
+                          onChange={() => toggleLearningStyle("Bisa Bahasa Inggris")}
+                          className="w-4 h-4 accent-lime"
+                        />
+                        <span className="text-[13px] font-bold text-text-main">Sedia mengajar Full English / Bilingual</span>
+                      </label>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Jenjang Siswa yang Diutamakan</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Jenjang: SD", "Jenjang: SMP", "Jenjang: SMA", "Jenjang: Mahasiswa/Umum"].map(type => (
+                          <span 
+                            key={type}
+                            onClick={() => toggleLearningStyle(type)}
+                            className={`text-[11px] px-3 py-1.5 rounded-lg cursor-pointer transition-colors border ${learningStyles.includes(type) ? "bg-lime-dim text-lime border-lime" : "bg-bg-3 text-text-sub border-border hover:border-lime/50"}`}
+                          >
+                             {type.replace("Jenjang: ", "")}
+                          </span>
                         ))}
                       </div>
                     </div>
