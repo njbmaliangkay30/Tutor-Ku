@@ -529,9 +529,6 @@ export function TutorDetail() {
             >
               {tutor.initials}
             </div>
-            <span
-              className={`absolute bottom-[2px] right-[2px] w-3.5 h-3.5 rounded-full border-2 border-bg-base ${tutor.online ? "bg-online" : "bg-text-muted"}`}
-            ></span>
           </div>
           <h2 className="font-display mt-2.5 mb-[3px] text-xl font-bold text-text-main">
             {tutor.name}
@@ -606,11 +603,7 @@ export function TutorDetail() {
        })}
           </div>
 
-          <div
-            className={`mt-1.5 text-[11px] font-bold font-mono ${tutor.online ? "text-online" : "text-text-light"}`}
-          >
-            {tutor.online ? "● Online sekarang" : "○ Offline"}
-          </div>
+
         </div>
 
         <div className="bg-card rounded-xl p-4 border-[1.5px] border-border mb-2.5 transition-colors hover:border-border-2">

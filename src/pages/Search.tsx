@@ -25,6 +25,19 @@ export function Search() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const englishSubjects: Record<string, string> = {
+    "Semua": "ALL",
+    "Matematika": "MATHEMATICS",
+    "Fisika": "PHYSICS",
+    "Kimia": "CHEMISTRY",
+    "Biologi": "BIOLOGY",
+    "Bahasa Inggris": "ENGLISH",
+    "Pemrograman": "PROGRAMMING",
+    "Ekonomi": "ECONOMICS",
+    "Akuntansi": "ACCOUNTING",
+    "Statistika": "STATISTICS"
+  };
+
   const allSubjects = ["Semua", ...SUBJECTS];
 
   const filteredTutors = tutors.filter((t:any) => {
@@ -110,7 +123,7 @@ export function Search() {
                      active ? 'border-lime bg-lime-mid text-lime' : 'border-border bg-card text-text-sub hover:text-text-main hover:bg-bg-3'
                    }`}
                  >
-                   {s}
+                   {englishSubjects[s] || s}
                  </button>
                )
              })}
@@ -136,7 +149,7 @@ export function Search() {
                     <div className="rounded-lg flex items-center justify-center font-extrabold text-white/90 shrink-0 font-display" style={{width: 48, height: 48, fontSize: Math.round(48*0.36), background: getAvatarColor(tutor.name), border: '1.5px solid var(--color-lime-mid)'}}>
                       {tutor.initials}
                     </div>
-                    <span className={`absolute -bottom-[1px] -right-[1px] w-3 h-3 rounded-full border-2 border-bg-base ${tutor.online ? 'bg-online' : 'bg-text-muted'}`}></span>
+
                  </div>
                  <div className="flex-1 min-w-0">
                    <div className="flex items-center gap-1.5 flex-wrap">
