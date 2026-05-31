@@ -621,7 +621,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "home" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <Home size={22} />
                   </span>
@@ -632,7 +632,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "schedule" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "schedule" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "schedule" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <Calendar size={22} />
                   </span>
@@ -643,7 +643,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "sessions" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <BookOpen size={22} />
                   </span>
@@ -654,7 +654,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "chat" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all relative ${activeTab === "chat" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all relative ${activeTab === "chat" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <MessageSquare size={22} />
                     {unreadChatCount > 0 && (
@@ -668,7 +668,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "history" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "history" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "history" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <Clock size={22} />
                   </span>
@@ -682,7 +682,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "home" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <Home size={22} />
                   </span>
@@ -693,7 +693,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-tutors" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-tutors" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-tutors" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <BookOpen size={22} />
                   </span>
@@ -704,7 +704,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-verifications" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-verifications" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-verifications" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <ShieldCheck size={22} />
                   </span>
@@ -715,7 +715,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-rate-requests" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-rate-requests" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-rate-requests" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <DollarSign size={22} />
                   </span>
@@ -726,7 +726,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-students" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-students" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-students" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <Users size={22} />
                   </span>
@@ -737,7 +737,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-sessions" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <Calendar size={22} />
                   </span>
@@ -748,7 +748,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-transactions" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-transactions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-transactions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <CreditCard size={22} />
                   </span>
@@ -759,7 +759,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-packages" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-packages" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-packages" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <Package size={22} />
                   </span>
@@ -770,7 +770,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all shrink-0 min-w-[72px] ${activeTab === "admin-reviews" ? "text-lime scale-105 font-bold" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-reviews" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "admin-reviews" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <Star size={22} />
                   </span>
@@ -785,7 +785,7 @@ export default function App() {
                     className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "home" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                   >
                     <span
-                      className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                      className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "home" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                     >
                       <Home size={22} />
                     </span>
@@ -797,7 +797,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] tour-explore ${(activeTab === "search" || (activeTab === "home" && userRole === "guest" && userRole !== "siswa")) ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${(activeTab === "search" || (activeTab === "home" && userRole === "guest" && userRole !== "siswa")) ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${(activeTab === "search" || (activeTab === "home" && userRole === "guest" && userRole !== "siswa")) ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <Search size={22} />
                   </span>
@@ -808,7 +808,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "student_sessions" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "student_sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "student_sessions" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <Calendar size={22} />
                   </span>
@@ -820,7 +820,7 @@ export default function App() {
                     className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "chat" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                   >
                     <span
-                      className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all relative ${activeTab === "chat" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                      className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all relative ${activeTab === "chat" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                     >
                       <MessageSquare size={22} />
                       {unreadChatCount > 0 && (
@@ -835,7 +835,7 @@ export default function App() {
                   className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all flex-1 min-w-[70px] ${activeTab === "progress" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
                 >
                   <span
-                    className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "progress" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "progress" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
                   >
                     <Activity size={22} />
                   </span>
@@ -848,7 +848,7 @@ export default function App() {
               className={`flex flex-col items-center gap-[4px] bg-transparent border-none cursor-pointer transition-all ${userRole === "admin" ? "shrink-0 min-w-[72px]" : "flex-1 min-w-[70px]"} ${activeTab === "login" || activeTab === "profile" ? "text-lime scale-105" : "text-text-sub opacity-70"}`}
             >
               <span
-                className={`w-12 h-8 flex items-center justify-center rounded-xl transition-all ${activeTab === "login" || activeTab === "profile" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
+                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeTab === "login" || activeTab === "profile" ? "bg-lime-mid text-lime" : "text-text-sub"}`}
               >
                 {userRole === "guest" ? (
                   <LogIn size={22} />

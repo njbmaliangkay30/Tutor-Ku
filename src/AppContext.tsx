@@ -335,7 +335,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const preferredRole = localStorage.getItem("preferredRole");
 
       if (profile) {
-        if (authUser?.email === "njbmaliangkay30@gmail.com" && profile.role !== "admin") {
+        if ((authUser?.email === "njbmaliangkay30@gmail.com" || authUser?.email === "admin.tutorku@gmail.com") && profile.role !== "admin") {
            profile.role = "admin";
            await supabase.from("profiles").update({ role: "admin" }).eq("id", userId);
         } else if (preferredRole && profile.role !== "admin") {
@@ -366,7 +366,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // Not found, auto-create a basic profile for OAuth users
         const authRoleRaw = authUser.user_metadata?.role;
         let authRole = "student";
-        if (authUser.email === "njbmaliangkay30@gmail.com") authRole = "admin";
+        if (authUser.email === "njbmaliangkay30@gmail.com" || authUser.email === "admin.tutorku@gmail.com") authRole = "admin";
         else if (preferredRole === "tutor") authRole = "tutor";
         else if (preferredRole === "siswa") authRole = "student";
         else if (authRoleRaw === "tutor") authRole = "tutor";

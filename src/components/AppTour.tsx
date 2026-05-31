@@ -3,74 +3,23 @@ import { Joyride, CallBackProps, STATUS, Step, TooltipRenderProps } from 'react-
 import { useAppContext } from '../AppContext';
 import { X } from 'lucide-react';
 
-function CustomTooltip({
-  index,
-  step,
-  size,
-  backProps,
-  closeProps,
-  primaryProps,
-  tooltipProps,
-  isLastStep,
-}: TooltipRenderProps & { size?: number }) {
-  return (
-    <div {...tooltipProps} className="bg-bg-2 border-[1.5px] border-border rounded-[14px] p-4 w-[280px] sm:w-[320px] shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
-      <div className="mb-1">
-        {step.title && (
-          <div className="font-display font-bold text-[15px] text-text-main mb-1.5 flex items-center justify-between gap-4">
-             <div className="flex items-center gap-2">
-               <span>{step.title}</span>
-               {size && size > 1 && (
-                 <span className="bg-lime/20 text-lime px-2 py-[2px] rounded-full text-[9px] font-mono whitespace-nowrap">
-                   {index + 1} / {size}
-                 </span>
-               )}
-             </div>
-             <button {...closeProps} className="text-text-sub hover:text-text-main transition-colors shrink-0 p-1 bg-bg-3 rounded-md border border-transparent hover:border-border">
-               <X size={14} />
-             </button>
-          </div>
-        )}
-        <div className="font-body text-[13px] text-text-sub leading-relaxed">{step.content}</div>
-      </div>
-      <div className="flex items-center justify-between mt-4 md:mt-5 border-t border-border/60 pt-3 md:pt-3.5">
-        <button {...closeProps} className="text-[11px] font-bold text-text-sub hover:text-white uppercase tracking-wider font-mono px-2 py-1 -ml-2 rounded hover:bg-bg-3 transition-colors">
-           Skip tour
-        </button>
-        <div className="flex gap-2">
-           {index > 0 && (
-             <button {...backProps} className="text-[11px] font-bold text-text-main px-3 py-1.5 rounded-lg hover:bg-bg-3 border border-transparent hover:border-border transition-colors">
-               Kembali
-             </button>
-           )}
-           <button {...primaryProps} className="bg-lime text-black font-bold text-[12px] px-3.5 py-1.5 rounded-lg border-[1.5px] border-lime shadow-[0_0_12px_rgba(200,255,0,0.2)] hover:shadow-[0_0_15px_rgba(200,255,0,0.3)] transition-all">
-              {isLastStep ? 'Mengerti!' : 'Lanjut'}
-           </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function AppTour() {
-  const { userRole, activeTab, selectedTutorId } = useAppContext();
+  const { userRole, activeTab, setActiveTab, selectedTutorId } = useAppContext();
   const [run, setRun] = useState(false);
   const [steps, setSteps] = useState<Step[]>([]);
 
   useEffect(() => {
     if (userRole !== 'siswa') return;
     
-    // We store flags for each page's tour
     const hasSkippedAll = localStorage.getItem('tutorku_tour_skipped');
     if (hasSkippedAll) return;
 
-    const hasSeenHome = localStorage.getItem('tutorku_tour_home');
-    const hasSeenSearch = localStorage.getItem('tutorku_tour_search');
+    const hasSeenMain = localStorage.getItem('tutorku_tour_main');
     const hasSeenDetail = localStorage.getItem('tutorku_tour_detail');
 
     let currentSteps: Step[] = [];
 
-    if (!hasSeenHome && activeTab === 'home' && !selectedTutorId) {
+    if (!hasSeenMain && !selectedTutorId) {
       currentSteps = [
         {
           target: 'body',
@@ -87,9 +36,6 @@ export function AppTour() {
           disableBeacon: true,
           spotlightPadding: 6,
         },
-      ];
-    } else if (!hasSeenSearch && (activeTab === 'search' || activeTab === 'explore') && !selectedTutorId) {
-      currentSteps = [
         {
           target: '.tour-filter-gender',
           title: 'Filter Gender',
@@ -154,16 +100,31 @@ export function AppTour() {
 
     if (currentSteps.length > 0) {
       setSteps(currentSteps);
-      // Wait for DOM to render
       setTimeout(() => setRun(true), 1200);
     } else {
       setRun(false);
     }
 
-  }, [userRole, activeTab, selectedTutorId]);
+  }, [userRole, selectedTutorId]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, action } = data;
+    const { status, action, index, type } = data;
+    const isMainTour = steps.length > 4;
+
+    if (type === 'step:after') {
+      if (action === 'next') {
+        const targetElement = document.querySelector(step.target as string) as HTMLElement;
+        if (targetElement) {
+          targetElement.click();
+        }
+      } else if (action === 'prev') {
+        if (isMainTour && index === 2) {
+          // If going back from feature tour to explore button, explicitly go back to home tab for context
+          setActiveTab('home');
+        }
+      }
+    }
+
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
 
     // Check if the user finished or skipped the tour
@@ -172,17 +133,64 @@ export function AppTour() {
       
       if (action === 'close' || status === STATUS.SKIPPED) {
         localStorage.setItem('tutorku_tour_skipped', 'true');
+        if (isMainTour) setActiveTab('home');
       } else {
-        // Mark current state as seen
-        if (activeTab === 'home' && !selectedTutorId) {
-          localStorage.setItem('tutorku_tour_home', 'true');
-        } else if ((activeTab === 'search' || activeTab === 'explore') && !selectedTutorId) {
-          localStorage.setItem('tutorku_tour_search', 'true');
+        if (isMainTour) {
+          localStorage.setItem('tutorku_tour_main', 'true');
+          setActiveTab('home');
         } else if (selectedTutorId) {
           localStorage.setItem('tutorku_tour_detail', 'true');
         }
       }
     }
+  };
+
+  const CustomTooltip = ({
+    index,
+    step,
+    backProps,
+    closeProps,
+    primaryProps,
+    tooltipProps,
+    isLastStep,
+  }: TooltipRenderProps) => {
+    return (
+      <div {...tooltipProps} className="bg-bg-2 border-[1.5px] border-border rounded-[14px] p-4 w-[280px] sm:w-[320px] shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+        <div className="mb-1">
+          {step.title && (
+            <div className="font-display font-bold text-[15px] text-text-main mb-1.5 flex items-center justify-between gap-4">
+               <div className="flex items-center gap-2">
+                 <span>{step.title}</span>
+                 {primaryProps.title !== 'Mengerti!' && (
+                   <span className="bg-lime/20 text-lime px-2 py-[2px] rounded-full text-[9px] font-mono whitespace-nowrap">
+                     {index + 1} / {steps.length}
+                   </span>
+                 )}
+               </div>
+               <button {...closeProps} className="text-text-sub hover:text-text-main transition-colors shrink-0 p-1 bg-bg-3 rounded-md border border-transparent hover:border-border">
+                 <X size={14} />
+               </button>
+            </div>
+          )}
+          <div className="font-body text-[13px] text-text-sub leading-relaxed">{step.content}</div>
+        </div>
+        <div className="flex items-center justify-between mt-4 md:mt-5 border-t border-border/60 pt-3 md:pt-3.5">
+          <button {...closeProps} className="text-[11px] font-bold text-text-sub hover:text-white uppercase tracking-wider font-mono px-2 py-1 -ml-2 rounded hover:bg-bg-3 transition-colors">
+             Skip tour
+          </button>
+          <div className="flex gap-2">
+             {index > 0 && (
+               <button {...backProps} className="text-[11px] font-bold text-text-main px-3 py-1.5 rounded-lg hover:bg-bg-3 border border-transparent hover:border-border transition-colors">
+                 Kembali
+               </button>
+             )}
+             <button {...primaryProps} className="bg-lime text-black font-bold text-[12px] px-3.5 py-1.5 rounded-lg border-[1.5px] border-lime shadow-[0_0_12px_rgba(200,255,0,0.2)] hover:shadow-[0_0_15px_rgba(200,255,0,0.3)] transition-all">
+                {isLastStep ? 'Mengerti!' : 'Lanjut'}
+             </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -193,6 +201,7 @@ export function AppTour() {
       scrollToFirstStep
       showProgress={false}
       showSkipButton
+      spotlightClicks={true}
       steps={steps}
       tooltipComponent={CustomTooltip}
       styles={{
@@ -200,9 +209,6 @@ export function AppTour() {
           arrowColor: '#161616', // bg-3
           overlayColor: 'rgba(13, 13, 13, 0.85)', // bg-base with opacity
           zIndex: 10000,
-        },
-        spotlight: {
-          borderRadius: 12,
         }
       }}
     />
