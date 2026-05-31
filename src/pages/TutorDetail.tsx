@@ -511,7 +511,7 @@ export function TutorDetail() {
         </div>
       </div>
 
-      <div className="p-[18px_14px_32px] max-w-2xl mx-auto w-full">
+      <div className="p-[18px_14px_32px] max-w-2xl mx-auto w-full tour-book-review">
         <div className="text-center mb-5">
           <div className="relative inline-block">
             <div
@@ -850,7 +850,8 @@ export function TutorDetail() {
           )}
         </div>
 
-        <div className="flex flex-col gap-[5px] mb-4 tour-mapel">
+        <div className="tour-mapel-method">
+        <div className="flex flex-col gap-[5px] mb-4">
           <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
             Mata Pelajaran <span className="text-red-500 font-bold">*</span>
           </label>
@@ -870,7 +871,7 @@ export function TutorDetail() {
           </select>
         </div>
 
-        <div className="flex flex-col gap-[5px] mb-4 tour-method">
+        <div className="flex flex-col gap-[5px] mb-4">
           <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
             Metode Pertemuan
           </label>
@@ -889,6 +890,7 @@ export function TutorDetail() {
             </button>
           </div>
         </div>
+        </div>
 
         {meetingType === 'offline' && (
           <div className="mb-4 animate-pgIn">
@@ -896,7 +898,7 @@ export function TutorDetail() {
           </div>
         )}
 
-        <div className="flex flex-col gap-[5px] mb-3">
+        <div className="flex flex-col gap-[5px] mb-3 tour-notes">
           <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
             Catatan untuk Tutor (opsional)
           </label>

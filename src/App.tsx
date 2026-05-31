@@ -535,6 +535,8 @@ export default function App() {
               <div className="w-full h-full flex items-center justify-center">
                  <div className="w-8 h-8 rounded-full border-4 border-lime/30 border-t-lime animate-spin"></div>
               </div>
+            ) : user && userProfile && !userProfile.phone && userRole !== "guest" ? (
+              <div className="w-full h-full" />
             ) : (
               <AnimatePresence mode="wait">
                 <motion.div

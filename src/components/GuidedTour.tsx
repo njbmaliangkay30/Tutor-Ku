@@ -47,16 +47,16 @@ export function GuidedTour() {
           if (activeTab === 'home' && !selectedTutorId) {
               if (subStep !== 'main_explore') setSubStep('main_explore');
           } else if (activeTab === 'search' && !selectedTutorId) {
-              if (subStep !== 'main_filter' && subStep !== 'main_card') {
-                  setSubStep('main_filter');
+              if (subStep !== 'main_filter_gender' && subStep !== 'main_filter_subject' && subStep !== 'main_card') {
+                  setSubStep('main_filter_gender');
               }
           } else {
               setSubStep(null);
           }
       } else if (!tourState.bookingDone) {
           if (selectedTutorId) {
-              if (subStep !== 'booking_start' && subStep !== 'booking_fields' && subStep !== 'booking_submit') {
-                  setSubStep('booking_start');
+              if (!['book_review', 'book_schedule', 'book_method', 'book_notes', 'book_submit'].includes(subStep || '')) {
+                  setSubStep('book_review');
               }
           } else {
               setSubStep(null);
@@ -80,6 +80,14 @@ export function GuidedTour() {
       if (user) supabase.auth.updateUser({ data: { tour_booking_completed: true } });
   };
 
+  const skipTour = () => {
+      setTourState({ mainDone: true, bookingDone: true, ready: true });
+      setSubStep(null);
+      localStorage.setItem('tour_main_done', 'true');
+      localStorage.setItem('tour_booking_done', 'true');
+      if (user) supabase.auth.updateUser({ data: { tour_skipped: true } });
+  };
+
   if (!tourState.ready || !subStep) return null;
 
   return createPortal(
@@ -88,12 +96,13 @@ export function GuidedTour() {
          onNext={(step: string) => setSubStep(step)} 
          onCompleteMain={completeMain}
          onCompleteBooking={completeBooking}
+         onSkip={skipTour}
      />,
      document.body
   );
 }
 
-function TourEngine({ subStep, onNext, onCompleteMain, onCompleteBooking }: any) {
+function TourEngine({ subStep, onNext, onCompleteMain, onCompleteBooking, onSkip }: any) {
     const isMobile = window.innerWidth < 768;
     let config: any = null;
 
@@ -103,15 +112,25 @@ function TourEngine({ subStep, onNext, onCompleteMain, onCompleteBooking }: any)
             title: 'Mulai Pencarian',
             content: 'Ketuk menu Eksplorasi ini untuk berpindah ke halaman pencarian tutor.',
             actionType: 'wait_click',
-            actionText: 'Ketuk untuk lanjut'
+            actionText: 'Ketuk area yang ditunjuk'
         };
-    } else if (subStep === 'main_filter') {
+    } else if (subStep === 'main_filter_gender') {
         config = {
             targetSelector: '.tour-filter-gender',
             title: 'Saring Sesuai Kebutuhan',
-            content: 'Kamu bisa memfilter tutor berdasarkan Jenis Kelamin dan Mata Pelajaran.',
+            content: 'Pilih preferensi jenis kelamin tutor yang membuatmu nyaman untuk belajar.',
             actionType: 'button',
-            actionText: 'Paham',
+            actionText: 'Lanjut',
+            onAction: () => onNext('main_filter_subject'),
+            placement: 'bottom'
+        };
+    } else if (subStep === 'main_filter_subject') {
+        config = {
+            targetSelector: '.tour-filter-subject',
+            title: 'Mata Pelajaran',
+            content: 'Geser bagian ini dan pilih spesifik pelajaran yang sedang kamu butuhkan.',
+            actionType: 'button',
+            actionText: 'Lanjut',
             onAction: () => onNext('main_card'),
             placement: 'bottom'
         };
@@ -120,45 +139,68 @@ function TourEngine({ subStep, onNext, onCompleteMain, onCompleteBooking }: any)
             targetSelector: '.tour-tutor-card-list > div:not(.text-center)', 
             fallbackSelector: '.tour-tutor-card-list',
             title: 'Pilih Tutor',
-            content: 'Ini adalah kartu tutor. Pilih salah satu untuk melihat profil lengkap, jadwal, dan mulai booking!',
-            actionType: 'button',
-            actionText: 'Selesai Tour',
+            content: 'Ketuk salah satu kartu tutor untuk melihat detail rating/ulasan, jadwal, opsi metode pertemuan, dan mulai booking kelas!',
+            actionType: 'wait_click',
+            actionText: 'Pilih Tutor',
             onAction: onCompleteMain,
             placement: 'top'
         };
-    } else if (subStep === 'booking_start') {
+    } else if (subStep === 'book_review') {
+        config = {
+            targetSelector: '.tour-book-review',
+            title: 'Cek Profil Tutor',
+            content: 'Di halaman ini, kamu bisa melihat profil lengkap, kualifikasi, tarif, serta ulasan terbaru dari siswa lain sebelum memesan.',
+            actionType: 'button',
+            actionText: 'Paham',
+            onAction: () => onNext('book_schedule'),
+            placement: 'bottom'
+        };
+    } else if (subStep === 'book_schedule') {
         config = {
             targetSelector: '.tour-schedule',
-            title: 'Jadwal Sesi Pertama',
-            content: 'Di sini, kamu bisa melihat dan memilih jadwal sesi mengajar yang sedang tersedia pada minggu ini.',
+            title: 'Pilih Waktu',
+            content: 'Pilih satu tanggal dan jam untuk sesi pertamamu. Jadwal lain bisa disesuaikan nanti bersama tutor.',
             actionType: 'button',
-            actionText: 'Oke, Lanjut',
-            onAction: () => onNext('booking_fields'),
-            placement: 'bottom'
+            actionText: 'Lanjut',
+            onAction: () => onNext('book_method'),
+            placement: 'top',
+            fixedPlacement: true
         };
-    } else if (subStep === 'booking_fields') {
+    } else if (subStep === 'book_method') {
         config = {
-            targetSelector: '.tour-mapel',
-            title: 'Isi Detail Kelas',
-            content: 'Pastikan kamu memilih Mata Pelajaran wajib yang diinginkan dan Metode Pertemuan di bagian ini ya.',
+            targetSelector: '.tour-mapel-method',
+            title: 'Mapel & Metode',
+            content: 'Pilih kembali Mata Pelajaran di atas (wajib) dan Metode Pertemuannya. Bisa pilih Online (Video Call) atau Offline lho!',
             actionType: 'button',
             actionText: 'Mengerti',
-            onAction: () => onNext('booking_submit'),
-            placement: 'bottom'
+            onAction: () => onNext('book_notes'),
+            placement: 'top'
         };
-    } else if (subStep === 'booking_submit') {
+    } else if (subStep === 'book_notes') {
+        config = {
+            targetSelector: '.tour-notes',
+            title: 'Catatan & Lokasi',
+            content: 'Jika kamu memilih Offline, pastikan untuk membagikan alamat jelasmu. Tinggalkan juga catatan bebas seputar materi yang ingin diajarkan!',
+            actionType: 'button',
+            actionText: 'Tentu!',
+            onAction: () => onNext('book_submit'),
+            placement: 'top'
+        };
+    } else if (subStep === 'book_submit') {
         config = {
             targetSelector: '.tour-book-now',
-            title: 'Booking Tutor!',
-            content: 'Jika semua sudah sesuai, klik tombol ini untuk mengirim permintaan kelasmu ke tutor.',
-            actionType: 'button',
-            actionText: 'Selesai Tour',
+            title: 'Selesai!',
+            content: 'Jika semuanya sudah diisi dengan pas, klik tombol ini untuk mengirim permintaan kelasmu ke tutor!',
+            actionType: 'wait_click',
+            actionText: 'Ketuk Tombol',
             onAction: onCompleteBooking,
             placement: 'top'
         };
     }
 
     if (!config) return null;
+
+    config.onSkip = onSkip;
 
     return <Spotlight config={config} />;
 }
@@ -197,6 +239,18 @@ function Spotlight({ config }: { config: any }) {
         };
     }, [config.targetSelector, config.fallbackSelector]);
 
+    useEffect(() => {
+        if (config.actionType !== 'wait_click') return;
+        const hc = (e: MouseEvent) => {
+            const el = document.querySelector(config.targetSelector) || (config.fallbackSelector ? document.querySelector(config.fallbackSelector) : null);
+            if (el && el.contains(e.target as Node)) {
+                if (config.onAction) config.onAction();
+            }
+        };
+        document.addEventListener('click', hc, true);
+        return () => document.removeEventListener('click', hc, true);
+    }, [config]);
+
     if (!rect) return null;
 
     const padding = 10;
@@ -214,7 +268,7 @@ function Spotlight({ config }: { config: any }) {
     let tLeft = tRect.left + (tRect.width / 2) - (tooltipW / 2);
     let pointerPos = 'top';
 
-    if (config.placement === 'top' || tTop + 160 > window.innerHeight) {
+    if (config.placement === 'top' || (!config.fixedPlacement && tTop + 160 > window.innerHeight)) {
         tTop = tRect.top - 16 - 160; 
         pointerPos = 'bottom'; 
         if (tTop < 16) {
@@ -249,11 +303,16 @@ function Spotlight({ config }: { config: any }) {
                className="absolute bg-bg-2 border-[1.5px] border-border rounded-2xl p-4 w-[280px] shadow-[0_10px_50px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.05)] pointer-events-auto"
                style={{ top: tTop, left: tLeft }}
             >
-               <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 rounded-full bg-lime/10 flex items-center justify-center text-lime shrink-0">
-                     <Sparkles size={12} />
-                  </div>
-                  <h4 className="font-display font-bold text-text-main text-[13px]">{config.title}</h4>
+               <div className="flex items-center justify-between mb-2">
+                 <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-lime/10 flex items-center justify-center text-lime shrink-0">
+                       <Sparkles size={12} />
+                    </div>
+                    <h4 className="font-display font-bold text-text-main text-[13px]">{config.title}</h4>
+                 </div>
+                 <button onClick={config.onSkip} className="w-6 h-6 rounded-full hover:bg-bg-3 flex items-center justify-center text-text-sub transition-colors">
+                    <span className="text-[10px] font-bold">✕</span>
+                 </button>
                </div>
                <p className="text-text-sub text-[12px] leading-relaxed mb-4">
                   {config.content}
