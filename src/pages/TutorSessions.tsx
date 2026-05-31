@@ -218,9 +218,15 @@ export function TutorSessions() {
                           <div>
                             <div className="font-bold text-text-main font-display flex items-center gap-2">
                               {session.student_profiles?.profiles?.full_name || 'Siswa'}
-                              {session.student_profiles?.school_level && (
-                                <span className="text-[9px] bg-lime/10 text-lime px-1.5 py-0.5 rounded font-mono border border-lime/30 uppercase tracking-widest">{session.student_profiles.school_level}</span>
-                              )}
+                              {(() => {
+                                 const level = session.student_profiles?.school_level;
+                                 if (!level) return null;
+                                 let colorClass = "bg-lime/10 text-lime border-lime/30";
+                                 if (level.includes('SD')) colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
+                                 else if (level.includes('SMP')) colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
+                                 else if (level.includes('SMA')) colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
+                                 return <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono border uppercase tracking-widest ${colorClass}`}>{level}</span>
+                               })()}
                             </div>
                             <div className="text-xs text-text-sub font-mono">
                               {session.subject}
@@ -324,9 +330,15 @@ export function TutorSessions() {
                           <div>
                             <div className="font-bold text-text-main font-display flex items-center gap-2">
                               {session.student_profiles?.profiles?.full_name || 'Siswa'}
-                              {session.student_profiles?.school_level && (
-                                <span className="text-[9px] bg-lime/10 text-lime px-1.5 py-0.5 rounded font-mono border border-lime/30 uppercase tracking-widest">{session.student_profiles.school_level}</span>
-                              )}
+                              {(() => {
+                                 const level = session.student_profiles?.school_level;
+                                 if (!level) return null;
+                                 let colorClass = "bg-lime/10 text-lime border-lime/30";
+                                 if (level.includes('SD')) colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
+                                 else if (level.includes('SMP')) colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
+                                 else if (level.includes('SMA')) colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
+                                 return <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono border uppercase tracking-widest ${colorClass}`}>{level}</span>
+                               })()}
                             </div>
                             <div className="text-xs text-text-sub font-mono">
                               {session.subject}
@@ -385,9 +397,15 @@ export function TutorSessions() {
                           <div>
                             <div className="font-bold text-text-main font-display flex items-center gap-2">
                               {session.student_profiles?.profiles?.full_name || 'Siswa'}
-                              {session.student_profiles?.school_level && (
-                                <span className="text-[9px] bg-lime/10 text-lime px-1.5 py-0.5 rounded font-mono border border-lime/30 uppercase tracking-widest">{session.student_profiles.school_level}</span>
-                              )}
+                              {(() => {
+                                 const level = session.student_profiles?.school_level;
+                                 if (!level) return null;
+                                 let colorClass = "bg-lime/10 text-lime border-lime/30";
+                                 if (level.includes('SD')) colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
+                                 else if (level.includes('SMP')) colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
+                                 else if (level.includes('SMA')) colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
+                                 return <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono border uppercase tracking-widest ${colorClass}`}>{level}</span>
+                               })()}
                             </div>
                             <div className="text-xs text-text-sub font-mono">
                               {session.subject}
@@ -437,9 +455,15 @@ export function TutorSessions() {
                           <div>
                             <div className="font-bold text-text-main font-display flex items-center gap-2">
                               {session.student_profiles?.profiles?.full_name || 'Siswa'}
-                              {session.student_profiles?.school_level && (
-                                <span className="text-[9px] bg-lime/10 text-lime px-1.5 py-0.5 rounded font-mono border border-lime/30 uppercase tracking-widest">{session.student_profiles.school_level}</span>
-                              )}
+                              {(() => {
+                                 const level = session.student_profiles?.school_level;
+                                 if (!level) return null;
+                                 let colorClass = "bg-lime/10 text-lime border-lime/30";
+                                 if (level.includes('SD')) colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
+                                 else if (level.includes('SMP')) colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
+                                 else if (level.includes('SMA')) colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
+                                 return <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono border uppercase tracking-widest ${colorClass}`}>{level}</span>
+                               })()}
                             </div>
                             <div className="text-xs text-text-sub font-mono">
                               {session.subject}

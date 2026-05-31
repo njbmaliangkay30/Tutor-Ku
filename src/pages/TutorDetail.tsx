@@ -580,11 +580,19 @@ export function TutorDetail() {
 
           <div className="flex justify-center flex-wrap gap-1 mt-2.5">
             {tutor.learningStyles?.includes('Bisa Bahasa Inggris') && (
-              <span className="bg-blue-500/10 text-blue-500 px-2 py-0.5 border border-blue-500/30 rounded font-bold uppercase tracking-widest text-[9px]">English OK</span>
+              <span className="bg-blue-500/10 text-blue-500 px-2 py-0.5 border border-blue-500/30 rounded font-bold uppercase tracking-widest text-[9px]">BILINGUAL</span>
             )}
-             {tutor.learningStyles?.filter((s: string) => s.startsWith('Jenjang')).map((s: string) => (
-                <span key={s} className="bg-white/5 text-text-sub border border-border px-2 py-0.5 rounded font-bold uppercase tracking-widest text-[9px]">{s.replace('Jenjang: ', '')}</span>
-             ))}
+             {(tutor.learningStyles || []).filter((s: string) => s.startsWith('Jenjang')).sort((a: string, b: string) => {
+                 const order: any = { 'Jenjang: SD': 1, 'Jenjang: SMP': 2, 'Jenjang: SMA': 3, 'Jenjang: Mahasiswa/Umum': 4 };
+                 return (order[a] || 99) - (order[b] || 99);
+             }).map((s: string) => {
+                 const level = s.replace('Jenjang: ', '');
+                 let colorClass = "bg-white/5 text-text-sub border-border";
+                 if (level === 'SD') colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
+                 else if (level === 'SMP') colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
+                 else if (level === 'SMA') colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
+                 return <span key={s} className={`px-2 py-0.5 border rounded font-bold uppercase tracking-widest text-[9px] ${colorClass}`}>{level}</span>
+             })}
           </div>
 
           <div

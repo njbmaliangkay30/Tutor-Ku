@@ -149,6 +149,11 @@ export function Search() {
                      <span className={`inline-flex items-center gap-[3px] px-2 py-[2px] rounded-sm text-[10px] font-bold font-mono border whitespace-nowrap ${t.genderClass}`}>
                        <span className="-mb-[1px]">{t.genderIcon}</span> {t.gender}
                      </span>
+                     {t.learningStyles?.includes('Bisa Bahasa Inggris') && (
+                       <span className="bg-blue-500/10 text-blue-500 border border-blue-500/30 rounded-sm px-2 py-[2px] text-[10px] font-bold font-mono whitespace-nowrap uppercase tracking-widest">
+                         BILINGUAL
+                       </span>
+                     )}
                    </div>
                  </div>
                  <div className="text-right shrink-0">
@@ -165,9 +170,26 @@ export function Search() {
                    )
                  })}
                </div>
-               
-               {t.badges && t.badges.length > 0 && (
-                 <div className="flex gap-[5px] flex-wrap mt-[7px]">
+                              {t.learningStyles && t.learningStyles.length > 0 && (
+                  <div className="flex gap-[5px] flex-wrap mt-[7px]">
+                    {(t.learningStyles).filter((s: string) => s.startsWith('Jenjang')).sort((a: string, b: string) => {
+                       const order: any = { 'Jenjang: SD': 1, 'Jenjang: SMP': 2, 'Jenjang: SMA': 3, 'Jenjang: Mahasiswa/Umum': 4 };
+                       return (order[a] || 99) - (order[b] || 99);
+                    }).map((s: string) => {
+                       const level = s.replace('Jenjang: ', '');
+                       let colorClass = "bg-white/5 text-text-sub border-border";
+                       if (level === 'SD') colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
+                       else if (level === 'SMP') colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
+                       else if (level === 'SMA') colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
+                       return (
+                         <span key={s} className={`border rounded px-2 py-[2px] text-[10px] font-bold font-mono whitespace-nowrap uppercase tracking-widest ${colorClass}`}>{level}</span>
+                       );
+                    })}
+                  </div>
+                )}
+                
+                {t.badges && t.badges.length > 0 && (
+                  <div className="flex gap-[5px] flex-wrap mt-[7px]">
                    {(t.badges || []).map((b: string) => (
                       <span key={b} className="bg-lime-dim text-lime border border-[color:var(--color-lime-mid)] rounded px-2 py-[2px] text-[10px] font-bold font-mono whitespace-nowrap">{b}</span>
                    ))}

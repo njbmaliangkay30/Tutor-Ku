@@ -92,6 +92,7 @@ export function StudentDashboard() {
           headline,
           subjects,
           price_per_hour,
+          learning_styles,
           profiles!inner(full_name, avatar_url)
         `)
         .eq('is_verified', true)

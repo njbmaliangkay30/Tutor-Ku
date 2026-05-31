@@ -300,7 +300,14 @@ export function Profile() {
             {!isTutor && userProfile?.school_level && (
               <div className="p-4 border-b border-border/60 bg-bg-2/10">
                 <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-1">Jenjang Tingkat Sekolah</div>
-                <div className="text-sm font-bold text-lime bg-lime/10 border border-lime/20 rounded px-3 py-1.5 inline-block">{userProfile.school_level}</div>
+                {(() => {
+                   const level = userProfile.school_level;
+                   let colorClass = "text-lime bg-lime/10 border-lime/20";
+                   if (level === 'SD') colorClass = "text-red-500 bg-red-500/10 border-red-500/30";
+                   else if (level === 'SMP') colorClass = "text-blue-500 bg-blue-500/10 border-blue-500/30";
+                   else if (level === 'SMA/SMK') colorClass = "text-slate-400 bg-slate-500/10 border-slate-500/30";
+                   return <div className={`text-sm font-bold border rounded px-3 py-1.5 inline-block ${colorClass}`}>{level}</div>
+                })()}
               </div>
             )}
 
@@ -365,11 +372,23 @@ export function Profile() {
                     </div>
                     <div className="text-[11px] text-text-sub mt-1 flex flex-wrap gap-1">
                       {tutorProfileData?.learning_styles?.includes('Bisa Bahasa Inggris') && (
-                        <span className="bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded font-bold uppercase tracking-widest text-[9px]">English OK</span>
+                        <span className="bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded font-bold uppercase tracking-widest text-[9px]">BILINGUAL</span>
                       )}
-                      {tutorProfileData?.learning_styles?.filter((s: string) => s.startsWith('Jenjang')).map((s: string) => (
-                         <span key={s} className="bg-white/5 text-text-sub border border-border px-1.5 py-0.5 rounded font-bold text-[9px]">{s.replace('Jenjang: ', '')}</span>
-                      ))}
+                      {(tutorProfileData?.learning_styles || [])
+                        .filter((s: string) => s.startsWith('Jenjang'))
+                        .sort((a: string, b: string) => {
+                           const order: any = { 'Jenjang: SD': 1, 'Jenjang: SMP': 2, 'Jenjang: SMA': 3, 'Jenjang: Mahasiswa/Umum': 4 };
+                           return (order[a] || 99) - (order[b] || 99);
+                        })
+                        .map((s: string) => {
+                           const level = s.replace('Jenjang: ', '');
+                           let colorClass = "bg-white/5 text-text-sub border-border";
+                           if (level === 'SD') colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
+                           else if (level === 'SMP') colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
+                           else if (level === 'SMA') colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
+                           return <span key={s} className={`border px-1.5 py-0.5 rounded font-bold uppercase tracking-widest text-[9px] ${colorClass}`}>{level}</span>
+                        })
+                      }
                     </div>
                   </div>
                   <span className="bg-lime-mid text-lime text-[10px] font-bold px-2 py-0.5 rounded font-mono border border-lime-dim">
