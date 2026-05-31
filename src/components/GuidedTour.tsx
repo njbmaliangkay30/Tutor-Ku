@@ -55,7 +55,7 @@ export function GuidedTour() {
           }
       } else if (!tourState.bookingDone) {
           if (selectedTutorId) {
-              if (!['book_review', 'book_schedule', 'book_method', 'book_notes', 'book_submit'].includes(subStep || '')) {
+              if (!['book_review', 'book_package', 'book_schedule', 'book_method', 'book_notes', 'book_submit'].includes(subStep || '')) {
                   setSubStep('book_review');
               }
           } else {
@@ -152,8 +152,19 @@ function TourEngine({ subStep, onNext, onCompleteMain, onCompleteBooking, onSkip
             content: 'Di halaman ini, kamu bisa melihat profil lengkap, kualifikasi, tarif, serta ulasan terbaru dari siswa lain sebelum memesan.',
             actionType: 'button',
             actionText: 'Paham',
-            onAction: () => onNext('book_schedule'),
+            onAction: () => onNext('book_package'),
             placement: 'bottom'
+        };
+    } else if (subStep === 'book_package') {
+        config = {
+            targetSelector: '.tour-package',
+            fallbackSelector: '.tour-schedule',
+            title: 'Sesi atau Paket?',
+            content: 'Kamu bisa memesan satu sesi untuk percobaan, atau membeli bundel paket (4, 8, 12 sesi) agar lebih hemat dan belajarnya terarah. Bisa pilih sesuai kebutuhan!',
+            actionType: 'button',
+            actionText: 'Mengerti',
+            onAction: () => onNext('book_schedule'),
+            placement: 'top'
         };
     } else if (subStep === 'book_schedule') {
         config = {

@@ -729,7 +729,7 @@ export function TutorDetail() {
         )}
 
         {!usePackageSession ? (
-          <div className="mb-3.5">
+          <div className="mb-3.5 tour-package">
             <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">
               PILIH PAKET
             </div>
