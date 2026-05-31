@@ -90,7 +90,7 @@ export function StudentDashboard() {
         .select(`
           id,
           headline,
-          price_per_hour,
+          hourly_rate,
           learning_styles,
           profiles(full_name, avatar_url),
           tutor_subjects(subject_name)
@@ -351,7 +351,7 @@ export function StudentDashboard() {
                              })
                            }
                            <span className="text-[10px] font-bold text-lime bg-lime/10 px-2 py-[2px] rounded-sm border border-lime/20 whitespace-nowrap">
-                             Rp{(tutor.price_per_hour || 0).toLocaleString('id-ID')}/jam
+                             Rp{(tutor.hourly_rate || 0).toLocaleString('id-ID')}/jam
                            </span>
                         </div>
                       </div>
