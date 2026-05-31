@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { Joyride, CallBackProps, STATUS, Step, TooltipRenderProps } from 'react-joyride';
 import { useAppContext } from '../AppContext';
 import { X } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 export function AppTour() {
-  const { userRole, activeTab, setActiveTab, selectedTutorId, setSelectedTutorId } = useAppContext();
+  const { userRole, activeTab, setActiveTab, selectedTutorId, setSelectedTutorId, user } = useAppContext();
   
   const [run, setRun] = useState(false);
   const [steps, setSteps] = useState<Step[]>([]);
@@ -12,15 +13,16 @@ export function AppTour() {
   const [tourType, setTourType] = useState<'main' | 'booking' | null>(null);
 
   useEffect(() => {
-    if (userRole !== 'siswa') return;
+    if (userRole !== 'siswa' || !user) return;
     
     // Using a timeout just to prevent hydration/layout shifts from confusing joyride initially
     const timer = setTimeout(() => {
-      const hasSkipped = localStorage.getItem('tutorku_tour_skipped');
+      const meta = user.user_metadata || {};
+      const hasSkipped = meta.tour_skipped || localStorage.getItem('tutorku_tour_skipped');
       if (hasSkipped) return;
 
-      const hasCompletedMain = localStorage.getItem('tutorku_tour_main_completed');
-      const hasCompletedBooking = localStorage.getItem('tutorku_tour_booking_completed');
+      const hasCompletedMain = meta.tour_main_completed || localStorage.getItem('tutorku_tour_main_completed');
+      const hasCompletedBooking = meta.tour_booking_completed || localStorage.getItem('tutorku_tour_booking_completed');
 
       const isMobile = window.innerWidth < 768;
       const exploreTarget = isMobile ? '.tour-explore-mobile' : '.tour-explore-desktop';
@@ -140,13 +142,22 @@ export function AppTour() {
       
       if (status === STATUS.SKIPPED || action === 'close') {
         localStorage.setItem('tutorku_tour_skipped', 'true');
+        if (user) {
+          supabase.auth.updateUser({ data: { tour_skipped: true } });
+        }
         setTourType(null); // Clear active tour
       } else {
         if (tourType === 'main') {
           localStorage.setItem('tutorku_tour_main_completed', 'true');
+          if (user) {
+            supabase.auth.updateUser({ data: { tour_main_completed: true } });
+          }
           setActiveTab('home'); // Go back to dashboard as requested
         } else if (tourType === 'booking') {
           localStorage.setItem('tutorku_tour_booking_completed', 'true');
+          if (user) {
+            supabase.auth.updateUser({ data: { tour_booking_completed: true } });
+          }
         }
         setTourType(null);
       }

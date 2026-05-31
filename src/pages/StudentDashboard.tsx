@@ -37,7 +37,7 @@ export function StudentDashboard() {
         .order('session_date', { ascending: true })
         .order('start_time', { ascending: true })
         .limit(1)
-        .single();
+        .maybeSingle();
         
       setUpcomingSession(sessionData || null);
 
@@ -90,10 +90,10 @@ export function StudentDashboard() {
         .select(`
           id,
           headline,
-          subjects,
           price_per_hour,
           learning_styles,
-          profiles!inner(full_name, avatar_url)
+          profiles!inner(full_name, avatar_url),
+          tutor_subjects(subject_name)
         `)
         .eq('is_verified', true)
         .limit(3);
@@ -323,9 +323,9 @@ export function StudentDashboard() {
                         </h3>
                         <p className="text-[13px] text-text-sub truncate mb-1">{tutor.headline || 'Tutor Mahasiswa'}</p>
                         <div className="flex items-center flex-wrap gap-2 mt-1.5">
-                           {tutor.subjects?.[0] && (
+                           {tutor.tutor_subjects?.[0] && (
                              <span className="text-[10px] font-mono font-bold bg-bg-3 px-2 py-[2px] rounded-sm text-text-main border border-border/60">
-                               {tutor.subjects[0]}
+                               {tutor.tutor_subjects[0].subject_name}
                              </span>
                            )}
                            {tutor.learning_styles?.includes('Bisa Bahasa Inggris') && (
