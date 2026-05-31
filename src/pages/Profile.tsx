@@ -132,6 +132,24 @@ export function Profile() {
     setActiveTab("home");
   };
 
+  const handleRestartTour = async () => {
+    if (!user) return;
+    try {
+        localStorage.removeItem('tour_main_done');
+        localStorage.removeItem('tour_booking_done');
+        await supabase.auth.updateUser({
+            data: {
+                tour_main_completed: false,
+                tour_booking_completed: false,
+                tour_skipped: false
+            }
+        });
+        window.location.reload();
+    } catch (err) {
+        console.error("Failed to reset tutorial", err);
+    }
+  };
+
   const handleSaveProfile = async () => {
     if (!user) return;
     setIsSaving(true);
@@ -484,13 +502,24 @@ export function Profile() {
           )}
         </div>
 
-        {/* Logout Button */}
-        <button
-          onClick={handleLogout}
-          className="w-full max-w-[200px] mx-auto flex items-center justify-center gap-2 px-[18px] py-[12px] rounded-lg border-[2px] border-red-500/30 bg-red-500/10 text-red-500 text-[13px] font-bold cursor-pointer transition-all font-display hover:border-red-500/50 hover:bg-red-500/20"
-        >
-          <LogOut size={16} /> Keluar
-        </button>
+        <div className="flex flex-col gap-3 w-full max-w-[200px] mx-auto">
+          {userRole === "siswa" && (
+            <button
+              onClick={handleRestartTour}
+              className="w-full flex items-center justify-center gap-2 px-[18px] py-[12px] rounded-lg border-[2px] border-lime/30 bg-lime/10 text-lime text-[13px] font-bold cursor-pointer transition-all font-display hover:border-lime/50 hover:bg-lime/20"
+            >
+              Ulangi Tutorial
+            </button>
+          )}
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 px-[18px] py-[12px] rounded-lg border-[2px] border-red-500/30 bg-red-500/10 text-red-500 text-[13px] font-bold cursor-pointer transition-all font-display hover:border-red-500/50 hover:bg-red-500/20"
+          >
+            <LogOut size={16} /> Keluar
+          </button>
+        </div>
       </div>
 
       {isEditing && createPortal(

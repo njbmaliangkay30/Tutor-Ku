@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 import { Sparkles, Navigation } from 'lucide-react';
 
 export function GuidedTour() {
-  const { user, userRole, activeTab, selectedTutorId } = useAppContext();
+  const { user, userRole, activeTab, selectedTutorId, userProfile } = useAppContext();
   
   const [tourState, setTourState] = useState<{
       mainDone: boolean;
@@ -21,6 +21,8 @@ export function GuidedTour() {
          setTourState(prev => ({...prev, ready: true}));
          return;
      }
+
+     if (!userProfile || !userProfile.phone) return;
 
      const meta = user.user_metadata || {};
      // LocalStorage overrides for fast loading
@@ -166,6 +168,7 @@ function Spotlight({ config }: { config: any }) {
 
     useEffect(() => {
         let scrolled = false;
+        let frame: number;
         const check = () => {
              const el = document.querySelector(config.targetSelector) || (config.fallbackSelector ? document.querySelector(config.fallbackSelector) : null);
              if (el) {
@@ -176,20 +179,20 @@ function Spotlight({ config }: { config: any }) {
                  }
                  const newRect = el.getBoundingClientRect();
                  setRect(prev => {
-                     // Dampen micro-movements during scroll slightly or accept if changed > 1px
-                     if (!prev || Math.abs(prev.top - newRect.top) > 1 || Math.abs(prev.left - newRect.left) > 1 || prev.width !== newRect.width || prev.height !== newRect.height) {
+                     // Only update if dimensions changed or moved more than a subpixel
+                     if (!prev || Math.abs(prev.top - newRect.top) > 0.5 || Math.abs(prev.left - newRect.left) > 0.5 || prev.width !== newRect.width || prev.height !== newRect.height) {
                          return newRect;
                      }
                      return prev;
                  });
              }
+             frame = requestAnimationFrame(check); // Super smooth 60fps tracking
         };
         check();
-        const iv = setInterval(check, 100);
         window.addEventListener('resize', check);
         
         return () => {
-           clearInterval(iv);
+           cancelAnimationFrame(frame);
            window.removeEventListener('resize', check);
         };
     }, [config.targetSelector, config.fallbackSelector]);
@@ -226,16 +229,16 @@ function Spotlight({ config }: { config: any }) {
     return (
         <div className="fixed inset-0 z-[100000] pointer-events-none">
             {/* Top Backdrop */}
-            <div className="absolute top-0 left-0 right-0 bg-bg-base/70 backdrop-blur-sm pointer-events-none transition-all duration-500 ease-out" style={{ height: Math.max(0, tRect.top + 1) }} />
+            <div className="absolute top-0 left-0 right-0 bg-bg-base/70 backdrop-blur-sm pointer-events-none" style={{ height: Math.max(0, tRect.top + 1) }} />
             {/* Bottom Backdrop */}
-            <div className="absolute left-0 right-0 bg-bg-base/70 backdrop-blur-sm pointer-events-none transition-all duration-500 ease-out" style={{ top: Math.max(0, tRect.bottom - 1), bottom: 0 }} />
+            <div className="absolute left-0 right-0 bg-bg-base/70 backdrop-blur-sm pointer-events-none" style={{ top: Math.max(0, tRect.bottom - 1), bottom: 0 }} />
             {/* Left Backdrop */}
-            <div className="absolute bg-bg-base/70 backdrop-blur-sm pointer-events-none transition-all duration-500 ease-out" style={{ top: tRect.top, height: tRect.height, left: 0, width: Math.max(0, tRect.left + 1) }} />
+            <div className="absolute bg-bg-base/70 backdrop-blur-sm pointer-events-none" style={{ top: tRect.top, height: tRect.height, left: 0, width: Math.max(0, tRect.left + 1) }} />
             {/* Right Backdrop */}
-            <div className="absolute bg-bg-base/70 backdrop-blur-sm pointer-events-none transition-all duration-500 ease-out" style={{ top: tRect.top, height: tRect.height, left: Math.max(0, tRect.right - 1), right: 0 }} />
+            <div className="absolute bg-bg-base/70 backdrop-blur-sm pointer-events-none" style={{ top: tRect.top, height: tRect.height, left: Math.max(0, tRect.right - 1), right: 0 }} />
             
             {/* Spotlight Border - Hole is naturally left untouched inside this boundary */}
-            <div className="absolute rounded-[14px] border-2 border-lime animate-pulse pointer-events-none transition-all duration-500 ease-out shadow-[0_0_30px_rgba(200,255,0,0.2)]"
+            <div className="absolute rounded-[14px] border-[1.5px] border-lime pointer-events-none shadow-[0_0_30px_rgba(200,255,0,0.2)]"
                  style={{ top: tRect.top, left: tRect.left, width: tRect.width, height: tRect.height }} />
             
             {/* Tooltip Card */}
@@ -244,7 +247,7 @@ function Spotlight({ config }: { config: any }) {
                animate={{ opacity: 1, y: 0, scale: 1 }}
                key={config.title} 
                className="absolute bg-bg-2 border-[1.5px] border-border rounded-2xl p-4 w-[280px] shadow-[0_10px_50px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.05)] pointer-events-auto"
-               style={{ top: tTop, left: tLeft, transition: 'top 0.5s ease-out, left 0.5s ease-out' }}
+               style={{ top: tTop, left: tLeft }}
             >
                <div className="flex items-center gap-2 mb-2">
                   <div className="w-6 h-6 rounded-full bg-lime/10 flex items-center justify-center text-lime shrink-0">
