@@ -201,9 +201,9 @@ function TourEngine({ subStep, onNext, onCompleteMain, onCompleteBooking, onSkip
         config = {
             targetSelector: '.tour-book-now',
             title: 'Selesai!',
-            content: 'Jika semuanya sudah diisi dengan pas, klik tombol ini untuk mengirim permintaan kelasmu ke tutor!',
-            actionType: 'wait_click',
-            actionText: 'Ketuk Tombol',
+            content: 'Jika semuanya sudah siap, kamu bisa klik tombol ini untuk mengajukan jadwal ke tutor. Selamat belajar!',
+            actionType: 'button',
+            actionText: 'Selesai Tour',
             onAction: onCompleteBooking,
             placement: 'top'
         };
