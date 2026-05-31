@@ -11,78 +11,102 @@ export function AppTour() {
   const [stepIndex, setStepIndex] = useState(0);
   const [tourType, setTourType] = useState<'main' | 'booking' | null>(null);
 
+  // Use interval to check when to start tours
   useEffect(() => {
-    if (userRole !== 'siswa' || !user) return;
+    if (userRole !== 'siswa' || !user || run) return;
     
-    const timer = setTimeout(() => {
-      const meta = user.user_metadata || {};
-      const hasCompletedMain = meta.tour_main_completed;
-      const hasCompletedBooking = meta.tour_booking_completed;
+    let isPolling = true;
+
+    const checkAndStartTour = () => {
+      if (!isPolling) return;
+      
+      const meta = user?.user_metadata || {};
+      const hasCompletedMain = meta.tour_main_completed || meta.tour_skipped;
+      const hasCompletedBooking = meta.tour_booking_completed || meta.tour_skipped;
 
       const isMobile = window.innerWidth < 768;
       const exploreTarget = isMobile ? '.tour-explore-mobile' : '.tour-explore-desktop';
 
       if (!hasCompletedMain && !selectedTutorId && activeTab === 'home') {
-        setTourType('main');
-        setSteps([
-          {
-            target: 'body',
-            placement: 'center',
-            content: 'Halo! Selamat datang di TutorKu. Yuk ikuti panduan singkat ini.',
-            title: 'Selamat Datang!',
-          },
-          {
-            target: exploreTarget,
-            content: 'Di navigasi ini, kamu bisa mencari tutor yang cocok untukmu.',
-            title: 'Eksplorasi',
-          },
-          {
-            target: '.tour-filter-gender',
-            content: 'Kamu bisa mengatur preferensi tutor berdasarkan jenis kelamin di sini.',
-            title: 'Filter Gender',
-          },
-          {
-            target: '.tour-filter-subject',
-            content: 'Pilih mata pelajaran yang ingin dipelajari secara spesifik.',
-            title: 'Filter Mata Pelajaran',
-          },
-          {
-            target: '.tour-tutor-card-list',
-            content: 'Ini adalah daftar tutor yang tersedia, pilih salah satu untuk melihat lebih lanjut!',
-            title: 'Pilih Tutor',
-          }
-        ]);
-        setStepIndex(0);
-        setRun(true);
-      } else if (!hasCompletedBooking && selectedTutorId && activeTab === 'search') {
-        setTourType('booking');
-        setSteps([
-          {
-            target: '.tour-schedule',
-            content: 'Kamu bisa memilih slot jadwal tutor yang tersedia di sini.',
-            title: 'Jadwal Mengajar',
-          },
-          {
-            target: '.tour-book-now',
-            content: 'Setelah semuanya dipastikan, tekan tombol ini untuk request kelas!',
-            title: 'Ayo Mulai!',
-          }
-        ]);
-        setStepIndex(0);
-        setRun(true);
+        if (document.querySelector(exploreTarget)) {
+          setTourType('main');
+          setSteps([
+            {
+              target: 'body',
+              placement: 'center',
+              content: 'Halo! Selamat datang di TutorKu. Yuk ikuti panduan singkat ini.',
+              title: 'Selamat Datang!',
+              disableBeacon: true
+            },
+            {
+              target: exploreTarget,
+              content: 'Di navigasi ini, kamu bisa mencari tutor yang cocok untukmu.',
+              title: 'Eksplorasi',
+              disableBeacon: true
+            },
+            {
+              target: '.tour-filter-gender',
+              content: 'Kamu bisa mengatur preferensi tutor berdasarkan jenis kelamin di sini.',
+              title: 'Filter Gender',
+              disableBeacon: true
+            },
+            {
+              target: '.tour-filter-subject',
+              content: 'Pilih mata pelajaran yang ingin dipelajari secara spesifik.',
+              title: 'Filter Mata Pelajaran',
+              disableBeacon: true
+            },
+            {
+              target: '.tour-tutor-card-list',
+              content: 'Ini adalah daftar tutor yang tersedia, pilih salah satu untuk melihat lebih lanjut!',
+              title: 'Pilih Tutor',
+              disableBeacon: true
+            }
+          ]);
+          setStepIndex(0);
+          setRun(true);
+          isPolling = false;
+        }
+      } else if (!hasCompletedBooking && selectedTutorId) {
+        if (document.querySelector('.tour-schedule') && document.querySelector('.tour-book-now')) {
+          setTourType('booking');
+          setSteps([
+            {
+              target: '.tour-schedule',
+              content: 'Kamu bisa memilih slot jadwal tutor yang tersedia di sini.',
+              title: 'Jadwal Mengajar',
+              disableBeacon: true
+            },
+            {
+              target: '.tour-book-now',
+              content: 'Setelah semuanya dipastikan, tekan tombol ini untuk request kelas!',
+              title: 'Ayo Mulai!',
+              disableBeacon: true
+            }
+          ]);
+          setStepIndex(0);
+          setRun(true);
+          isPolling = false;
+        }
       }
-    }, 1000);
+    };
 
-    return () => clearTimeout(timer);
-  }, [userRole, selectedTutorId, activeTab, user]);
+    const interval = setInterval(checkAndStartTour, 1000);
+
+    return () => {
+      isPolling = false;
+      clearInterval(interval);
+    };
+  }, [userRole, selectedTutorId, activeTab, user, run]);
 
   const handleJoyrideCallback = async (data: CallBackProps) => {
-    const { status, action, index, type, step } = data;
+    const { status, action, index, type } = data;
 
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
     
     if (finishedStatuses.includes(status) || action === 'close' || type === 'tour:end') {
       setRun(false);
+      setStepIndex(0);
       
       const updateData: any = {};
       
@@ -94,11 +118,17 @@ export function AppTour() {
       
       if (status === STATUS.SKIPPED || action === 'close') {
          updateData.tour_skipped = true;
+         updateData.tour_main_completed = true;
+         updateData.tour_booking_completed = true;
       }
 
       if (user) {
-         await supabase.auth.updateUser({ data: updateData });
-         user.user_metadata = { ...user.user_metadata, ...updateData };
+         try {
+           await supabase.auth.updateUser({ data: updateData });
+           user.user_metadata = { ...user.user_metadata, ...updateData };
+         } catch(e) {
+           console.error("Failed to update tour status", e);
+         }
       }
       
       setTourType(null);
@@ -106,11 +136,9 @@ export function AppTour() {
     }
 
     if (type === 'error:target_not_found') {
-      if (step.target === '.tour-filter-gender') {
-          setTimeout(() => setStepIndex(index), 100);
-      } else {
-          setStepIndex(index + 1);
-      }
+      // Just close it on severe error so the screen doesn't freeze dark
+      setRun(false); 
+      setStepIndex(0);
       return;
     }
 
@@ -118,14 +146,37 @@ export function AppTour() {
       if (action === 'next') {
         if (tourType === 'main' && index === 1) {
           setActiveTab('search');
-          setTimeout(() => setStepIndex(index + 1), 100);
+          // Wait until the search tab renders
+          const checkDOM = setInterval(() => {
+            if (document.querySelector('.tour-filter-gender')) {
+              clearInterval(checkDOM);
+              setStepIndex(index + 1);
+            }
+          }, 300);
+          
+          // Fallback cleanup if somehow it takes too long
+          setTimeout(() => clearInterval(checkDOM), 5000);
           return;
         }
-        setStepIndex(index + 1);
+        
+        if (index + 1 >= steps.length) {
+            setRun(false);
+            setStepIndex(0);
+        } else {
+            setStepIndex(index + 1);
+        }
       } else if (action === 'prev') {
         if (tourType === 'main' && index === 2) {
           setActiveTab('home');
-          setTimeout(() => setStepIndex(index - 1), 100);
+          const checkDOM = setInterval(() => {
+             const isMobile = window.innerWidth < 768;
+             const exploreTarget = isMobile ? '.tour-explore-mobile' : '.tour-explore-desktop';
+             if (document.querySelector(exploreTarget)) {
+               clearInterval(checkDOM);
+               setStepIndex(index - 1);
+             }
+          }, 300);
+          setTimeout(() => clearInterval(checkDOM), 5000);
           return;
         }
         setStepIndex(index - 1);
