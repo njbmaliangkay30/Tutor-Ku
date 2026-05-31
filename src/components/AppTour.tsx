@@ -61,6 +61,9 @@ export function AppTour() {
     if (userRole !== 'siswa') return;
     
     // We store flags for each page's tour
+    const hasSkippedAll = localStorage.getItem('tutorku_tour_skipped');
+    if (hasSkippedAll) return;
+
     const hasSeenHome = localStorage.getItem('tutorku_tour_home');
     const hasSeenSearch = localStorage.getItem('tutorku_tour_search');
     const hasSeenDetail = localStorage.getItem('tutorku_tour_detail');
@@ -82,6 +85,7 @@ export function AppTour() {
           content: 'Buka menu pencarian ini untuk melihat daftar semua tutor terbaik yang tersedia.',
           placement: 'top',
           disableBeacon: true,
+          spotlightPadding: 6,
         },
       ];
     } else if (!hasSeenSearch && (activeTab === 'search' || activeTab === 'explore') && !selectedTutorId) {
@@ -92,6 +96,7 @@ export function AppTour() {
           content: 'Kamu bisa memfilter tutor berdasarkan gender jika kamu merasa lebih nyaman belajar dengan gender tertentu.',
           placement: 'bottom',
           disableBeacon: true,
+          spotlightPadding: 6,
         },
         {
           target: '.tour-filter-subject',
@@ -99,13 +104,15 @@ export function AppTour() {
           content: 'Pilih mata pelajaran yang ingin kamu pelajari agar pencarian tutor lebih spesifik dan tepat sasaran.',
           placement: 'bottom',
           disableBeacon: true,
+          spotlightPadding: 6,
         },
         {
           target: '.tour-tutor-card',
           title: 'Pilih Tutor',
           content: 'Klik kartu tutor yang kamu sukai untuk melihat profil detail dan mengatur jadwal bareng mereka.',
-          placement: 'bottom',
+          placement: 'top-start',
           disableBeacon: true,
+          spotlightPadding: 8,
         }
       ];
     } else if (!hasSeenDetail && selectedTutorId) {
@@ -116,6 +123,7 @@ export function AppTour() {
           content: 'Silakan pilih tanggal dan jam luangmu untuk mengadakan pelajaran.',
           placement: 'top',
           disableBeacon: true,
+          spotlightPadding: 6,
         },
         {
           target: '.tour-mapel',
@@ -123,6 +131,7 @@ export function AppTour() {
           content: 'Pilih mata pelajaran spesifik yang ingin kamu bahas pada sesi ini.',
           placement: 'top',
           disableBeacon: true,
+          spotlightPadding: 6,
         },
         {
           target: '.tour-method',
@@ -130,6 +139,7 @@ export function AppTour() {
           content: 'Pilih apakah kamu ingin belajar secara Online atau Offline (Tatap Muka).',
           placement: 'top',
           disableBeacon: true,
+          spotlightPadding: 6,
         },
         {
           target: '.tour-book-now',
@@ -137,6 +147,7 @@ export function AppTour() {
           content: 'Sama seperti ini! Tinggal klik Booking Sekarang, dan jadwal belajarmu akan otomatis tercatat.',
           placement: 'top',
           disableBeacon: true,
+          spotlightPadding: 8,
         }
       ];
     }
@@ -159,13 +170,17 @@ export function AppTour() {
     if (finishedStatuses.includes(status) || action === 'close') {
       setRun(false);
       
-      // Mark current state as seen
-      if (activeTab === 'home' && !selectedTutorId) {
-        localStorage.setItem('tutorku_tour_home', 'true');
-      } else if ((activeTab === 'search' || activeTab === 'explore') && !selectedTutorId) {
-        localStorage.setItem('tutorku_tour_search', 'true');
-      } else if (selectedTutorId) {
-        localStorage.setItem('tutorku_tour_detail', 'true');
+      if (action === 'close' || status === STATUS.SKIPPED) {
+        localStorage.setItem('tutorku_tour_skipped', 'true');
+      } else {
+        // Mark current state as seen
+        if (activeTab === 'home' && !selectedTutorId) {
+          localStorage.setItem('tutorku_tour_home', 'true');
+        } else if ((activeTab === 'search' || activeTab === 'explore') && !selectedTutorId) {
+          localStorage.setItem('tutorku_tour_search', 'true');
+        } else if (selectedTutorId) {
+          localStorage.setItem('tutorku_tour_detail', 'true');
+        }
       }
     }
   };
@@ -185,6 +200,9 @@ export function AppTour() {
           arrowColor: '#161616', // bg-3
           overlayColor: 'rgba(13, 13, 13, 0.85)', // bg-base with opacity
           zIndex: 10000,
+        },
+        spotlight: {
+          borderRadius: 12,
         }
       }}
     />
