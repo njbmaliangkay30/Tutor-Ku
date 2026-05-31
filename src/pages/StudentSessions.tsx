@@ -81,7 +81,7 @@ export function StudentSessions() {
           .from('platform_settings')
           .select('*')
           .eq('key', 'payment_settings')
-          .single();
+          .maybeSingle();
         if (!error && data && data.value) {
           setPaymentSettings(data.value);
           return;
@@ -310,7 +310,7 @@ export function StudentSessions() {
           .from('tutor_profiles')
           .select('rating, total_reviews')
           .eq('id', reviewModal.tutor_id)
-          .single();
+          .maybeSingle();
 
         if (tutorProfile) {
           const newTotal = (tutorProfile.total_reviews || 0) + 1;

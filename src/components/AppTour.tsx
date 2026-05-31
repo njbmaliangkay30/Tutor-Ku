@@ -146,6 +146,7 @@ export function AppTour() {
           supabase.auth.updateUser({ data: { tour_skipped: true } });
         }
         setTourType(null); // Clear active tour
+        setSteps([]);
       } else {
         if (tourType === 'main') {
           localStorage.setItem('tutorku_tour_main_completed', 'true');
@@ -160,6 +161,7 @@ export function AppTour() {
           }
         }
         setTourType(null);
+        setSteps([]);
       }
     }
   };

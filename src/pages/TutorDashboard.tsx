@@ -75,7 +75,7 @@ export function TutorDashboard() {
           .from('tutor_profiles')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
         
         if (tutorProfile) {
           setTutorStats({ rating: tutorProfile.rating || 0, total_reviews: tutorProfile.total_reviews || 0 });
