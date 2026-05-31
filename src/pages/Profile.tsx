@@ -302,11 +302,15 @@ export function Profile() {
                 <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-1">Jenjang Tingkat Sekolah</div>
                 {(() => {
                    const level = userProfile.school_level;
-                   let colorClass = "text-lime bg-lime/10 border-lime/20";
-                   if (level === 'SD') colorClass = "text-red-500 bg-red-500/10 border-red-500/30";
-                   else if (level === 'SMP') colorClass = "text-blue-500 bg-blue-500/10 border-blue-500/30";
-                   else if (level === 'SMA/SMK') colorClass = "text-slate-400 bg-slate-500/10 border-slate-500/30";
-                   return <div className={`text-sm font-bold border rounded px-3 py-1.5 inline-block ${colorClass}`}>{level}</div>
+                   return (
+                   <div className="border border-border/60 bg-bg-2 px-3 py-1.5 rounded-md text-[13px] font-mono text-text-main font-medium tracking-wider flex items-center gap-2 w-fit mt-2">
+                     <span className={`w-2 h-2 rounded-full shrink-0 ${
+                        level === 'SD' ? 'bg-rose-400' : 
+                        level === 'SMP' ? 'bg-sky-400' : 
+                        level === 'SMA/SMK' ? 'bg-slate-400' : 'bg-text-sub'
+                     }`}></span> {level}
+                   </div>
+                 )
                 })()}
               </div>
             )}
@@ -372,7 +376,7 @@ export function Profile() {
                     </div>
                     <div className="text-[11px] text-text-sub mt-1 flex flex-wrap gap-1">
                       {tutorProfileData?.learning_styles?.includes('Bisa Bahasa Inggris') && (
-                        <span className="bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded font-bold uppercase tracking-widest text-[9px]">BILINGUAL</span>
+                        <span className="border border-border/60 bg-bg-2 px-2 py-[2px] rounded-sm text-[9px] font-mono text-violet-300 font-medium tracking-wider w-fit whitespace-nowrap">BILINGUAL</span>
                       )}
                       {(tutorProfileData?.learning_styles || [])
                         .filter((s: string) => s.startsWith('Jenjang'))
@@ -382,12 +386,16 @@ export function Profile() {
                         })
                         .map((s: string) => {
                            const level = s.replace('Jenjang: ', '');
-                           let colorClass = "bg-white/5 text-text-sub border-border";
-                           if (level === 'SD') colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
-                           else if (level === 'SMP') colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
-                           else if (level === 'SMA') colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
-                           return <span key={s} className={`border px-1.5 py-0.5 rounded font-bold uppercase tracking-widest text-[9px] ${colorClass}`}>{level}</span>
-                        })
+         let dotColor = "bg-text-sub";
+         if (level === 'SD') dotColor = "bg-rose-400";
+         else if (level === 'SMP') dotColor = "bg-sky-400";
+         else if (level === 'SMA') dotColor = "bg-slate-400";
+         return (
+           <span key={s} className="border border-border/60 bg-bg-2 px-1.5 py-[2px] rounded-sm text-[9px] font-mono text-text-main font-medium tracking-wider flex items-center gap-1.5 whitespace-nowrap w-fit">
+             <span className={`w-1 h-1 rounded-full shrink-0 ${dotColor}`}></span> {level}
+           </span>
+         );
+       })
                       }
                     </div>
                   </div>

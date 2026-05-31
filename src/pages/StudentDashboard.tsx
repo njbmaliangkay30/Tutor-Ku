@@ -302,11 +302,11 @@ export function StudentDashboard() {
                  </button>
                </div>
                <div className="space-y-4">
-                 {popularTutors.map(tutor => (
+                 {popularTutors.map((tutor, idx) => (
                    <div 
                      key={tutor.id} 
                      onClick={() => setSelectedTutorId(tutor.id)}
-                     className="bg-bg-2 border-[1.5px] border-border/60 hover:border-lime transition-colors p-4 rounded-2xl flex items-center gap-4 cursor-pointer group shadow-sm"
+                     className={`bg-bg-2 border-[1.5px] border-border/60 hover:border-lime transition-colors p-4 rounded-2xl flex items-center gap-4 cursor-pointer group shadow-sm ${idx === 0 ? 'tour-tutor-card' : ''}`}
                    >
                       <div className="w-14 h-14 rounded-full bg-border/50 overflow-hidden shrink-0 border-2 border-transparent group-hover:border-lime transition-all">
                         {tutor.profiles?.avatar_url ? (
@@ -322,13 +322,35 @@ export function StudentDashboard() {
                           {tutor.profiles?.full_name} <ShieldCheck size={14} className="text-blue-500" />
                         </h3>
                         <p className="text-[13px] text-text-sub truncate mb-1">{tutor.headline || 'Tutor Mahasiswa'}</p>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center flex-wrap gap-2 mt-1.5">
                            {tutor.subjects?.[0] && (
-                             <span className="text-[10px] font-mono font-bold bg-bg-3 px-2 py-0.5 rounded text-text-main">
+                             <span className="text-[10px] font-mono font-bold bg-bg-3 px-2 py-[2px] rounded-sm text-text-main border border-border/60">
                                {tutor.subjects[0]}
                              </span>
                            )}
-                           <span className="text-[11px] font-bold text-lime bg-lime/10 px-2 py-0.5 rounded">
+                           {tutor.learning_styles?.includes('Bisa Bahasa Inggris') && (
+                             <span className="border border-border/60 bg-bg-2 px-1.5 py-[2px] rounded-sm text-[9px] font-mono text-violet-300 font-medium tracking-wider w-fit whitespace-nowrap">BILINGUAL</span>
+                           )}
+                           {(tutor.learning_styles || [])
+                             .filter((s: string) => s.startsWith('Jenjang'))
+                             .sort((a: string, b: string) => {
+                                const order: any = { 'Jenjang: SD': 1, 'Jenjang: SMP': 2, 'Jenjang: SMA': 3, 'Jenjang: Mahasiswa/Umum': 4 };
+                                return (order[a] || 99) - (order[b] || 99);
+                             })
+                             .map((s: string) => {
+                                const level = s.replace('Jenjang: ', '');
+                                let dotColor = "bg-text-sub";
+                                if (level === 'SD') dotColor = "bg-rose-400";
+                                else if (level === 'SMP') dotColor = "bg-sky-400";
+                                else if (level === 'SMA') dotColor = "bg-slate-300";
+                                return (
+                                  <span key={s} className="border border-border/60 bg-bg-2 px-1.5 py-[2px] rounded-sm text-[9px] font-mono text-text-main font-medium tracking-wider flex items-center gap-1 w-fit whitespace-nowrap">
+                                    <span className={`w-1 h-1 rounded-full shrink-0 ${dotColor}`}></span> {level}
+                                  </span>
+                                );
+                             })
+                           }
+                           <span className="text-[10px] font-bold text-lime bg-lime/10 px-2 py-[2px] rounded-sm border border-lime/20 whitespace-nowrap">
                              Rp{(tutor.price_per_hour || 0).toLocaleString('id-ID')}/jam
                            </span>
                         </div>

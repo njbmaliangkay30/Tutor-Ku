@@ -221,11 +221,11 @@ export function TutorSessions() {
                               {(() => {
                                  const level = session.student_profiles?.school_level;
                                  if (!level) return null;
-                                 let colorClass = "bg-lime/10 text-lime border-lime/30";
-                                 if (level.includes('SD')) colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
-                                 else if (level.includes('SMP')) colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
-                                 else if (level.includes('SMA')) colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
-                                 return <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono border uppercase tracking-widest ${colorClass}`}>{level}</span>
+                                 let dotColor = "bg-text-sub";
+                                 if (level.includes('SD')) dotColor = "bg-rose-400";
+                                 else if (level.includes('SMP')) dotColor = "bg-sky-400";
+                                 else if (level.includes('SMA')) dotColor = "bg-slate-400";
+                                 return <span className="border border-border/60 bg-bg-2 px-1.5 py-[2px] rounded-sm text-[9px] font-mono text-text-main font-medium tracking-wider flex items-center gap-1.5 w-fit whitespace-nowrap"><span className={`w-1 h-1 rounded-full shrink-0 ${dotColor}`}></span> {level}</span>
                                })()}
                             </div>
                             <div className="text-xs text-text-sub font-mono">
@@ -333,11 +333,11 @@ export function TutorSessions() {
                               {(() => {
                                  const level = session.student_profiles?.school_level;
                                  if (!level) return null;
-                                 let colorClass = "bg-lime/10 text-lime border-lime/30";
-                                 if (level.includes('SD')) colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
-                                 else if (level.includes('SMP')) colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
-                                 else if (level.includes('SMA')) colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
-                                 return <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono border uppercase tracking-widest ${colorClass}`}>{level}</span>
+                                 let dotColor = "bg-text-sub";
+                                 if (level.includes('SD')) dotColor = "bg-rose-400";
+                                 else if (level.includes('SMP')) dotColor = "bg-sky-400";
+                                 else if (level.includes('SMA')) dotColor = "bg-slate-400";
+                                 return <span className="border border-border/60 bg-bg-2 px-1.5 py-[2px] rounded-sm text-[9px] font-mono text-text-main font-medium tracking-wider flex items-center gap-1.5 w-fit whitespace-nowrap"><span className={`w-1 h-1 rounded-full shrink-0 ${dotColor}`}></span> {level}</span>
                                })()}
                             </div>
                             <div className="text-xs text-text-sub font-mono">
@@ -400,11 +400,11 @@ export function TutorSessions() {
                               {(() => {
                                  const level = session.student_profiles?.school_level;
                                  if (!level) return null;
-                                 let colorClass = "bg-lime/10 text-lime border-lime/30";
-                                 if (level.includes('SD')) colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
-                                 else if (level.includes('SMP')) colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
-                                 else if (level.includes('SMA')) colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
-                                 return <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono border uppercase tracking-widest ${colorClass}`}>{level}</span>
+                                 let dotColor = "bg-text-sub";
+                                 if (level.includes('SD')) dotColor = "bg-rose-400";
+                                 else if (level.includes('SMP')) dotColor = "bg-sky-400";
+                                 else if (level.includes('SMA')) dotColor = "bg-slate-400";
+                                 return <span className="border border-border/60 bg-bg-2 px-1.5 py-[2px] rounded-sm text-[9px] font-mono text-text-main font-medium tracking-wider flex items-center gap-1.5 w-fit whitespace-nowrap"><span className={`w-1 h-1 rounded-full shrink-0 ${dotColor}`}></span> {level}</span>
                                })()}
                             </div>
                             <div className="text-xs text-text-sub font-mono">
@@ -458,11 +458,11 @@ export function TutorSessions() {
                               {(() => {
                                  const level = session.student_profiles?.school_level;
                                  if (!level) return null;
-                                 let colorClass = "bg-lime/10 text-lime border-lime/30";
-                                 if (level.includes('SD')) colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
-                                 else if (level.includes('SMP')) colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
-                                 else if (level.includes('SMA')) colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
-                                 return <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono border uppercase tracking-widest ${colorClass}`}>{level}</span>
+                                 let dotColor = "bg-text-sub";
+                                 if (level.includes('SD')) dotColor = "bg-rose-400";
+                                 else if (level.includes('SMP')) dotColor = "bg-sky-400";
+                                 else if (level.includes('SMA')) dotColor = "bg-slate-400";
+                                 return <span className="border border-border/60 bg-bg-2 px-1.5 py-[2px] rounded-sm text-[9px] font-mono text-text-main font-medium tracking-wider flex items-center gap-1.5 w-fit whitespace-nowrap"><span className={`w-1 h-1 rounded-full shrink-0 ${dotColor}`}></span> {level}</span>
                                })()}
                             </div>
                             <div className="text-xs text-text-sub font-mono">

@@ -74,7 +74,7 @@ export function Search() {
         </div>
 
         <div className="px-3.5 space-y-3">
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center tour-filter-gender">
              <div className="text-[10px] font-bold text-text-sub font-mono uppercase whitespace-nowrap opacity-60">Gender:</div>
              <div className="flex-1 flex gap-1.5">
                {['all', 'F', 'M'].map(st => {
@@ -96,7 +96,7 @@ export function Search() {
                })}
              </div>
           </div>
-          <div className="flex gap-1.5 overflow-x-auto pb-1.5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex gap-1.5 overflow-x-auto pb-1.5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] tour-filter-subject">
              {allSubjects.map(s => {
                const active = (s === 'Semua' && !subjectFilter) || subjectFilter === s;
                return (
@@ -122,11 +122,11 @@ export function Search() {
              <div className="font-mono text-[12px]">Tidak ada tutor yang cocok</div>
           </div>
         ) : (
-          filteredTutors.map(t => (
+          filteredTutors.map((t, idx) => (
             <div 
                key={t.id} 
                onClick={() => setSelectedTutorId(t.id)}
-               className="bg-card/80 backdrop-blur-md rounded-xl p-3.5 border-[1.5px] border-border/60 cursor-pointer transition-all relative overflow-hidden hover:border-lime hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-lime group shadow-sm"
+               className={`bg-card/80 backdrop-blur-md rounded-xl p-3.5 border-[1.5px] border-border/60 cursor-pointer transition-all relative overflow-hidden hover:border-lime hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-lime group shadow-sm ${idx === 0 ? 'tour-tutor-card' : ''}`}
             >
                <div className="flex gap-[11px] items-start">
                  <div className="relative shrink-0">
@@ -150,9 +150,7 @@ export function Search() {
                        <span className="-mb-[1px]">{t.genderIcon}</span> {t.gender}
                      </span>
                      {t.learningStyles?.includes('Bisa Bahasa Inggris') && (
-                       <span className="bg-blue-500/10 text-blue-500 border border-blue-500/30 rounded-sm px-2 py-[2px] text-[10px] font-bold font-mono whitespace-nowrap uppercase tracking-widest">
-                         BILINGUAL
-                       </span>
+                       <span className="border border-border/60 bg-bg-2 px-1.5 py-[2px] rounded-sm text-[9px] font-mono text-violet-300 font-medium tracking-wider w-fit whitespace-nowrap">BILINGUAL</span>
                      )}
                    </div>
                  </div>
@@ -177,14 +175,16 @@ export function Search() {
                        return (order[a] || 99) - (order[b] || 99);
                     }).map((s: string) => {
                        const level = s.replace('Jenjang: ', '');
-                       let colorClass = "bg-white/5 text-text-sub border-border";
-                       if (level === 'SD') colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
-                       else if (level === 'SMP') colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
-                       else if (level === 'SMA') colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
-                       return (
-                         <span key={s} className={`border rounded px-2 py-[2px] text-[10px] font-bold font-mono whitespace-nowrap uppercase tracking-widest ${colorClass}`}>{level}</span>
-                       );
-                    })}
+         let dotColor = "bg-text-sub";
+         if (level === 'SD') dotColor = "bg-rose-400";
+         else if (level === 'SMP') dotColor = "bg-sky-400";
+         else if (level === 'SMA') dotColor = "bg-slate-400";
+         return (
+           <span key={s} className="border border-border/60 bg-bg-2 px-1.5 py-[2px] rounded-sm text-[9px] font-mono text-text-main font-medium tracking-wider flex items-center gap-1.5 whitespace-nowrap w-fit">
+             <span className={`w-1 h-1 rounded-full shrink-0 ${dotColor}`}></span> {level}
+           </span>
+         );
+       })}
                   </div>
                 )}
                 

@@ -580,19 +580,23 @@ export function TutorDetail() {
 
           <div className="flex justify-center flex-wrap gap-1 mt-2.5">
             {tutor.learningStyles?.includes('Bisa Bahasa Inggris') && (
-              <span className="bg-blue-500/10 text-blue-500 px-2 py-0.5 border border-blue-500/30 rounded font-bold uppercase tracking-widest text-[9px]">BILINGUAL</span>
+              <span className="border border-border/60 bg-bg-2 px-2 py-[2px] rounded-sm text-[9px] font-mono text-violet-300 font-medium tracking-wider w-fit whitespace-nowrap">BILINGUAL</span>
             )}
              {(tutor.learningStyles || []).filter((s: string) => s.startsWith('Jenjang')).sort((a: string, b: string) => {
                  const order: any = { 'Jenjang: SD': 1, 'Jenjang: SMP': 2, 'Jenjang: SMA': 3, 'Jenjang: Mahasiswa/Umum': 4 };
                  return (order[a] || 99) - (order[b] || 99);
              }).map((s: string) => {
                  const level = s.replace('Jenjang: ', '');
-                 let colorClass = "bg-white/5 text-text-sub border-border";
-                 if (level === 'SD') colorClass = "bg-red-500/10 text-red-500 border-red-500/30";
-                 else if (level === 'SMP') colorClass = "bg-blue-500/10 text-blue-500 border-blue-500/30";
-                 else if (level === 'SMA') colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/30";
-                 return <span key={s} className={`px-2 py-0.5 border rounded font-bold uppercase tracking-widest text-[9px] ${colorClass}`}>{level}</span>
-             })}
+         let dotColor = "bg-text-sub";
+         if (level === 'SD') dotColor = "bg-rose-400";
+         else if (level === 'SMP') dotColor = "bg-sky-400";
+         else if (level === 'SMA') dotColor = "bg-slate-400";
+         return (
+           <span key={s} className="border border-border/60 bg-bg-2 px-1.5 py-[2px] rounded-sm text-[9px] font-mono text-text-main font-medium tracking-wider flex items-center gap-1.5 whitespace-nowrap w-fit">
+             <span className={`w-1 h-1 rounded-full shrink-0 ${dotColor}`}></span> {level}
+           </span>
+         );
+       })}
           </div>
 
           <div
@@ -803,7 +807,7 @@ export function TutorDetail() {
           </div>
         )}
 
-        <div className="mb-3.5">
+        <div className="mb-3.5 tour-schedule">
           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] mb-2.5 font-mono">
             JADWAL SESI PERTAMA
           </div>
@@ -846,7 +850,7 @@ export function TutorDetail() {
           )}
         </div>
 
-        <div className="flex flex-col gap-[5px] mb-4">
+        <div className="flex flex-col gap-[5px] mb-4 tour-mapel">
           <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
             Mata Pelajaran <span className="text-red-500 font-bold">*</span>
           </label>
@@ -866,7 +870,7 @@ export function TutorDetail() {
           </select>
         </div>
 
-        <div className="flex flex-col gap-[5px] mb-4">
+        <div className="flex flex-col gap-[5px] mb-4 tour-method">
           <label className="text-[10px] font-bold text-text-sub uppercase tracking-[0.06em] font-mono">
             Metode Pertemuan
           </label>
@@ -908,7 +912,7 @@ export function TutorDetail() {
           <button
             onClick={handleBook}
             disabled={bookingSuccess || isSubmitting}
-            className="w-full bg-lime text-black border-[2px] border-lime rounded-lg py-[11px] px-[18px] font-display font-bold text-[13px] flex items-center justify-center gap-1.5 shadow-sh1 transition-all hover:shadow-sh2 hover:-translate-x-px hover:-translate-y-px active:scale-[0.97] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+            className="w-full bg-lime text-black border-[2px] border-lime rounded-lg py-[11px] px-[18px] font-display font-bold text-[13px] flex items-center justify-center gap-1.5 shadow-sh1 transition-all hover:shadow-sh2 hover:-translate-x-px hover:-translate-y-px active:scale-[0.97] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none tour-book-now"
           >
             {bookingSuccess
               ? "Booking Berhasil! Mengalihkan..."
