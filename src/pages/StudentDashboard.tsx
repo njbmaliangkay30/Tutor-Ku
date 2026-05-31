@@ -111,7 +111,7 @@ export function StudentDashboard() {
     setActiveTab('student_sessions');
   };
 
-  const contentVariants = {
+  const contentVariants: any = {
     hidden: { opacity: 0 },
     visible: {
        opacity: 1,
@@ -119,7 +119,7 @@ export function StudentDashboard() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants: any = {
     hidden: { opacity: 0, y: 15 },
     visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
   };

@@ -116,7 +116,7 @@ export function Search() {
         </div>
       </div>
 
-      <div className="p-3.5 flex flex-col gap-2 pb-20">
+      <div className="p-3.5 flex flex-col gap-2 pb-20 tour-tutor-card-list">
         {filteredTutors.length === 0 ? (
           <div className="text-center py-10 px-5 text-text-light">
              <SearchIcon size={40} className="mx-auto mb-2 text-border" />

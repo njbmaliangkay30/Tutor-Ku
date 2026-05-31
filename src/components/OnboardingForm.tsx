@@ -94,7 +94,7 @@ export function OnboardingForm() {
           schedule: schedule
         });
         if (tutorError) throw tutorError;
-      } else if (userRole === "student" || userRole === "siswa") {
+      } else if ((userRole as string) === "student" || userRole === "siswa") {
         // Option to upsert student profile if needed
         const { error: studentError } = await supabase.from("student_profiles").upsert({
           id: user.id,
