@@ -4,8 +4,10 @@ import { LogOut, ArrowRight, Edit3 as PencilSimple, AlertCircle as WarningCircle
 import { useAppContext } from '../AppContext';
 import { supabase } from '../lib/supabase';
 import { getAvatarColor } from '../data';
+import { useTranslation } from '../hooks/useTranslation';
 
 export function TutorDashboard() {
+  const { t } = useTranslation();
   const { setActiveTab, setUserRole, user, userProfile } = useAppContext();
   
   const [isLoading, setIsLoading] = useState(true);
@@ -347,8 +349,8 @@ export function TutorDashboard() {
         
         {/* Header */}
         <div className="sticky top-0 bg-bg-base/80 backdrop-blur-md z-10 border-b-[1.5px] border-border pb-3 mb-4 pt-4 md:pt-0 -mx-4 px-4 md:mx-0 md:px-0">
-          <div className="font-display text-[20px] font-extrabold mb-[1px]">Dasbor Tutor</div>
-          <div className="text-[12px] text-text-sub">Halo, {tutorName}! 👋</div>
+          <div className="font-display text-[20px] font-extrabold mb-[1px]">{t('tutor_dashboard.title')}</div>
+          <div className="text-[12px] text-text-sub">{t('tutor_dashboard.hello').replace('{name}', tutorName)}</div>
         </div>
 
         {/* XP Card */}
@@ -356,7 +358,7 @@ export function TutorDashboard() {
            <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0px, rgba(255,255,255,.02) 1px, transparent 1px, transparent 18px)' }}></div>
            <div className="flex justify-between items-start relative z-10">
               <div>
-                 <div className="text-[9px] text-white/45 font-bold uppercase tracking-[0.1em] mb-[3px] font-mono">TOTAL XP</div>
+                 <div className="text-[9px] text-white/45 font-bold uppercase tracking-[0.1em] mb-[3px] font-mono">{t('tutor_dashboard.total_xp')}</div>
                  <div className="font-mono text-[44px] font-bold text-lime leading-none tracking-[-1px] animate-pgIn">{xp.toLocaleString('id-ID')}</div>
               </div>
               {tierBadge(tier)}
@@ -375,23 +377,23 @@ export function TutorDashboard() {
            <div className="flex gap-3 mt-[13px] relative z-10 bg-black/25 rounded-lg py-2.5 px-3 items-center">
               <div className="text-center">
                 <div className="font-mono text-[18px] text-lime leading-tight">0</div>
-                <div className="text-[9px] text-white/40 font-semibold font-mono">🔥 STREAK</div>
+                <div className="text-[9px] text-white/40 font-semibold font-mono">{t('tutor_dashboard.streak')}</div>
               </div>
               <div className="w-[1px] bg-white/10 h-[28px] mx-1"></div>
               <div className="text-center">
                 <div className="font-mono text-[18px] text-white leading-tight">{totalSessions}</div>
-                <div className="text-[9px] text-white/40 font-semibold font-mono">TOTAL SESI</div>
+                <div className="text-[9px] text-white/40 font-semibold font-mono">{t('tutor_dashboard.total_sessions')}</div>
               </div>
               <div className="w-[1px] bg-white/10 h-[28px] mx-1"></div>
               <div className="text-center">
                 <div className="font-mono text-[18px] text-white leading-tight">{activeStudents.length}</div>
-                <div className="text-[9px] text-white/40 font-semibold font-mono">SISWA AKTIF</div>
+                <div className="text-[9px] text-white/40 font-semibold font-mono">{t('tutor_dashboard.active_students')}</div>
               </div>
               <button 
                 onClick={() => alert("Halaman detail statistik belum tersedia.")}
                 className="ml-auto bg-lime-mid border border-lime-dim text-lime text-[11px] font-bold px-3 py-1.5 rounded-[4px] cursor-pointer font-mono hover:bg-lime/20 transition-colors"
               >
-                Detail →
+                {t('tutor_dashboard.details')}
               </button>
            </div>
         </div>
@@ -401,8 +403,8 @@ export function TutorDashboard() {
           <div onClick={() => setActiveTab('sessions')} className="bg-warning/10 border-[1.5px] border-warning/35 rounded-xl p-3 mb-3.5 flex items-center gap-2.5 cursor-pointer hover:bg-warning/20 transition-colors">
              <WarningCircle className="text-[22px] text-warning shrink-0" fill="currentColor" stroke="none" />
              <div className="flex-1">
-                <div className="text-[13px] font-bold text-warning font-display">{pendingReviews.length} Laporan Sesi Belum Diisi</div>
-                <div className="text-[11px] text-text-sub font-mono">Klik di sini untuk diarahkan ke tab Sesi →</div>
+                <div className="text-[13px] font-bold text-warning font-display">{t('tutor_dashboard.reports_pending').replace('{count}', String(pendingReviews.length))}</div>
+                <div className="text-[11px] text-text-sub font-mono">{t('tutor_dashboard.reports_desc')}</div>
              </div>
           </div>
         )}
@@ -410,16 +412,16 @@ export function TutorDashboard() {
         {/* Hari Aktifku */}
         <div className="bg-card rounded-xl p-4 border-[1.5px] border-border mb-3.5">
            <div className="flex justify-between items-center mb-3">
-             <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono">JADWAL MENGAJAR & JAM AKTIF</div>
+             <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono">{t('tutor_dashboard.schedule')}</div>
              {!isEditingDays ? (
-               <button onClick={() => setIsEditingDays(true)} className="bg-transparent border-none text-[11px] font-bold text-lime font-mono cursor-pointer hover:text-lime-dim">Atur Jadwal →</button>
+               <button onClick={() => setIsEditingDays(true)} className="bg-transparent border-none text-[11px] font-bold text-lime font-mono cursor-pointer hover:text-lime-dim">{t('tutor_dashboard.set_schedule')}</button>
              ) : (
                <button 
                  onClick={saveSchedule} 
                  disabled={isSavingSchedule}
                  className="bg-lime text-black border-none text-[10px] font-bold py-1 px-3 rounded font-mono cursor-pointer hover:bg-lime-dim disabled:opacity-50"
                >
-                 {isSavingSchedule ? "Menyimpan..." : "Simpan Jadwal"}
+                 {isSavingSchedule ? t('tutor_dashboard.saving') : t('tutor_dashboard.save_schedule')}
                </button>
              )}
            </div>
@@ -448,7 +450,7 @@ export function TutorDashboard() {
                 <div className="mt-2">
                   {selectedDayToEdit !== null ? (
                     <div className="animate-pgIn border border-border p-3 rounded-lg bg-bg-2">
-                      <p className="text-[11px] text-text-sub font-mono mb-2">Pilih jam pada hari <strong>{DAYS_MAP.find(d => d.id === selectedDayToEdit)?.name}</strong></p>
+                      <p className="text-[11px] text-text-sub font-mono mb-2">{t('tutor_dashboard.choose_hour_day')} <strong>{DAYS_MAP.find(d => d.id === selectedDayToEdit)?.name}</strong></p>
                       <div className="flex flex-wrap gap-2">
                         {AVAILABLE_HOURS.map(hour => (
                           <span 
@@ -463,7 +465,7 @@ export function TutorDashboard() {
                     </div>
                   ) : (
                     <div className="text-[11px] text-center text-text-sub py-3 bg-bg-2/50 rounded-lg border border-border/40 font-mono">
-                      Klik hari di atas untuk mengatur jam.
+                      {t('tutor_dashboard.click_day_set')}
                     </div>
                   )}
                 </div>
@@ -499,11 +501,11 @@ export function TutorDashboard() {
         {/* Harga Layanan */}
         <div className="bg-card rounded-xl p-4 border-[1.5px] border-border mb-3.5 flex justify-between items-center">
            <div>
-              <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono mb-[4px]">HARGA PER JAM</div>
+              <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono mb-[4px]">{t('tutor_dashboard.hourly_rate')}</div>
               <div className="font-display font-black text-[18px] text-lime">Rp {hourlyRate.toLocaleString('id-ID')}</div>
               {pendingRateRequest !== null && (
                 <div className="text-[10px] text-warning font-mono mt-1 flex items-center gap-1">
-                  <Clock size={10} /> Menunggu acc admin: Rp {pendingRateRequest.toLocaleString('id-ID')}
+                  <Clock size={10} /> {t('tutor_dashboard.waiting_acc')} Rp {pendingRateRequest.toLocaleString('id-ID')}
                 </div>
               )}
            </div>
@@ -512,30 +514,30 @@ export function TutorDashboard() {
              disabled={pendingRateRequest !== null}
              className="bg-bg-2 border border-border text-[11px] font-bold px-3 py-2 rounded-[6px] transition-colors disabled:opacity-50 hover:bg-bg-3 font-mono text-text-main cursor-pointer"
            >
-             Ajukan Ubah
+             {t('tutor_dashboard.request_change')}
            </button>
         </div>
 
         {/* Siswa Aktif */}
         <div className="bg-card rounded-xl p-4 border-[1.5px] border-border mb-3.5">
-           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono mb-[4px]">SISWA AKTIFKU ({activeStudents.length})</div>
+           <div className="text-[10px] font-bold text-text-light uppercase tracking-[0.1em] font-mono mb-[4px]">{t('tutor_dashboard.active_students_count').replace('{count}', String(activeStudents.length))}</div>
            {activeStudents.map(s => (
              <div key={s.id} className="flex items-center gap-2.5 py-2.5 border-b-[1.5px] border-border last:border-b-0 cursor-pointer hover:bg-bg-3 rounded-lg px-1 transition-colors">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center font-display font-extrabold text-white/90 text-[14px] shrink-0" style={{ background: s.avatarColor }}>
-                  {s.name.split(' ').map(w=>w[0]).join('').substring(0,2)}
+                  {s.name.split(' ').map((w: string)=>w[0]).join('').substring(0,2)}
                 </div>
                 <div className="flex-1 min-w-0">
                    <div className="font-display text-[13px] font-bold whitespace-nowrap overflow-hidden text-ellipsis">{s.name}</div>
-                   <div className="text-[11px] text-text-sub font-mono mt-[2px]">{s.level} · {s.subject} · {s.sessions} sesi total</div>
+                   <div className="text-[11px] text-text-sub font-mono mt-[2px]">{s.level} · {s.subject} · {t('tutor_dashboard.total_sessions_count').replace('{count}', String(s.sessions))}</div>
                    <div className="flex items-center gap-1.5 mt-1">
                       <div className="h-[3px] bg-bg-3 w-[70px] rounded-full overflow-hidden border border-border">
                          <div className="h-full bg-lime rounded-full" style={{ width: `${Math.round((s.remaining / (s.sessions || 1)) * 100)}%` }}></div>
                       </div>
-                      <span className="text-[10px] text-text-sub font-mono">{s.remaining} sesi tersisa</span>
+                      <span className="text-[10px] text-text-sub font-mono">{t('tutor_dashboard.sessions_remaining').replace('{count}', String(s.remaining))}</span>
                    </div>
                 </div>
                 <div className="text-right shrink-0">
-                   <div className="text-[10px] text-text-sub font-mono">berikutnya</div>
+                   <div className="text-[10px] text-text-sub font-mono">{t('tutor_dashboard.next_session')}</div>
                    <div className="text-[11px] font-bold text-lime font-mono">{s.nextSession.split('·')[0]}</div>
                 </div>
              </div>
@@ -552,7 +554,7 @@ export function TutorDashboard() {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>
           <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center p-4 border-b-[1.5px] border-border bg-bg-2">
-              <div className="font-display font-bold text-[16px]">Ajukan Ubah Harga</div>
+              <div className="font-display font-bold text-[16px]">{t('tutor_dashboard.request_rate_change')}</div>
               <button 
                 onClick={() => setIsRateModalOpen(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-bg-3 text-text-sub transition-colors"
@@ -562,14 +564,14 @@ export function TutorDashboard() {
             </div>
             <div className="p-5">
               <div className="text-[13px] text-text-sub mb-4">
-                 Harga Anda saat ini adalah <strong className="text-lime font-mono">Rp {hourlyRate.toLocaleString('id-ID')}</strong>. Masukkan nominal harga per jam baru yang ingin Anda ajukan.
+                 {t('tutor_dashboard.current_price_text')} <strong className="text-lime font-mono">Rp {hourlyRate.toLocaleString('id-ID')}</strong>{t('tutor_dashboard.new_price_text')}
               </div>
               <div className="flex flex-col gap-1.5 mb-4">
-                 <label className="text-[11px] font-bold font-mono text-text-sub uppercase">Harga Baru (Rp)</label>
+                 <label className="text-[11px] font-bold font-mono text-text-sub uppercase">{t('tutor_dashboard.new_price_label')}</label>
                  <input 
                    type="text"
                    className="w-full bg-bg-2 border-[1.5px] border-border rounded-lg p-3 text-[13px] font-mono focus:outline-none focus:border-lime"
-                   placeholder="Contoh: 150000"
+                   placeholder="150000"
                    value={requestedRate}
                    onChange={(e) => {
                      const val = e.target.value.replace(/\D/g, '');
@@ -578,16 +580,16 @@ export function TutorDashboard() {
                  />
               </div>
               <div className="flex flex-col gap-1.5 mb-4">
-                 <label className="text-[11px] font-bold font-mono text-text-sub uppercase">Alasan (Opsional)</label>
+                 <label className="text-[11px] font-bold font-mono text-text-sub uppercase">{t('tutor_dashboard.reason_label')}</label>
                  <textarea 
                    className="w-full bg-bg-2 border-[1.5px] border-border rounded-lg p-3 text-[13px] focus:outline-none focus:border-lime min-h-[80px] resize-none"
-                   placeholder="Berikan alasan mengapa Anda menaikkan harga..."
+                   placeholder={t('tutor_dashboard.reason_placeholder')}
                    value={requestReason}
                    onChange={(e) => setRequestReason(e.target.value)}
                  ></textarea>
               </div>
               <div className="text-[11px] text-text-muted mt-2 mb-4">
-                Pengubahan harga harus disetujui oleh tim administrasi untuk mencegah lonjakan harga sepihak yang dapat merugikan siswa.
+                {t('tutor_dashboard.request_info')}
               </div>
               <button 
                 onClick={submitRateRequest}
@@ -595,7 +597,7 @@ export function TutorDashboard() {
                 className="w-full flex items-center justify-center gap-2 bg-lime border-[2px] border-lime text-black font-bold font-display px-4 py-3 rounded-lg mt-2 cursor-pointer shadow-sh1 hover:shadow-sh2 hover:-translate-y-[1px] hover:-translate-x-[1px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmittingRate ? <Loader2 size={16} className="animate-spin" /> : null}
-                {isSubmittingRate ? 'Mengajukan...' : 'Ajukan Perubahan'}
+                {isSubmittingRate ? t('tutor_dashboard.submitting') : t('tutor_dashboard.submit_request')}
               </button>
             </div>
           </div>

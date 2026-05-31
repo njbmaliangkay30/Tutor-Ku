@@ -122,7 +122,8 @@ export const TUTORS = [
 ];
 
 export const getTagStyle = (tag: string) => {
-  const sl = tag.toLowerCase();
+  if (!tag) return {c:'var(--color-lime)', bg:'var(--color-lime-dim)'};
+  const sl = String(tag).toLowerCase();
   if(sl.includes('matematika')||sl.includes('statistika')) return {c:'#50A0FF', bg:'rgba(80,160,255,0.1)'};
   if(sl.includes('fisika')||sl.includes('kimia')||sl.includes('biologi')) return {c:'#00E676', bg:'rgba(0,230,118,0.1)'};
   if(sl.includes('inggris')||sl.includes('bahasa')) return {c:'#FFD700', bg:'rgba(255,215,0,0.1)'};
