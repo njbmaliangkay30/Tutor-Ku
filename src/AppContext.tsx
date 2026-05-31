@@ -10,6 +10,8 @@ import { User } from "@supabase/supabase-js";
 
 type UserRoleType = "guest" | "siswa" | "tutor" | "admin";
 
+type Language = "id" | "en";
+
 type AppContextType = {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -23,6 +25,8 @@ type AppContextType = {
   setSelectedTutorId: (id: string | null) => void;
   theme: string;
   toggleTheme: () => void;
+  language: Language;
+  setLanguage: (lang: Language) => void;
   userRole: UserRoleType;
   setUserRole: (role: UserRoleType) => void;
   user: User | null;
@@ -65,6 +69,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoadingTutors, setIsLoadingTutors] = useState(true);
 
   const [theme, setTheme] = useState("light");
+  const [language, setLanguageState] = useState<Language>("id");
   const [targetSessionId, setTargetSessionId] = useState<string | null>(null);
   
   const [unreadChatCount, setUnreadChatCount] = useState(0);
@@ -72,6 +77,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setActiveTab = (tab: string) => {
     setActiveTabInternal(tab);
     window.history.pushState(null, '', '/' + tab);
+  };
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    localStorage.setItem("tutorku_lang", lang);
   };
 
   useEffect(() => {
@@ -448,6 +458,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute("data-theme", savedTheme);
     updateFavicon(savedTheme);
 
+    const savedLang = (localStorage.getItem("tutorku_lang") as Language) || "id";
+    setLanguageState(savedLang);
+
     fetchTutors();
 
     const checkAndSeedPackages = async () => {
@@ -543,6 +556,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setSelectedTutorId,
         theme,
         toggleTheme,
+        language,
+        setLanguage,
         userRole,
         setUserRole,
         user,

@@ -43,6 +43,7 @@ import { OnboardingForm } from "./components/OnboardingForm";
 import { UnverifiedTutorView } from "./components/UnverifiedTutorView";
 import { VerificationForm } from "./components/VerificationForm";
 import { useAppContext } from "./AppContext";
+import { useTranslation } from "./hooks/useTranslation";
 import { NotificationBell } from "./components/NotificationBell";
 import { StudentDashboard } from "./pages/StudentDashboard";
 import { GuidedTour } from "./components/GuidedTour";
@@ -63,6 +64,8 @@ export default function App() {
     isLoadingProfile,
     unreadChatCount,
   } = useAppContext();
+  
+  const { t } = useTranslation();
 
   const [showDesktopSidebar, setShowDesktopSidebar] = useState(true);
 
@@ -192,12 +195,12 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Dashboard
+                    {t('nav.home')}
                   </span>
                 </button>
                 <button
                   onClick={() => handleNav("schedule")}
-                  title="Jadwal"
+                  title={t('nav.schedule')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "schedule" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -206,12 +209,12 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Schedule
+                    {t('nav.schedule')}
                   </span>
                 </button>
                 <button
                   onClick={() => handleNav("sessions")}
-                  title="Sesi"
+                  title={t('nav.sessions')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "sessions" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -220,12 +223,12 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Sessions
+                    {t('nav.sessions')}
                   </span>
                 </button>
                 <button
                   onClick={() => handleNav("chat")}
-                  title="Pesan"
+                  title={t('nav.chat')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "chat" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all relative">
@@ -237,12 +240,12 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Pesan
+                    {t('nav.chat')}
                   </span>
                 </button>
                 <button
                   onClick={() => handleNav("history")}
-                  title="History"
+                  title={t('nav.history')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "history" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -251,7 +254,7 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    History
+                    {t('nav.history')}
                   </span>
                 </button>
               </>
@@ -259,7 +262,7 @@ export default function App() {
               <>
                 <button
                   onClick={() => handleNav("home")}
-                  title="Overview"
+                  title={t('nav.admin_overview')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "home" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -268,7 +271,7 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Overview
+                    {t('nav.admin_overview')}
                   </span>
                 </button>
                 
@@ -390,7 +393,7 @@ export default function App() {
                 {userRole === "siswa" && (
                   <button
                     onClick={() => handleNav("home")}
-                    title="Dashboard"
+                    title={t("nav.home")}
                     className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "home" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                   >
                     <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -399,13 +402,13 @@ export default function App() {
                     <span
                       className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                     >
-                      Dashboard
+                      {t("nav.home")}
                     </span>
                   </button>
                 )}
                 <button
                   onClick={() => handleNav("search")}
-                  title="Explore"
+                  title={t("nav.explore")}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden tour-explore-desktop ${(activeTab === "search" || (activeTab === "home" && userRole === "guest")) ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -414,12 +417,12 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Explore
+                    {t("nav.explore")}
                   </span>
                 </button>
                 <button
                   onClick={() => handleNav("student_sessions")}
-                  title="Sesi Saya"
+                  title={t("nav.sessions")}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "student_sessions" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -428,13 +431,13 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Sessions
+                    {t("nav.sessions")}
                   </span>
                 </button>
                 {userRole !== "guest" && (
                   <button
                     onClick={() => handleNav("chat")}
-                    title="Pesan"
+                    title={t("nav.chat")}
                     className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "chat" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                   >
                     <span className="flex items-center justify-center shrink-0 w-[22px] transition-all relative">
@@ -446,7 +449,7 @@ export default function App() {
                     <span
                       className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                     >
-                      Pesan
+                      {t("nav.chat")}
                     </span>
                   </button>
                 )}

@@ -16,10 +16,13 @@ import { useAppContext } from "../AppContext";
 import { supabase } from "../lib/supabase";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "../hooks/useTranslation";
 
 export function Profile() {
   const { userRole, setUserRole, setActiveTab, user, userProfile, tutorProfileData, setSelectedTutorId } =
     useAppContext();
+    
+  const { t, language, setLanguage } = useTranslation();
 
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState(userProfile?.full_name || user?.user_metadata?.full_name || "");
@@ -296,7 +299,7 @@ export function Profile() {
               <UserIcon className="text-text-sub" size={20} />
               <div className="flex-1">
                 <div className="text-[14px] font-bold font-display">
-                  Data Diri & Biodata
+                  {t('profile.personal_data')}
                 </div>
                 <div className="text-[11px] text-text-sub line-clamp-1">
                   Ubah foto, nama, gender, dan biodata pribadi
@@ -338,6 +341,26 @@ export function Profile() {
               <p className="text-[12px] text-text-main leading-relaxed italic opacity-80">
                 "{isTutor ? (tutorProfileData?.bio || "Belum ada biodata tutor.") : (userProfile?.bio || "Belum ada biodata.")}"
               </p>
+            </div>
+            
+            <div className="p-4 border-b border-border/60 bg-bg-2/30 flex justify-between items-center">
+              <div>
+                 <div className="text-[12px] font-bold text-text-main flex items-center gap-2">
+                    <Settings size={14} className="text-lime" /> {t('profile.language')}
+                 </div>
+                 <div className="text-[10px] text-text-sub mt-0.5">English / Bahasa Indonesia</div>
+              </div>
+              <div className="flex bg-bg-3 rounded-md border border-border p-0.5 relative">
+                 <button 
+                   onClick={() => setLanguage('id')}
+                   className={`px-3 py-1 rounded text-xs font-bold font-mono transition-all z-10 ${language === 'id' ? 'text-black' : 'text-text-sub'}`}
+                 >ID</button>
+                 <button 
+                   onClick={() => setLanguage('en')}
+                   className={`px-3 py-1 rounded text-xs font-bold font-mono transition-all z-10 ${language === 'en' ? 'text-black' : 'text-text-sub'}`}
+                 >EN</button>
+                 <div className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded bg-lime transition-all duration-300 ease-spring ${language === 'en' ? 'translate-x-[calc(100%+0px)]' : 'translate-x-0'}`}></div>
+              </div>
             </div>
 
             <div className="flex items-center gap-3 p-4 cursor-pointer hover:bg-bg-3/50 transition-colors border-b border-border/60">
@@ -508,7 +531,7 @@ export function Profile() {
               onClick={handleRestartTour}
               className="w-full flex items-center justify-center gap-2 px-[18px] py-[12px] rounded-lg border-[2px] border-lime/30 bg-lime/10 text-lime text-[13px] font-bold cursor-pointer transition-all font-display hover:border-lime/50 hover:bg-lime/20"
             >
-              Ulangi Tutorial
+              {t('common.restart_tour')}
             </button>
           )}
 
@@ -517,7 +540,7 @@ export function Profile() {
             onClick={handleLogout}
             className="w-full flex items-center justify-center gap-2 px-[18px] py-[12px] rounded-lg border-[2px] border-red-500/30 bg-red-500/10 text-red-500 text-[13px] font-bold cursor-pointer transition-all font-display hover:border-red-500/50 hover:bg-red-500/20"
           >
-            <LogOut size={16} /> Keluar
+            <LogOut size={16} /> {t('common.logout')}
           </button>
         </div>
       </div>
