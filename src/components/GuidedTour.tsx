@@ -123,12 +123,32 @@ function TourEngine({ subStep, onNext, onCompleteMain, onCompleteBooking }: any)
     } else if (subStep === 'booking_start') {
         config = {
             targetSelector: '.tour-schedule',
-            title: 'Jadwal & Booking',
-            content: 'Cek jadwal yang tersedia di sini. Jika cocok, cukup tekan Booking untuk memulai sesi dengan tutor ini!',
+            title: 'Jadwal Sesi Pertama',
+            content: 'Di sini, kamu bisa melihat dan memilih jadwal sesi mengajar yang sedang tersedia pada minggu ini.',
             actionType: 'button',
-            actionText: 'Siap!',
-            onAction: onCompleteBooking,
+            actionText: 'Oke, Lanjut',
+            onAction: () => onNext('booking_fields'),
             placement: 'bottom'
+        };
+    } else if (subStep === 'booking_fields') {
+        config = {
+            targetSelector: '.tour-mapel',
+            title: 'Isi Detail Kelas',
+            content: 'Pastikan kamu memilih Mata Pelajaran wajib yang diinginkan dan Metode Pertemuan di bagian ini ya.',
+            actionType: 'button',
+            actionText: 'Mengerti',
+            onAction: () => onNext('booking_submit'),
+            placement: 'bottom'
+        };
+    } else if (subStep === 'booking_submit') {
+        config = {
+            targetSelector: '.tour-book-now',
+            title: 'Booking Tutor!',
+            content: 'Jika semua sudah sesuai, klik tombol ini untuk mengirim permintaan kelasmu ke tutor.',
+            actionType: 'button',
+            actionText: 'Selesai Tour',
+            onAction: onCompleteBooking,
+            placement: 'top'
         };
     }
 
@@ -141,10 +161,15 @@ function Spotlight({ config }: { config: any }) {
     const [rect, setRect] = useState<DOMRect | null>(null);
 
     useEffect(() => {
-        let attempts = 0;
+        let scrolled = false;
         const check = () => {
              const el = document.querySelector(config.targetSelector) || (config.fallbackSelector ? document.querySelector(config.fallbackSelector) : null);
              if (el) {
+                 if (!scrolled) {
+                     // Attempt to scroll the target smoothly into the center of the scrollable view
+                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     scrolled = true;
+                 }
                  const newRect = el.getBoundingClientRect();
                  setRect(prev => {
                      // Dampen micro-movements during scroll slightly or accept if changed > 1px
@@ -197,13 +222,13 @@ function Spotlight({ config }: { config: any }) {
     return (
         <div className="fixed inset-0 z-[100000] pointer-events-none">
             {/* Top Backdrop */}
-            <div className="absolute top-0 left-0 right-0 bg-bg-base/70 backdrop-blur-sm pointer-events-auto transition-all duration-500 ease-out" style={{ height: Math.max(0, tRect.top + 1) }} />
+            <div className="absolute top-0 left-0 right-0 bg-bg-base/70 backdrop-blur-sm pointer-events-none transition-all duration-500 ease-out" style={{ height: Math.max(0, tRect.top + 1) }} />
             {/* Bottom Backdrop */}
-            <div className="absolute left-0 right-0 bg-bg-base/70 backdrop-blur-sm pointer-events-auto transition-all duration-500 ease-out" style={{ top: Math.max(0, tRect.bottom - 1), bottom: 0 }} />
+            <div className="absolute left-0 right-0 bg-bg-base/70 backdrop-blur-sm pointer-events-none transition-all duration-500 ease-out" style={{ top: Math.max(0, tRect.bottom - 1), bottom: 0 }} />
             {/* Left Backdrop */}
-            <div className="absolute bg-bg-base/70 backdrop-blur-sm pointer-events-auto transition-all duration-500 ease-out" style={{ top: tRect.top, height: tRect.height, left: 0, width: Math.max(0, tRect.left + 1) }} />
+            <div className="absolute bg-bg-base/70 backdrop-blur-sm pointer-events-none transition-all duration-500 ease-out" style={{ top: tRect.top, height: tRect.height, left: 0, width: Math.max(0, tRect.left + 1) }} />
             {/* Right Backdrop */}
-            <div className="absolute bg-bg-base/70 backdrop-blur-sm pointer-events-auto transition-all duration-500 ease-out" style={{ top: tRect.top, height: tRect.height, left: Math.max(0, tRect.right - 1), right: 0 }} />
+            <div className="absolute bg-bg-base/70 backdrop-blur-sm pointer-events-none transition-all duration-500 ease-out" style={{ top: tRect.top, height: tRect.height, left: Math.max(0, tRect.right - 1), right: 0 }} />
             
             {/* Spotlight Border - Hole is naturally left untouched inside this boundary */}
             <div className="absolute rounded-[14px] border-2 border-lime animate-pulse pointer-events-none transition-all duration-500 ease-out shadow-[0_0_30px_rgba(200,255,0,0.2)]"
