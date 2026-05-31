@@ -229,7 +229,18 @@ export const translations = {
       no_text_review: "Siswa memberikan rating bintang tanpa ulasan tertulis.",
       bio: "BIO",
       active_days: "HARI AKTIF MENGAJAR",
-      teaching_subjects: "MATA PELAJARAN"
+      teaching_subjects: "MATA PELAJARAN",
+      day_0: "Min",
+      day_1: "Sen",
+      day_2: "Sel",
+      day_3: "Rab",
+      day_4: "Kam",
+      day_5: "Jum",
+      day_6: "Sab",
+      select_datetime_alert: "Silakan pilih tanggal dan jam sesi pertama terlebih dahulu.",
+      select_subject_alert: "Silakan pilih mata pelajaran terlebih dahulu untuk menghindari kesalahan memilih mapel.",
+      select_offline_location_alert: "Alamat detail pertemuan wajib diisi jika Anda memilih pertemuan Tatap Muka (Offline).",
+      no_active_schedule: "Tutor ini belum mengatur jadwal aktif."
     },
     subjects: {
       "Matematika": "Matematika",
@@ -473,7 +484,18 @@ export const translations = {
       no_text_review: "The student gave a star rating without a written review.",
       bio: "BIO",
       active_days: "ACTIVE TEACHING DAYS",
-      teaching_subjects: "TEACHING SUBJECTS"
+      teaching_subjects: "TEACHING SUBJECTS",
+      day_0: "Sun",
+      day_1: "Mon",
+      day_2: "Tue",
+      day_3: "Wed",
+      day_4: "Thu",
+      day_5: "Fri",
+      day_6: "Sat",
+      select_datetime_alert: "Please select the date and time for the first session first.",
+      select_subject_alert: "Please select a subject first to avoid subject selection errors.",
+      select_offline_location_alert: "Detailed meeting address is required if you choose In-person Meeting (Offline).",
+      no_active_schedule: "This tutor has not set an active schedule yet."
     },
     subjects: {
       "Matematika": "Mathematics",

@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Users, BookOpen, Search, ShieldCheck, Eye, ShieldAlert, X, AlertOctagon, CreditCard, Calendar, Star, LayoutGrid, List, Plus, Edit3, Trash2 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { PlatformPaymentSettings } from "../../components/PlatformPaymentSettings";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export const parseLocationField = (locationStr: string | null | undefined) => {
   if (!locationStr) return { text: "", url: "" };
@@ -31,6 +32,7 @@ export const parseLocationField = (locationStr: string | null | undefined) => {
 };
 
 export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "students" | "transactions" | "sessions" | "packages" | "reviews" }) {
+  const { getLocalizedValue } = useTranslation();
   const [tutors, setTutors] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -186,6 +188,11 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
   const [pkgPricingType, setPkgPricingType] = useState<"percentage" | "fixed">("percentage");
   const [pkgPriceValue, setPkgPriceValue] = useState<number>(5);
   const [pkgDescription, setPkgDescription] = useState("");
+  
+  const [pkgNameId, setPkgNameId] = useState("");
+  const [pkgNameEn, setPkgNameEn] = useState("");
+  const [pkgDescId, setPkgDescId] = useState("");
+  const [pkgDescEn, setPkgDescEn] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -398,10 +405,10 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
     setIsProcessing(true);
     try {
       const defaultPkgs = [
-        { name: 'Sesi Satuan', session_count: 1, price: 0, description: 'Booking satu sesi dulu, cocok untuk percobaan. Harga adaptif menyesuaikan tarif tutor.' },
-        { name: 'Paket 4 Pertemuan', session_count: 4, price: 5, description: '4 sesi, cocok untuk persiapan ulangan. Diskon 5% dari tarif normal tutor.' },
-        { name: 'Paket 8 Pertemuan', session_count: 8, price: 10, description: 'Paket terlaris — belajar rutin, hasil lebih optimal. Diskon 10% dari tarif normal tutor.' },
-        { name: 'Paket 12 Pertemuan', session_count: 12, price: 12, description: 'Untuk persiapan UTBK atau kursus intensif. Diskon 12% dari tarif normal tutor.' }
+        { name: 'Sesi Satuan | Single Session', session_count: 1, price: 0, description: 'Booking satu sesi dulu, cocok untuk percobaan. Harga adaptif menyesuaikan tarif tutor. | Book a single session first, perfect for a trial session. Adaptive rate matches the tutor\'s rate.' },
+        { name: 'Paket 4 Pertemuan | 4 Sessions', session_count: 4, price: 5, description: '4 sesi, cocok untuk persiapan ulangan. Diskon 5% dari tarif normal tutor. | 4 sessions, perfect for exam preparation. 5% discount from normal tutor rates.' },
+        { name: 'Paket 8 Pertemuan | 8 Sessions', session_count: 8, price: 10, description: 'Paket terlaris — belajar rutin, hasil lebih optimal. Diskon 10% dari tarif normal tutor. | Best seller — regular learning for optimal results. 10% discount from normal tutor rates.' },
+        { name: 'Paket 12 Pertemuan | 12 Sessions', session_count: 12, price: 12, description: 'Untuk persiapan UTBK atau kursus intensif. Diskon 12% dari tarif normal tutor. | For intensive prep or exams. 12% discount from normal tutor rates.' }
       ];
       const { error } = await supabase.from("packages").insert(defaultPkgs);
       if (error) throw error;
@@ -429,7 +436,10 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
   const openPackageModal = (pkg: any | null) => {
     if (pkg) {
       setEditingPackage(pkg);
-      setPkgName(pkg.name);
+      const nameParts = (pkg.name || "").split("|").map((p: any) => p.trim());
+      setPkgNameId(nameParts[0] || "");
+      setPkgNameEn(nameParts[1] || "");
+      
       setPkgSessionCount(pkg.session_count);
       if (pkg.price <= 100) {
         setPkgPricingType("percentage");
@@ -438,14 +448,19 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
         setPkgPricingType("fixed");
         setPkgPriceValue(pkg.price);
       }
-      setPkgDescription(pkg.description || "");
+      
+      const descParts = (pkg.description || "").split("|").map((p: any) => p.trim());
+      setPkgDescId(descParts[0] || "");
+      setPkgDescEn(descParts[1] || "");
     } else {
       setEditingPackage(null);
-      setPkgName("");
+      setPkgNameId("");
+      setPkgNameEn("");
       setPkgSessionCount(4);
       setPkgPricingType("percentage");
       setPkgPriceValue(5);
-      setPkgDescription("");
+      setPkgDescId("");
+      setPkgDescEn("");
     }
     setIsPackageModalOpen(true);
   };
@@ -457,7 +472,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
 
   const savePackage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pkgName.trim()) {
+    if (!pkgNameId.trim()) {
       alert("Nama paket wajib diisi!");
       return;
     }
@@ -476,11 +491,19 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
 
     try {
       setIsProcessing(true);
+      const finalName = pkgNameEn.trim() 
+        ? `${pkgNameId.trim()} | ${pkgNameEn.trim()}`
+        : pkgNameId.trim();
+
+      const finalDesc = pkgDescEn.trim()
+        ? `${pkgDescId.trim()} | ${pkgDescEn.trim()}`
+        : pkgDescId.trim();
+
       const pkgData = {
-        name: pkgName,
+        name: finalName,
         session_count: pkgSessionCount,
         price: pkgPriceValue,
-        description: pkgDescription,
+        description: finalDesc,
       };
 
       if (editingPackage) {
@@ -1071,7 +1094,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                       <div>
                         <div className="flex justify-between items-start gap-2">
                           <h3 className="font-semibold text-text-main text-sm uppercase tracking-wider">
-                            {pkg.name}
+                            {getLocalizedValue(pkg.name)}
                           </h3>
                           <div className="flex items-center gap-1.5 shrink-0">
                             <span className="px-2 py-0.5 bg-lime-dim text-lime text-[9px] font-bold rounded uppercase font-mono">
@@ -1094,7 +1117,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                           </div>
                         </div>
                         <p className="text-xs text-text-sub mt-2 line-clamp-2">
-                          {pkg.description || "Daftar Paket Belajar Privat TutorKu."}
+                          {getLocalizedValue(pkg.description) || "Daftar Paket Belajar Privat TutorKu."}
                         </p>
                       </div>
                       <div className="mt-4 pt-3 border-t border-border/40 flex flex-col gap-1.5">
@@ -1142,7 +1165,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                   const studentName = sPkg.student?.profiles?.full_name || "Siswa";
                   const studentEmail = sPkg.student?.profiles?.email || "-";
                   const tutorName = sPkg.tutor?.profiles?.full_name || "Tutor";
-                  const pkgName = sPkg.packages?.name || "Paket Belajar";
+                  const pkgName = getLocalizedValue(sPkg.packages?.name) || "Paket Belajar";
                   const expiryStr = sPkg.valid_until 
                     ? new Date(sPkg.valid_until).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })
                     : "Selamanya";
@@ -1665,18 +1688,33 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
             
             <form onSubmit={savePackage} className="p-4 space-y-4 text-xs">
               {/* Nama Paket */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold text-text-sub uppercase tracking-wider block">
-                  Nama Paket / Promo
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={pkgName}
-                  onChange={(e) => setPkgName(e.target.value)}
-                  placeholder="e.g., Paket Belajar Hemat 8 Sesi"
-                  className="w-full bg-bg-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-main placeholder:text-text-light/40 focus:outline-none focus:border-lime/50 transition-colors"
-                />
+              <div className="space-y-3 p-3 bg-bg-2/30 rounded-lg border border-border/45">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono font-bold text-text-sub uppercase tracking-wider block">
+                    Nama Paket (Bahasa Indonesia)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={pkgNameId}
+                    onChange={(e) => setPkgNameId(e.target.value)}
+                    placeholder="e.g., Paket Belajar Hemat 8 Sesi"
+                    className="w-full bg-bg-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-main placeholder:text-text-light/40 focus:outline-none focus:border-lime/50 transition-colors"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono font-bold text-text-sub uppercase tracking-wider block">
+                    Package Name (English)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={pkgNameEn}
+                    onChange={(e) => setPkgNameEn(e.target.value)}
+                    placeholder="e.g., Slim 8-Sessions Prep Pack"
+                    className="w-full bg-bg-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-main placeholder:text-text-light/40 focus:outline-none focus:border-lime/50 transition-colors"
+                  />
+                </div>
               </div>
 
               {/* Jumlah Sesi */}
@@ -1772,17 +1810,31 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
               </div>
 
               {/* Deskripsi */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold text-text-sub uppercase tracking-wider block">
-                  Keterangan Deskripsi
-                </label>
-                <textarea
-                  value={pkgDescription}
-                  onChange={(e) => setPkgDescription(e.target.value)}
-                  placeholder="e.g., Paket ekonomis untuk persiapan UTBK"
-                  rows={2}
-                  className="w-full bg-bg-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-main placeholder:text-text-light/40 focus:outline-none focus:border-lime/50 transition-colors resize-none"
-                />
+              <div className="space-y-3 p-3 bg-bg-2/30 rounded-lg border border-border/45">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono font-bold text-text-sub uppercase tracking-wider block">
+                    Keterangan Deskripsi (Bahasa Indonesia)
+                  </label>
+                  <textarea
+                    value={pkgDescId}
+                    onChange={(e) => setPkgDescId(e.target.value)}
+                    placeholder="e.g., Paket ekonomis untuk persiapan UTBK"
+                    rows={2}
+                    className="w-full bg-bg-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-main placeholder:text-text-light/40 focus:outline-none focus:border-lime/50 transition-colors resize-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono font-bold text-text-sub uppercase tracking-wider block">
+                    Package Description (English)
+                  </label>
+                  <textarea
+                    value={pkgDescEn}
+                    onChange={(e) => setPkgDescEn(e.target.value)}
+                    placeholder="e.g., Value pack for intensive exam prep"
+                    rows={2}
+                    className="w-full bg-bg-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-main placeholder:text-text-light/40 focus:outline-none focus:border-lime/50 transition-colors resize-none"
+                  />
+                </div>
               </div>
 
               {/* Submit / actions */}

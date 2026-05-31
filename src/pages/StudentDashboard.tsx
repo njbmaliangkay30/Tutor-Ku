@@ -7,7 +7,7 @@ import { useTranslation } from '../hooks/useTranslation';
 
 export function StudentDashboard() {
   const { userProfile, setActiveTab, setTargetSessionId, setSelectedTutorId } = useAppContext();
-  const { t } = useTranslation();
+  const { t, getLocalizedValue } = useTranslation();
   const [upcomingSession, setUpcomingSession] = useState<any | null>(null);
   const [activePackages, setActivePackages] = useState<any[]>([]);
   const [latestReport, setLatestReport] = useState<any | null>(null);
@@ -384,7 +384,7 @@ export function StudentDashboard() {
                   <div key={pkg.id} className="bg-bg-2 border-[1.5px] hover:border-orange-500/50 transition-colors border-border p-5 rounded-2xl relative overflow-hidden group">
                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-500/10 to-transparent rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
                      <div className="relative z-10 flex flex-col h-full">
-                       <h3 className="font-extrabold text-text-main text-lg mb-1">{pkg.packages?.name || t('profile.learning_package')}</h3>
+                       <h3 className="font-extrabold text-text-main text-lg mb-1">{getLocalizedValue(pkg.packages?.name) || t('profile.learning_package')}</h3>
                        <p className="text-[13px] text-text-sub font-medium mb-5 flex items-center gap-2">
                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> {t('profile.tutor_label')}: {pkg.tutor_profiles?.profiles?.full_name}
                        </p>

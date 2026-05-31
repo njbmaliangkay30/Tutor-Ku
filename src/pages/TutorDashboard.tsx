@@ -7,7 +7,7 @@ import { getAvatarColor } from '../data';
 import { useTranslation } from '../hooks/useTranslation';
 
 export function TutorDashboard() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { setActiveTab, setUserRole, user, userProfile } = useAppContext();
   
   const [isLoading, setIsLoading] = useState(true);
@@ -439,7 +439,7 @@ export function TutorDashboard() {
                       }}
                       className={`relative aspect-square rounded-[4px] border-[1.5px] flex items-center justify-center text-[10px] font-bold font-mono transition-colors ${isActive ? 'border-lime bg-lime-mid text-lime' : 'border-border bg-bg-2 text-text-light'} ${isEditingDays || isActive ? 'cursor-pointer hover:border-lime/50' : ''} ${selectedDayToEdit === day.id ? 'ring-2 ring-lime/30' : ''}`}
                     >
-                      {day.name} {isActive && <span className="absolute bottom-[4px] w-1.5 h-1.5 bg-lime rounded-full"></span>}
+                      {t(`booking.day_${day.id}`)} {isActive && <span className="absolute bottom-[4px] w-1.5 h-1.5 bg-lime rounded-full"></span>}
                     </div>
                   )
                 })}
@@ -450,7 +450,7 @@ export function TutorDashboard() {
                 <div className="mt-2">
                   {selectedDayToEdit !== null ? (
                     <div className="animate-pgIn border border-border p-3 rounded-lg bg-bg-2">
-                      <p className="text-[11px] text-text-sub font-mono mb-2">{t('tutor_dashboard.choose_hour_day')} <strong>{DAYS_MAP.find(d => d.id === selectedDayToEdit)?.name}</strong></p>
+                      <p className="text-[11px] text-text-sub font-mono mb-2">{t('tutor_dashboard.choose_hour_day')} <strong>{t(`booking.day_${selectedDayToEdit}`)}</strong></p>
                       <div className="flex flex-wrap gap-2">
                         {AVAILABLE_HOURS.map(hour => (
                           <span 
@@ -478,7 +478,9 @@ export function TutorDashboard() {
                       const hours = tutorSchedule[day.id];
                       let displayHours = "";
                       if (hours.length > 3) {
-                          displayHours = `${hours[0]}, ${hours[1]} ... +${hours.length - 2} jam`;
+                          displayHours = language === 'en' 
+                            ? `${hours[0]}, ${hours[1]} ... +${hours.length - 2} hrs`
+                            : `${hours[0]}, ${hours[1]} ... +${hours.length - 2} jam`;
                       } else {
                           displayHours = hours.join(", ");
                       }
@@ -486,7 +488,7 @@ export function TutorDashboard() {
                       return (
                         <div key={`time-${day.id}`} className="flex items-center justify-between bg-bg-2/50 p-2.5 rounded-lg border border-border/40 animate-pgIn">
                            <div className="flex items-center gap-3">
-                              <span className="w-8 font-mono text-[11px] font-bold text-lime">{day.name}</span>
+                              <span className="w-8 font-mono text-[11px] font-bold text-lime">{t(`booking.day_${day.id}`)}</span>
                               <span className="text-[11px] text-text-sub font-mono tracking-wider">{displayHours}</span>
                            </div>
                            <Clock size={14} className="text-text-muted" />

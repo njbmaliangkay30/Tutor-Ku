@@ -22,7 +22,7 @@ export function Profile() {
   const { userRole, setUserRole, setActiveTab, user, userProfile, tutorProfileData, setSelectedTutorId } =
     useAppContext();
     
-  const { t, language, setLanguage } = useTranslation();
+  const { t, language, setLanguage, getLocalizedValue } = useTranslation();
 
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState(userProfile?.full_name || user?.user_metadata?.full_name || "");
@@ -743,13 +743,13 @@ export function Profile() {
                                onClick={() => setSelectedDay(selectedDay === day.id ? null : day.id)}
                                className={`text-[11px] px-2.5 py-1 rounded-md cursor-pointer transition-colors border ${selectedDay === day.id ? "bg-lime text-black font-bold" : (schedule[day.id]?.length > 0 ? "bg-lime-dim text-lime border-lime font-bold" : "bg-bg-1 text-text-sub border-border hover:border-lime/50")}`}
                              >
-                                {day.name} {schedule[day.id]?.length > 0 && `(${schedule[day.id].length})`}
+                                {t(`booking.day_${day.id}`)} {schedule[day.id]?.length > 0 && `(${schedule[day.id].length})`}
                              </span>
                            ))}
                         </div>
                         {selectedDay !== null && (
                           <div className="animate-pgIn">
-                            <p className="text-[10px] text-text-sub mb-2">{t('profile.select_hour')} {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"][selectedDay]}</p>
+                            <p className="text-[10px] text-text-sub mb-2">{t('profile.select_hour')} {t(`booking.day_${selectedDay}`)}</p>
                             <div className="flex flex-wrap gap-2">
                                {["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "18:00", "19:00", "20:00"].map(hour => (
                                  <span 
@@ -852,7 +852,7 @@ export function Profile() {
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="text-xs text-text-sub font-mono font-semibold uppercase tracking-wider text-lime">
-                              {pkg.packages?.name || t('profile.learning_package')}
+                              {getLocalizedValue(pkg.packages?.name) || t('profile.learning_package')}
                             </div>
                             <div className="font-display text-[15px] font-bold text-text-main mt-0.5">
                               {t('profile.tutor_label')}: {tutorName}

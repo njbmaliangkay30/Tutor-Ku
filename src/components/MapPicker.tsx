@@ -9,7 +9,8 @@ interface MapPickerProps {
 }
 
 export default function MapPicker({ value, onChange }: MapPickerProps) {
-  const { lang = 'en' } = useAppContext() || {};
+  const { language = 'en' } = useAppContext() || {};
+  const lang = language;
   const mapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
   const userMarkerRef = useRef<any>(null);

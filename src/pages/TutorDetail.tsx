@@ -14,8 +14,8 @@ import MapPicker from "../components/MapPicker";
 import { useTranslation } from "../hooks/useTranslation";
 
 export function TutorDetail() {
-  const { t } = useTranslation();
-  const { selectedTutorId, setSelectedTutorId, setActiveTab, userRole, tutors, user, userProfile, lang } =
+  const { t, language, getLocalizedValue } = useTranslation();
+  const { selectedTutorId, setSelectedTutorId, setActiveTab, userRole, tutors, user, userProfile } =
     useAppContext();
   const [dbPackages, setDbPackages] = useState<any[]>([]);
   const [selectedPkg, setSelectedPkg] = useState<string>("");
@@ -52,10 +52,10 @@ export function TutorDetail() {
       } catch (err) {
         console.error("Error fetching packages catalog:", err);
         const fallback = [
-          { id: 'pkg-single', name: 'Sesi Satuan', session_count: 1, price: 65000, description: 'Booking satu sesi dulu, cocok untuk percobaan.' },
-          { id: 'pkg-4', name: 'Paket 4 Pertemuan', session_count: 4, price: 247000, description: '4 sesi, cocok untuk persiapan ulangan.' },
-          { id: 'pkg-8', name: 'Paket 8 Pertemuan', session_count: 8, price: 468000, description: 'Paket terlaris — belajar rutin, hasil lebih optimal.' },
-          { id: 'pkg-12', name: 'Paket 12 Pertemuan', session_count: 12, price: 686400, description: 'Untuk persiapan UTBK atau kursus intensif.' }
+          { id: 'pkg-single', name: 'Sesi Satuan | Single Session', session_count: 1, price: 65000, description: 'Booking satu sesi dulu, cocok untuk percobaan. | Book a single session first, perfect for a trial session.' },
+          { id: 'pkg-4', name: 'Paket 4 Pertemuan | 4 Sessions', session_count: 4, price: 247000, description: '4 sesi, cocok untuk persiapan ulangan. | 4 sessions, perfect for exam preparation.' },
+          { id: 'pkg-8', name: 'Paket 8 Pertemuan | 8 Sessions', session_count: 8, price: 468000, description: 'Paket terlaris — belajar rutin, hasil lebih optimal. | Best seller — regular learning for optimal results.' },
+          { id: 'pkg-12', name: 'Paket 12 Pertemuan | 12 Sessions', session_count: 12, price: 686400, description: 'Untuk persiapan UTBK atau kursus intensif. | For intensive courses or UTBK prep.' }
         ];
         setDbPackages(fallback);
         setSelectedPkg(fallback[0].id);
@@ -191,18 +191,18 @@ export function TutorDetail() {
     } 
 
     if (!selectedDate || !selectedTime) {
-      alert("Silakan pilih tanggal dan jam sesi pertama terlebih dahulu.");
+      alert(t('booking.select_datetime_alert'));
       return;
     }
 
     if (!selectedSubject) {
-      alert("Silakan pilih mata pelajaran terlebih dahulu untuk menghindari kesalahan memilih mapel.");
+      alert(t('booking.select_subject_alert'));
       return;
     }
 
     if (meetingType === 'offline') {
       if (!location.trim()) {
-        alert("Alamat detail pertemuan wajib diisi jika Anda memilih pertemuan Tatap Muka (Offline).");
+        alert(t('booking.select_offline_location_alert'));
         return;
       }
     }
@@ -626,11 +626,11 @@ export function TutorDetail() {
           </div>
           <div className="grid grid-cols-7 gap-[5px] mb-1.5">
             {[1, 2, 3, 4, 5, 6, 0].map((dayIndex) => {
-              const d = DAYS[dayIndex];
+              const d = t(`booking.day_${dayIndex}`);
               const isActive = (tutor.activeDays || []).includes(dayIndex);
               return (
                 <div
-                  key={d}
+                  key={dayIndex}
                   className={`aspect-square rounded-sm border-[1.5px] flex items-center justify-center text-[10px] font-bold font-mono ${isActive ? "border-lime bg-lime-mid text-lime" : "border-border bg-bg-2 text-text-light"}`}
                 >
                   {d}
@@ -639,7 +639,7 @@ export function TutorDetail() {
             })}
           </div>
           <div className="text-[11px] text-text-sub font-mono">
-            {lang === 'en' ? 'Active: ' : 'Aktif: '} {(tutor.activeDays || []).map((d: number) => DAYS[d]).join(", ")}
+            {language === 'en' ? 'Active: ' : 'Aktif: '} {(tutor.activeDays || []).map((d: number) => t(`booking.day_${d}`)).join(", ")}
           </div>
         </div>
 
@@ -689,7 +689,7 @@ export function TutorDetail() {
                     </div>
                   </div>
                   <p className="text-[10px] text-text-sub font-mono -mt-1">
-                    {new Date(r.created_at).toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {new Date(r.created_at).toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                   {r.review_text ? (
                     <p className="text-xs italic text-text-main bg-bg-base/70 py-2 px-2.5 border-l border-lime rounded-r">
@@ -767,10 +767,10 @@ export function TutorDetail() {
                     <div className="flex justify-between items-start">
                       <div>
                         <div className="font-display text-[14px] font-bold text-text-main pr-[60px]">
-                          {pkg.name}
+                          {getLocalizedValue(pkg.name)}
                         </div>
                         <div className="text-[11px] text-text-sub mt-0.5">
-                          {pkg.description || "Daftar Paket Belajar Privat Tutor"}
+                          {getLocalizedValue(pkg.description) || "Daftar Paket Belajar Privat Tutor"}
                         </div>
                       </div>
                     </div>
@@ -828,12 +828,12 @@ export function TutorDetail() {
                   onClick={() => { setSelectedDate(d); setSelectedTime(null); }}
                   className={`flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl border-[1.5px] cursor-pointer transition-all ${isSelected ? "border-lime bg-lime-dim shadow-lime" : "border-border bg-card-2 hover:border-lime/50"}`}
                 >
-                  <span className={`text-[10px] font-bold font-mono ${isSelected ? 'text-lime' : 'text-text-sub'}`}>{DAYS[d.getDay()]}</span>
+                  <span className={`text-[10px] font-bold font-mono ${isSelected ? 'text-lime' : 'text-text-sub'}`}>{t(`booking.day_${d.getDay()}`)}</span>
                   <span className={`text-[16px] font-display font-bold ${isSelected ? 'text-white' : 'text-text-main'}`}>{d.getDate()}</span>
                 </div>
               );
             }) : (
-              <div className="text-[12px] text-text-sub">Tutor ini belum mengatur jadwal aktif.</div>
+              <div className="text-[12px] text-text-sub">{t('booking.no_active_schedule')}</div>
             )}
           </div>
 

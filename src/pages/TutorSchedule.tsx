@@ -3,12 +3,14 @@ import { createPortal } from "react-dom";
 import { Calendar as CalendarIcon, Clock, Check, X, MapPin, Video, CheckCircle2, ChevronLeft, ChevronRight, User } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAppContext } from "../AppContext";
+import { useTranslation } from "../hooks/useTranslation";
 import { getAvatarColor, DAYS } from "../data";
 import { parseSessionNotes, parseLocationField } from './TutorSessions';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addDays, subDays, isSameMonth, isSameDay, addWeeks, subWeeks, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
 
 export function TutorSchedule() {
+  const { t } = useTranslation();
   const { userProfile, userRole, setActiveTab } = useAppContext();
   
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -161,9 +163,9 @@ export function TutorSchedule() {
     return (
       <div className="flex flex-col bg-card rounded-xl border-[1.5px] border-border shadow-sh1 overflow-hidden">
         <div className="grid grid-cols-7 border-b border-border bg-bg-2">
-          {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((d, i) => (
-            <div key={i} className="py-2 text-center text-xs font-mono font-bold text-text-sub uppercase border-r border-border last:border-0">
-              {d}
+          {[1, 2, 3, 4, 5, 6, 0].map((dayIdx) => (
+            <div key={dayIdx} className="py-2 text-center text-xs font-mono font-bold text-text-sub uppercase border-r border-border last:border-0">
+              {t(`booking.day_${dayIdx}`)}
             </div>
           ))}
         </div>

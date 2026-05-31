@@ -3,8 +3,10 @@ import { createPortal } from "react-dom";
 import { supabase } from "../lib/supabase";
 import { useAppContext } from "../AppContext";
 import { Loader2, ArrowRight } from "lucide-react";
+import { useTranslation } from "../hooks/useTranslation";
 
 export function OnboardingForm() {
+  const { t } = useTranslation();
   const { user, userProfile, userRole } = useAppContext();
   
   const [fullName, setFullName] = useState("");
@@ -258,13 +260,13 @@ export function OnboardingForm() {
                            onClick={() => setSelectedDay(selectedDay === day.id ? null : day.id)}
                            className={`text-[11px] px-2.5 py-1 rounded-md cursor-pointer transition-colors border ${selectedDay === day.id ? "bg-lime text-black font-bold" : (schedule[day.id]?.length > 0 ? "bg-lime-dim text-lime border-lime font-bold" : "bg-bg-1 text-text-sub border-border hover:border-lime/50")}`}
                          >
-                            {day.name} {schedule[day.id]?.length > 0 && `(${schedule[day.id].length})`}
+                            {t(`booking.day_${day.id}`)} {schedule[day.id]?.length > 0 && `(${schedule[day.id].length})`}
                          </span>
                        ))}
                     </div>
                     {selectedDay !== null && (
                       <div className="animate-pgIn">
-                        <p className="text-[10px] text-text-sub mb-2">Pilih jam pada hari {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"][selectedDay]}</p>
+                        <p className="text-[10px] text-text-sub mb-2">Pilih jam pada hari {t(`booking.day_${selectedDay}`)}</p>
                         <div className="flex flex-wrap gap-2">
                           {["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "18:00", "19:00", "20:00"].map(hour => (
                             <span 

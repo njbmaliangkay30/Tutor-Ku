@@ -468,10 +468,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const { data, error } = await supabase.from("packages").select("id").limit(1);
         if (!error && (!data || data.length === 0)) {
           const defaultPkgs = [
-            { name: 'Sesi Satuan', session_count: 1, price: 65000, description: 'Booking satu sesi dulu, cocok untuk percobaan.' },
-            { name: 'Paket 4 Pertemuan', session_count: 4, price: 247000, description: '4 sesi, cocok untuk persiapan ulangan.' },
-            { name: 'Paket 8 Pertemuan', session_count: 8, price: 468000, description: 'Paket terlaris — belajar rutin, hasil lebih optimal.' },
-            { name: 'Paket 12 Pertemuan', session_count: 12, price: 686400, description: 'Untuk persiapan UTBK atau kursus intensif.' }
+            { name: 'Sesi Satuan | Single Session', session_count: 1, price: 65000, description: 'Booking satu sesi dulu, cocok untuk percobaan. | Book a single session first, perfect for a trial session.' },
+            { name: 'Paket 4 Pertemuan | 4 Sessions', session_count: 4, price: 247000, description: '4 sesi, cocok untuk persiapan ulangan. | 4 sessions, perfect for exam preparation.' },
+            { name: 'Paket 8 Pertemuan | 8 Sessions', session_count: 8, price: 468000, description: 'Paket terlaris — belajar rutin, hasil lebih optimal. | Best seller — regular learning for optimal results.' },
+            { name: 'Paket 12 Pertemuan | 12 Sessions', session_count: 12, price: 686400, description: 'Untuk persiapan UTBK atau kursus intensif. | For intensive courses or UTBK prep.' }
           ];
           await supabase.from("packages").insert(defaultPkgs);
         }
