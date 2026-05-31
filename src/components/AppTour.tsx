@@ -5,149 +5,150 @@ import { X } from 'lucide-react';
 
 export function AppTour() {
   const { userRole, activeTab, setActiveTab, selectedTutorId, setSelectedTutorId } = useAppContext();
+  
   const [run, setRun] = useState(false);
   const [steps, setSteps] = useState<Step[]>([]);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [tourType, setTourType] = useState<'main' | 'booking' | null>(null);
 
   useEffect(() => {
     if (userRole !== 'siswa') return;
     
-    const hasSkippedAll = localStorage.getItem('tutorku_tour_skipped');
-    if (hasSkippedAll) return;
+    // Using a timeout just to prevent hydration/layout shifts from confusing joyride initially
+    const timer = setTimeout(() => {
+      const hasSkipped = localStorage.getItem('tutorku_tour_skipped');
+      if (hasSkipped) return;
 
-    const hasSeenHome = localStorage.getItem('tutorku_tour_home');
-    const hasSeenSearch = localStorage.getItem('tutorku_tour_search');
-    const hasSeenDetail = localStorage.getItem('tutorku_tour_detail');
+      const hasCompletedMain = localStorage.getItem('tutorku_tour_main_completed');
+      const hasCompletedBooking = localStorage.getItem('tutorku_tour_booking_completed');
 
-    let currentSteps: Step[] = [];
-    const isMobile = window.innerWidth < 768;
-    const exploreTarget = isMobile ? '.tour-explore-mobile' : '.tour-explore-desktop';
+      const isMobile = window.innerWidth < 768;
+      const exploreTarget = isMobile ? '.tour-explore-mobile' : '.tour-explore-desktop';
 
-    if (!hasSeenHome && activeTab === 'home' && !selectedTutorId) {
-      currentSteps = [
-        {
-          target: 'body',
-          title: 'Selamat Datang! 👋',
-          content: 'Mari kami pandu cara memesan tutor pertamamu di layanan Tutorku.',
-          placement: 'center',
-          disableBeacon: true,
-        },
-        {
-          target: exploreTarget,
-          title: 'Cari Tutor',
-          content: 'Buka menu pencarian ini untuk melihat daftar semua tutor terbaik yang tersedia.',
-          placement: isMobile ? 'top' : 'right',
-          disableBeacon: true,
-          spotlightPadding: 6,
-        }
-      ];
-    } else if (!hasSeenSearch && (activeTab === 'search' || activeTab === 'explore') && !selectedTutorId) {
-      currentSteps = [
-        {
-          target: '.tour-filter-gender',
-          title: 'Filter Gender',
-          content: 'Kamu bisa memfilter tutor berdasarkan gender jika kamu merasa lebih nyaman belajar dengan gender tertentu.',
-          placement: 'bottom',
-          disableBeacon: true,
-          spotlightPadding: 6,
-        },
-        {
-          target: '.tour-filter-subject',
-          title: 'Pilih Mata Pelajaran',
-          content: 'Pilih mata pelajaran yang ingin kamu pelajari agar pencarian tutor lebih spesifik dan tepat sasaran.',
-          placement: 'bottom',
-          disableBeacon: true,
-          spotlightPadding: 6,
-        },
-        {
-          target: '.tour-tutor-card',
-          title: 'Pilih Tutor',
-          content: 'Klik kartu tutor yang kamu sukai untuk melihat profil detail dan mengatur jadwal bareng mereka.',
-          placement: 'top-start',
-          disableBeacon: true,
-          spotlightPadding: 8,
-        }
-      ];
-    } else if (!hasSeenDetail && selectedTutorId) {
-      currentSteps = [
-        {
-          target: '.tour-schedule',
-          title: 'Pilih Jadwal',
-          content: 'Silakan pilih tanggal dan jam luangmu untuk mengadakan pelajaran.',
-          placement: 'top',
-          disableBeacon: true,
-          spotlightPadding: 6,
-        },
-        {
-          target: '.tour-mapel',
-          title: 'Tentukan Materi',
-          content: 'Pilih mata pelajaran spesifik yang ingin kamu bahas pada sesi ini.',
-          placement: 'top',
-          disableBeacon: true,
-          spotlightPadding: 6,
-        },
-        {
-          target: '.tour-method',
-          title: 'Metode Pertemuan',
-          content: 'Pilih apakah kamu ingin belajar secara Online atau Offline (Tatap Muka).',
-          placement: 'top',
-          disableBeacon: true,
-          spotlightPadding: 6,
-        },
-        {
-          target: '.tour-book-now',
-          title: 'Sewa & Atur Jadwal',
-          content: 'Sama seperti ini! Tinggal klik Booking Sekarang, dan jadwal belajarmu akan otomatis tercatat.',
-          placement: 'top',
-          disableBeacon: true,
-          spotlightPadding: 8,
-        }
-      ];
-    }
+      if (!hasCompletedMain && tourType !== 'main') {
+        setTourType('main');
+        setSteps([
+          {
+            target: 'body',
+            title: 'Selamat Datang! 👋',
+            content: 'Halo! Selamat datang di TutorKu. Yuk ikuti tur singkat ini untuk berkenalan dengan fitur yang ada.',
+            placement: 'center',
+            disableBeacon: true,
+          },
+          {
+            target: exploreTarget,
+            title: 'Cari Tutor',
+            content: 'Buka menu pencarian ini untuk melihat daftar semua tutor terbaik yang tersedia.',
+            placement: isMobile ? 'top' : 'right',
+            disableBeacon: true,
+            spotlightPadding: 6,
+          },
+          {
+            target: '.tour-filter-gender',
+            title: 'Filter Gender',
+            content: 'Kamu bisa memfilter tutor berdasarkan gender jika kamu merasa lebih nyaman belajar dengan gender tertentu.',
+            placement: 'bottom',
+            disableBeacon: true,
+            spotlightPadding: 6,
+          },
+          {
+            target: '.tour-filter-subject',
+            title: 'Pilih Mata Pelajaran',
+            content: 'Pilih mata pelajaran yang ingin kamu pelajari agar pencarian tutor lebih spesifik dan tepat sasaran.',
+            placement: 'bottom',
+            disableBeacon: true,
+            spotlightPadding: 6,
+          },
+          {
+            target: '.tour-tutor-card',
+            title: 'Pilih Tutor',
+            content: 'Klik kartu tutor yang kamu sukai untuk melihat profil detail dan mengatur jadwal bareng mereka.',
+            placement: 'top-start',
+            disableBeacon: true,
+            spotlightPadding: 8,
+          }
+        ]);
+        setStepIndex(0);
+        setRun(true);
+      } else if (hasCompletedMain && !hasCompletedBooking && selectedTutorId && tourType !== 'booking') {
+        setTourType('booking');
+        setSteps([
+          {
+            target: '.tour-schedule',
+            title: 'Pilih Jadwal',
+            content: 'Silakan pilih tanggal dan jam luangmu untuk mengadakan pelajaran.',
+            placement: 'top',
+            disableBeacon: true,
+            spotlightPadding: 6,
+          },
+          {
+            target: '.tour-mapel',
+            title: 'Tentukan Materi',
+            content: 'Pilih mata pelajaran spesifik yang ingin kamu bahas pada sesi ini.',
+            placement: 'top',
+            disableBeacon: true,
+            spotlightPadding: 6,
+          },
+          {
+            target: '.tour-method',
+            title: 'Metode Pertemuan',
+            content: 'Pilih apakah kamu ingin belajar secara Online atau Offline (Tatap Muka).',
+            placement: 'top',
+            disableBeacon: true,
+            spotlightPadding: 6,
+          },
+          {
+            target: '.tour-book-now',
+            title: 'Sewa & Atur Jadwal',
+            content: 'Sama seperti ini! Tinggal klik Booking Sekarang, dan jadwal belajarmu akan otomatis tercatat.',
+            placement: 'top',
+            disableBeacon: true,
+            spotlightPadding: 8,
+          }
+        ]);
+        setStepIndex(0);
+        setRun(true);
+      }
+    }, 1000); // 1s delay before starting tour
 
-    if (currentSteps.length > 0) {
-      setSteps(currentSteps);
-      setTimeout(() => setRun(true), 1200);
-    } else {
-      setRun(false);
-    }
-
-  }, [userRole, selectedTutorId]);
+    return () => clearTimeout(timer);
+  }, [userRole, selectedTutorId, tourType, activeTab]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, action, step, index, type } = data;
-    
-    // Check if it's the home tour
-    const isHomeTour = steps.length > 0 && steps[1]?.title === 'Cari Tutor';
-    const isSearchTour = steps.length > 0 && steps[0]?.title === 'Filter Gender';
-    const isDetailTour = steps.length > 0 && steps[0]?.title === 'Pilih Jadwal';
+    const { status, action, index, type } = data;
 
     if (type === 'step:after') {
       if (action === 'next') {
-        if (step.target === '.tour-explore-desktop' || step.target === '.tour-explore-mobile') {
+        if (tourType === 'main' && index === 1) {
+          // Transition to Explore tab
           setActiveTab('search');
-          // Important: after moving to search, Joyride for Home will end since target disappears? No, 
-          // let Joyride naturally finish this step, and then the next render will have activeTab === search,
-          // so Home tour ends, and Search tour begins!
+          setTimeout(() => setStepIndex(index + 1), 600); // give it time to render the explore page
+          return;
         }
+        setStepIndex(index + 1);
+      } else if (action === 'prev') {
+        if (tourType === 'main' && index === 2) {
+          // Navigating back to Home tab
+          setActiveTab('home');
+          setTimeout(() => setStepIndex(index - 1), 600);
+          return;
+        }
+        setStepIndex(index - 1);
       }
-    }
-
-    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
-
-    // Check if the user finished or skipped the tour
-    if (finishedStatuses.includes(status) || action === 'close') {
+    } else if (status === STATUS.FINISHED || status === STATUS.SKIPPED || action === 'close') {
       setRun(false);
       
-      if (action === 'close' || status === STATUS.SKIPPED) {
+      if (status === STATUS.SKIPPED || action === 'close') {
         localStorage.setItem('tutorku_tour_skipped', 'true');
+        setTourType(null); // Clear active tour
       } else {
-        if (isHomeTour) {
-          localStorage.setItem('tutorku_tour_home', 'true');
-        } else if (isSearchTour) {
-          localStorage.setItem('tutorku_tour_search', 'true');
-        } else if (isDetailTour) {
-          localStorage.setItem('tutorku_tour_detail', 'true');
+        if (tourType === 'main') {
+          localStorage.setItem('tutorku_tour_main_completed', 'true');
+          setActiveTab('home'); // Go back to dashboard as requested
+        } else if (tourType === 'booking') {
+          localStorage.setItem('tutorku_tour_booking_completed', 'true');
         }
+        setTourType(null);
       }
     }
   };
@@ -202,6 +203,7 @@ export function AppTour() {
 
   return (
     <Joyride
+      stepIndex={stepIndex}
       callback={handleJoyrideCallback}
       continuous
       run={run}
