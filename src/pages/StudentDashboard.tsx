@@ -3,9 +3,11 @@ import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
 import { Calendar, Package, ArrowRight, BookOpen, Clock, Activity, Video, MessageSquare, Star, Search, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export function StudentDashboard() {
   const { userProfile, setActiveTab, setTargetSessionId, setSelectedTutorId } = useAppContext();
+  const { t } = useTranslation();
   const [upcomingSession, setUpcomingSession] = useState<any | null>(null);
   const [activePackages, setActivePackages] = useState<any[]>([]);
   const [latestReport, setLatestReport] = useState<any | null>(null);
@@ -136,10 +138,10 @@ export function StudentDashboard() {
         <div className="absolute w-[300px] h-[300px] -top-[100px] -right-[50px] rounded-full pointer-events-none" style={{background: 'radial-gradient(circle, var(--color-lime-mid) 0%, transparent 70%)'}}></div>
         
         <h1 className="text-2xl md:text-[36px] font-display font-extrabold text-white mb-2 tracking-tight relative z-10">
-          Selamat datang, <span className="text-lime">{userProfile?.full_name?.split(' ')[0]}! 👋</span>
+          {t('dashboard.welcome')} <span className="text-lime">{userProfile?.full_name?.split(' ')[0]}! 👋</span>
         </h1>
         <p className="text-white/80 font-medium text-[15px] relative z-10 max-w-md">
-          Sudah siap untuk mengejar mimpimu hari ini? Mari mulai belajar dan capai targetmu!
+          {t('dashboard.ready')}
         </p>
       </motion.div>
 
@@ -160,10 +162,10 @@ export function StudentDashboard() {
             <motion.div variants={itemVariants}>
               <div className="flex items-center justify-between mb-4 px-2">
                  <h2 className="text-xl font-bold font-display text-text-main flex items-center gap-2">
-                   <Calendar size={20} className="text-blue-500" /> Sesi Terdekat
+                   <Calendar size={20} className="text-blue-500" /> {t('dashboard.upcoming_session')}
                  </h2>
                  <button onClick={() => goToSesi()} className="text-[13px] font-bold text-lime hover:opacity-80 transition-opacity bg-lime/10 px-3 py-1.5 rounded-full uppercase tracking-wide">
-                   Lihat Semua
+                   {t('dashboard.see_all')}
                  </button>
               </div>
 
@@ -179,7 +181,7 @@ export function StudentDashboard() {
                      <div className="flex-1">
                         <h3 className="font-extrabold font-display text-text-main text-2xl mb-1.5 tracking-tight group-hover:text-lime transition-colors">{upcomingSession.subject}</h3>
                         <p className="text-[15px] text-text-sub flex items-center gap-2 font-medium">
-                          Tutor: <span className="text-text-main shrink-0">{upcomingSession.tutor_profiles?.profiles?.full_name || 'Tutor'}</span>
+                          {t('profile.tutor_label')}: <span className="text-text-main shrink-0">{upcomingSession.tutor_profiles?.profiles?.full_name || 'Tutor'}</span>
                         </p>
                      </div>
                      
@@ -203,7 +205,7 @@ export function StudentDashboard() {
                           onClick={e => e.stopPropagation()}
                           className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 shadow-[0_0_20px_rgba(59,130,246,0.3)] text-white font-extrabold tracking-wide py-3.5 rounded-xl text-[15px] transition-all hover:-translate-y-0.5"
                         >
-                          <Video size={20} strokeWidth={2.5} /> MASUK KELAS ONLINE
+                          <Video size={20} strokeWidth={2.5} /> {t('dashboard.join_class')}
                         </a>
                      </div>
                    )}
@@ -213,13 +215,13 @@ export function StudentDashboard() {
                    <div className="w-20 h-20 bg-bg-3 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                      <Calendar size={36} className="text-text-sub opacity-50" strokeWidth={1.5} />
                    </div>
-                   <h3 className="text-xl font-bold font-display text-text-main mb-3">Belum ada sesi jadwalan</h3>
-                   <p className="text-[15px] text-text-sub mb-8 max-w-sm">Jadwalmu saat ini kosong. Ayo mulai langkah barumu dengan mencari tutor pilihan.</p>
+                   <h3 className="text-xl font-bold font-display text-text-main mb-3">{t('dashboard.no_upcoming')}</h3>
+                   <p className="text-[15px] text-text-sub mb-8 max-w-sm">{t('dashboard.no_upcoming_desc')}</p>
                    <button 
                      onClick={() => setActiveTab('explore')}
                      className="px-6 py-3.5 bg-lime text-black font-extrabold tracking-wide text-[15px] rounded-xl hover:opacity-90 flex items-center gap-2 shadow-[0_0_20px_var(--color-lime-dim)] hover:-translate-y-0.5 transition-all uppercase"
                    >
-                     Cari Tutor Sekarang <ArrowRight size={18} strokeWidth={2.5} />
+                     {t('dashboard.find_tutor_now')} <ArrowRight size={18} strokeWidth={2.5} />
                    </button>
                 </div>
               )}
@@ -231,7 +233,7 @@ export function StudentDashboard() {
                  <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-lime/5 rounded-full blur-2xl group-hover:bg-lime/10 transition-colors duration-700"></div>
                  <div className="flex items-center justify-between mb-4 relative z-10">
                    <h2 className="text-xl font-bold font-display text-text-main flex items-center gap-2">
-                     <MessageSquare size={20} className="text-lime" /> Catatan Tutor Terakhir
+                     <MessageSquare size={20} className="text-lime" /> {t('dashboard.latest_note')}
                    </h2>
                    <div className="flex text-lime">
                      {[...Array(5)].map((_, i) => (
@@ -241,12 +243,12 @@ export function StudentDashboard() {
                  </div>
                  <div className="relative z-10">
                    <div className="flex items-center gap-2 mb-3">
-                     <span className="text-text-sub font-medium text-sm">Review dari:</span>
+                     <span className="text-text-sub font-medium text-sm">{t('dashboard.review_from')}</span>
                      <span className="text-text-main font-bold text-sm bg-bg-3 px-2 py-1 rounded-md">
                        {latestReport.tutor_profiles?.profiles?.full_name || 'Tutor'}
                      </span>
                      <span className="text-text-sub text-xs ml-auto">
-                       {new Date(latestReport.sessions?.session_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                       {new Date(latestReport.sessions?.session_date).toLocaleDateString(t('common.date_locale') || 'id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                      </span>
                    </div>
                    <p className="text-[15px] leading-relaxed text-text-main/90 italic border-l-4 border-lime/50 pl-4 py-1 mb-4">
@@ -254,7 +256,7 @@ export function StudentDashboard() {
                    </p>
                    {latestReport.homework && (
                      <div className="bg-lime/5 border border-lime/10 rounded-xl p-4">
-                       <p className="text-[12px] font-mono text-lime uppercase font-bold mb-1 tracking-wider">Tugas / Catatan Tambahan:</p>
+                       <p className="text-[12px] font-mono text-lime uppercase font-bold mb-1 tracking-wider">{t('dashboard.extra_notes')}</p>
                        <p className="text-sm text-text-main">{latestReport.homework}</p>
                      </div>
                    )}
@@ -272,8 +274,8 @@ export function StudentDashboard() {
                    <Activity size={24} strokeWidth={2} />
                  </div>
                  <div>
-                   <h4 className="font-bold text-text-main text-[16px] md:text-lg mb-1 tracking-tight">Lihat Progress</h4>
-                   <p className="text-[12px] md:text-[13px] text-text-sub font-medium leading-tight">Pantau perkembangan</p>
+                   <h4 className="font-bold text-text-main text-[16px] md:text-lg mb-1 tracking-tight">{t('dashboard.see_progress')}</h4>
+                   <p className="text-[12px] md:text-[13px] text-text-sub font-medium leading-tight">{t('dashboard.monitor_development')}</p>
                  </div>
                </button>
 
@@ -285,8 +287,8 @@ export function StudentDashboard() {
                    <BookOpen size={24} strokeWidth={2} />
                  </div>
                  <div>
-                   <h4 className="font-bold text-text-main text-[16px] md:text-lg mb-1 tracking-tight">Eksplor Tutor</h4>
-                   <p className="text-[12px] md:text-[13px] text-text-sub font-medium leading-tight">Cari pelajaran baru</p>
+                   <h4 className="font-bold text-text-main text-[16px] md:text-lg mb-1 tracking-tight">{t('dashboard.explore_tutors')}</h4>
+                   <p className="text-[12px] md:text-[13px] text-text-sub font-medium leading-tight">{t('dashboard.find_new_lessons')}</p>
                  </div>
                </button>
             </motion.div>
@@ -295,10 +297,10 @@ export function StudentDashboard() {
             <motion.div variants={itemVariants} className="mt-8">
                <div className="flex items-center justify-between mb-4 px-2">
                  <h2 className="text-xl font-bold font-display text-text-main flex items-center gap-2">
-                   <Star size={20} className="text-yellow-500" /> Rekomendasi Tutor
+                   <Star size={20} className="text-yellow-500" /> {t('dashboard.recommended_tutors')}
                  </h2>
                  <button onClick={() => setActiveTab('search')} className="text-[13px] font-bold text-lime hover:opacity-80 transition-opacity bg-lime/10 px-3 py-1.5 rounded-full uppercase tracking-wide">
-                   Lihat Semua
+                   {t('dashboard.see_all')}
                  </button>
                </div>
                <div className="space-y-4">
@@ -351,7 +353,7 @@ export function StudentDashboard() {
                              })
                            }
                            <span className="text-[10px] font-bold text-lime bg-lime/10 px-2 py-[2px] rounded-sm border border-lime/20 whitespace-nowrap">
-                             Rp{(tutor.hourly_rate || 0).toLocaleString('id-ID')}/jam
+                             Rp{(tutor.hourly_rate || 0).toLocaleString('id-ID')}{t('dashboard.hourly')}
                            </span>
                         </div>
                       </div>
@@ -363,7 +365,7 @@ export function StudentDashboard() {
                  {popularTutors.length === 0 && (
                    <div className="text-center py-6 border-[1.5px] border-border/50 border-dashed rounded-2xl">
                      <Search size={24} className="text-text-sub mx-auto mb-2 opacity-50" />
-                     <p className="text-sm text-text-sub">Belum ada rekomendasi.</p>
+                     <p className="text-sm text-text-sub">{t('dashboard.no_recommendations')}</p>
                    </div>
                  )}
                </div>
@@ -373,7 +375,7 @@ export function StudentDashboard() {
 
           <motion.div variants={itemVariants} className="space-y-6">
             <h2 className="text-xl font-bold font-display text-text-main flex items-center gap-2 px-2">
-               <Package size={20} className="text-orange-500" /> Paket Aktif
+               <Package size={20} className="text-orange-500" /> {t('profile.active_packages')}
             </h2>
             
             <div className="space-y-4">
@@ -382,20 +384,20 @@ export function StudentDashboard() {
                   <div key={pkg.id} className="bg-bg-2 border-[1.5px] hover:border-orange-500/50 transition-colors border-border p-5 rounded-2xl relative overflow-hidden group">
                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-500/10 to-transparent rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
                      <div className="relative z-10 flex flex-col h-full">
-                       <h3 className="font-extrabold text-text-main text-lg mb-1">{pkg.packages?.name || 'Paket'}</h3>
+                       <h3 className="font-extrabold text-text-main text-lg mb-1">{pkg.packages?.name || t('profile.learning_package')}</h3>
                        <p className="text-[13px] text-text-sub font-medium mb-5 flex items-center gap-2">
-                         <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Tutor: {pkg.tutor_profiles?.profiles?.full_name}
+                         <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> {t('profile.tutor_label')}: {pkg.tutor_profiles?.profiles?.full_name}
                        </p>
                        
                        <div className="flex justify-between items-end mt-auto pt-4 border-t border-border/60">
                          <span className="text-[12px] bg-orange-500/10 border border-orange-500/20 text-orange-500 font-bold font-mono px-3 py-1.5 rounded-lg">
-                           Sisa {pkg.remaining_sessions} sesi
+                           {t('dashboard.sessions_left').replace('{count}', String(pkg.remaining_sessions))}
                          </span>
                          <button
                            onClick={() => setActiveTab('explore')}
                            className="text-text-main hover:text-orange-500 font-bold text-xs flex items-center gap-1.5 hover:gap-2.5 transition-all uppercase tracking-wider"
                          >
-                           PAKAI <ArrowRight size={14} strokeWidth={2.5} />
+                           {t('dashboard.use_package')} <ArrowRight size={14} strokeWidth={2.5} />
                          </button>
                        </div>
                      </div>
@@ -406,12 +408,12 @@ export function StudentDashboard() {
                    <div className="w-12 h-12 bg-bg-3 rounded-full flex items-center justify-center mx-auto mb-3">
                      <Package size={20} className="text-text-sub opacity-50" />
                    </div>
-                   <p className="text-sm text-text-sub mb-4 font-medium">Kamu belum memiliki paket<br/>yang aktif saat ini.</p>
+                   <p className="text-sm text-text-sub mb-4 font-medium">{t('dashboard.no_active_packages')}</p>
                    <button 
                      onClick={() => setActiveTab('search')}
                      className="text-[13px] font-bold text-lime hover:underline underline-offset-4"
                    >
-                     Lihat Penawaran
+                     {t('dashboard.see_offers')}
                    </button>
                 </div>
               )}

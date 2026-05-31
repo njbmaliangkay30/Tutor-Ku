@@ -278,15 +278,8 @@ export function Profile() {
             {email}
           </div>
           <div className="bg-lime-mid border border-lime-dim text-lime text-[10px] font-bold px-3 py-1 rounded-full font-mono uppercase tracking-wider mb-4">
-            {isTutor ? "Tutor" : (userRole === "admin" ? "Admin" : "Siswa")}
+            {isTutor ? t('profile.role_tutor') : (userRole === "admin" ? t('profile.role_admin') : t('profile.role_student'))}
           </div>
-
-          <button
-            onClick={() => setIsEditing(true)}
-            className="px-4 py-1.5 rounded-lg border border-border-2 bg-bg-2 hover:border-lime text-[13px] font-bold transition-all text-text-main"
-          >
-            Edit Profil
-          </button>
         </div>
 
         {/* Menu List */}
@@ -302,25 +295,25 @@ export function Profile() {
                   {t('profile.personal_data')}
                 </div>
                 <div className="text-[11px] text-text-sub line-clamp-1">
-                  Ubah foto, nama, gender, dan biodata pribadi
+                  {t('profile.personal_data_desc')}
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 border-b border-border/60 bg-bg-2/30">
                <div className="p-4 border-r border-border/60">
-                  <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-1">Gender</div>
-                  <div className="text-sm font-bold text-text-main">{userProfile?.gender === 'L' ? 'Laki-laki' : (userProfile?.gender === 'P' ? 'Perempuan' : '-')}</div>
+                  <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-1">{t('profile.gender_field')}</div>
+                  <div className="text-sm font-bold text-text-main">{userProfile?.gender === 'L' ? t('profile.male') : (userProfile?.gender === 'P' ? t('profile.female') : '-')}</div>
                </div>
                <div className="p-4">
-                  <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-1">Tgl Lahir</div>
+                  <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-1">{t('profile.dob')}</div>
                   <div className="text-sm font-bold text-text-main">{userProfile?.birth_date ? new Date(userProfile.birth_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-'}</div>
                </div>
             </div>
 
             {!isTutor && userProfile?.school_level && (
               <div className="p-4 border-b border-border/60 bg-bg-2/10">
-                <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-1">Jenjang Tingkat Sekolah</div>
+                <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-1">{t('profile.education_level')}</div>
                 {(() => {
                    const level = userProfile.school_level;
                    return (
@@ -337,9 +330,9 @@ export function Profile() {
             )}
 
             <div className="p-4 border-b border-border/60">
-              <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-2">Biodata</div>
+              <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider mb-2">{t('profile.bio')}</div>
               <p className="text-[12px] text-text-main leading-relaxed italic opacity-80">
-                "{isTutor ? (tutorProfileData?.bio || "Belum ada biodata tutor.") : (userProfile?.bio || "Belum ada biodata.")}"
+                "{isTutor ? (tutorProfileData?.bio || t('profile.no_bio_tutor')) : (userProfile?.bio || t('profile.no_bio'))}"
               </p>
             </div>
             
@@ -348,7 +341,7 @@ export function Profile() {
                  <div className="text-[12px] font-bold text-text-main flex items-center gap-2">
                     <Settings size={14} className="text-lime" /> {t('profile.language')}
                  </div>
-                 <div className="text-[10px] text-text-sub mt-0.5">English / Bahasa Indonesia</div>
+                 <div className="text-[10px] text-text-sub mt-0.5">{t('profile.language_desc')}</div>
               </div>
               <div className="flex bg-bg-3 rounded-md border border-border p-0.5 relative">
                  <button 
@@ -367,10 +360,10 @@ export function Profile() {
               <Mail className="text-text-sub" size={20} />
               <div className="flex-1">
                 <div className="text-[14px] font-bold font-display">
-                  Email & Sandi
+                  {t('profile.security')}
                 </div>
                 <div className="text-[11px] text-text-sub">
-                  Kelola keamanan akun
+                  {t('profile.security_desc')}
                 </div>
               </div>
             </div>
@@ -378,10 +371,10 @@ export function Profile() {
               <Shield className="text-text-sub" size={20} />
               <div className="flex-1">
                 <div className="text-[14px] font-bold font-display">
-                  Privasi
+                  {t('profile.privacy')}
                 </div>
                 <div className="text-[11px] text-text-sub">
-                  Atur visibilitas dan data
+                  {t('profile.privacy_desc')}
                 </div>
               </div>
             </div>
@@ -391,7 +384,7 @@ export function Profile() {
             <div className="bg-card border-[1.5px] border-border/60 rounded-xl overflow-hidden shadow-sm">
               <div className="bg-bg-2 p-3 border-b border-border/60">
                 <div className="text-[12px] font-bold font-mono tracking-widest uppercase text-text-sub">
-                  Profil Publik (Tutor)
+                  {t('profile.settings_section')} (Tutor)
                 </div>
               </div>
               <div className="flex items-center gap-3 p-4 cursor-pointer hover:bg-bg-3/50 transition-colors border-b border-border/60">
@@ -401,10 +394,10 @@ export function Profile() {
                   onClick={() => setIsEditing(true)}
                 >
                   <div className="text-[14px] font-bold font-display">
-                    Biodata & Pengalaman
+                    {t('profile.bio_tutor')}
                   </div>
                   <div className="text-[11px] text-text-sub">
-                    Ceritakan tentang diri Anda untuk menarik siswa
+                    {t('profile.personal_data_desc')}
                   </div>
                 </div>
               </div>
@@ -413,7 +406,7 @@ export function Profile() {
                 <div className="flex-1 flex justify-between items-center">
                   <div>
                     <div className="text-[14px] font-bold font-display">
-                      Mata Pelajaran
+                      {t('profile.subjects')}
                     </div>
                     <div className="text-[11px] text-text-sub mt-1 flex flex-wrap gap-1">
                       {tutorProfileData?.learning_styles?.includes('Bisa Bahasa Inggris') && (
@@ -441,7 +434,7 @@ export function Profile() {
                     </div>
                   </div>
                   <span className="bg-lime-mid text-lime text-[10px] font-bold px-2 py-0.5 rounded font-mono border border-lime-dim">
-                    {tutorProfileData?.target_subjects?.length || 0} Mapel
+                    {tutorProfileData?.target_subjects?.length || 0} {t('profile.subjects_count')}
                   </span>
                 </div>
               </div>
@@ -453,10 +446,10 @@ export function Profile() {
                 <div className="flex-1 flex justify-between items-center">
                   <div>
                     <div className="text-[14px] font-bold font-display">
-                      Tarif per Sesi
+                      {t('profile.payment_section')}
                     </div>
                     <div className="text-[11px] text-text-sub">
-                      Atur harga per jam mengajar
+                      {t('profile.payment_desc')}
                     </div>
                   </div>
                   <span className="text-[12px] font-bold font-mono text-lime">
@@ -468,10 +461,10 @@ export function Profile() {
                 <Package className="text-text-sub" size={20} />
                 <div className="flex-1">
                   <div className="text-[14px] font-bold font-display">
-                    Riwayat Penarikan Saldo
+                    {t('profile.history')}
                   </div>
                   <div className="text-[11px] text-text-sub">
-                    Earnings history & withdrawal
+                    {t('profile.payment_desc')}
                   </div>
                 </div>
               </div>
@@ -484,10 +477,10 @@ export function Profile() {
                 <BookOpen className="text-text-sub" size={20} />
                 <div className="flex-1">
                   <div className="text-[14px] font-bold font-display">
-                    Preferensi Belajar
+                    {t('profile.settings')}
                   </div>
                   <div className="text-[11px] text-text-sub">
-                    Mata pelajaran favorit, gaya belajar
+                    {t('profile.personal_data_desc')}
                   </div>
                 </div>
               </div>
@@ -499,14 +492,14 @@ export function Profile() {
                 <div className="flex-1 flex justify-between items-center">
                   <div>
                     <div className="text-[14px] font-bold font-display">
-                      Paket Aktif
+                      {t('profile.active_packages')}
                     </div>
                     <div className="text-[11px] text-text-sub">
-                      Sisa kuota sesi belajar privat Anda
+                      {t('profile.active_packages_desc')}
                     </div>
                   </div>
                   <span className="bg-lime-mid text-lime text-[10px] font-bold px-2 py-0.5 rounded font-mono border border-lime-dim">
-                    {myPackages.reduce((sum, p) => sum + (p.remaining_sessions || 0), 0)} Sesi
+                    {myPackages.reduce((sum, p) => sum + (p.remaining_sessions || 0), 0)} {t('profile.sessions_count')}
                   </span>
                 </div>
               </div>
@@ -514,10 +507,10 @@ export function Profile() {
                 <CreditCard className="text-text-sub" size={20} />
                 <div className="flex-1">
                   <div className="text-[14px] font-bold font-display">
-                    Riwayat Pembayaran
+                    {t('profile.payment_title')}
                   </div>
                   <div className="text-[11px] text-text-sub">
-                    Invoice dan riwayat top-up/beli paket
+                    {t('profile.payment_desc')}
                   </div>
                 </div>
               </div>
@@ -550,7 +543,7 @@ export function Profile() {
            <div className="bg-card border border-border sm:shadow-2xl sm:rounded-2xl w-full h-full sm:h-auto sm:max-w-[500px] flex flex-col sm:max-h-[85vh] overflow-hidden relative">
               <div className="flex items-center justify-between p-4 border-b border-border bg-bg-2">
                 <h3 className="font-display font-bold text-lg flex items-center gap-2">
-                  <Settings size={20} className="text-lime" /> Edit Profil
+                  <Settings size={20} className="text-lime" /> {t('profile.edit_profile')}
                 </h3>
                 <button onClick={() => setIsEditing(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-bg-2 transition-colors">
                   <X size={18} />
@@ -588,33 +581,33 @@ export function Profile() {
                       }}
                     />
                   </div>
-                  <span className="text-xs text-text-sub">Ubah Foto Profil</span>
+                  <span className="text-xs text-text-sub">{t('profile.change_avatar')}</span>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Nama Lengkap</label>
+                  <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">{t('profile.full_name')}</label>
                   <input 
                     type="text" 
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     className="w-full bg-bg-2 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all"
-                    placeholder="Masukkan nama lengkap"
+                    placeholder={t('profile.placeholder_name')}
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Nomor HP / WhatsApp</label>
+                  <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">{t('profile.phone')}</label>
                   <input 
                     type="text" 
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     className="w-full bg-bg-2 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all"
-                    placeholder="Contoh: 081234567890"
+                    placeholder={t('profile.placeholder_phone')}
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Tanggal Lahir</label>
+                  <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">{t('profile.dob')}</label>
                   <input 
                     type="date" 
                     value={birthDate}
@@ -624,27 +617,27 @@ export function Profile() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Jenis Kelamin</label>
+                  <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">{t('profile.gender_field')}</label>
                   <select 
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
                     className="w-full bg-bg-2 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all appearance-none"
                   >
-                    <option value="">Pilih Jenis Kelamin</option>
-                    <option value="L">Laki-laki</option>
-                    <option value="P">Perempuan</option>
+                    <option value="">{t('profile.select_gender')}</option>
+                    <option value="L">{t('profile.male')}</option>
+                    <option value="P">{t('profile.female')}</option>
                   </select>
                 </div>
 
                 {!isTutor && userRole !== 'admin' && (
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Jenjang Pendidikan Saat Ini</label>
+                    <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">{t('profile.education_level')}</label>
                     <select 
                       value={schoolLevel}
                       onChange={(e) => setSchoolLevel(e.target.value)}
                       className="w-full bg-bg-2 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all appearance-none"
                     >
-                      <option value="">Pilih Jenjang</option>
+                      <option value="">{t('profile.select_edu')}</option>
                       <option value="SD">SD (Sekolah Dasar)</option>
                       <option value="SMP">SMP (Sekolah Menengah Pertama)</option>
                       <option value="SMA/SMK">SMA/SMK</option>
@@ -657,30 +650,30 @@ export function Profile() {
                 {isTutor && (
                   <>
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Alamat Lengkap</label>
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">{t('profile.address')}</label>
                       <input 
                         type="text" 
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         className="w-full bg-bg-2 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all"
-                        placeholder="Domisili kota/alamat..."
+                        placeholder={t('profile.placeholder_address')}
                       />
                     </div>
                     
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Asal Universitas <span className="text-warning">*</span></label>
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">{t('profile.university')} <span className="text-warning">*</span></label>
                       <input 
                         type="text" 
                         required
                         value={university}
                         onChange={(e) => setUniversity(e.target.value)}
                         className="w-full bg-bg-2 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all"
-                        placeholder="Contoh: Universitas Indonesia"
+                        placeholder={t('profile.placeholder_university')}
                       />
                     </div>
                     
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Mapel yang Dikuasai</label>
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">{t('profile.subjects')}</label>
                       <div className="flex flex-wrap gap-2">
                         {["Matematika", "Fisika", "Kimia", "Biologi", "Bahasa Inggris", "Bahasa Indonesia", "Sejarah"].map(sub => (
                           <span 
@@ -695,7 +688,7 @@ export function Profile() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Tipe Mengajar</label>
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">{t('profile.teaching_type')}</label>
                       <div className="flex gap-4">
                         {["Online", "Offline"].map(type => (
                           <label key={type} className="flex items-center gap-2 cursor-pointer">
@@ -712,7 +705,7 @@ export function Profile() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Bilingual (Bahasa Inggris)</label>
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">{t('profile.bilingual')}</label>
                       <label className="flex items-center gap-2 cursor-pointer border border-border p-3 rounded-xl bg-bg-2">
                         <input 
                           type="checkbox" 
@@ -720,12 +713,12 @@ export function Profile() {
                           onChange={() => toggleLearningStyle("Bisa Bahasa Inggris")}
                           className="w-4 h-4 accent-lime"
                         />
-                        <span className="text-[13px] font-bold text-text-main">Sedia mengajar Full English / Bilingual</span>
+                        <span className="text-[13px] font-bold text-text-main">{t('profile.bilingual_desc')}</span>
                       </label>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Jenjang Siswa yang Diutamakan</label>
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">{t('profile.student_level')}</label>
                       <div className="flex flex-wrap gap-2">
                         {["Jenjang: SD", "Jenjang: SMP", "Jenjang: SMA", "Jenjang: Mahasiswa/Umum"].map(type => (
                           <span 
@@ -740,9 +733,9 @@ export function Profile() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Hari & Jam Tersedia</label>
+                      <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">{t('profile.available_schedule')}</label>
                       <div className="border border-border p-3 rounded-xl bg-bg-2">
-                        <p className="text-[10px] text-text-sub mb-2">Pilih hari mengajar</p>
+                        <p className="text-[10px] text-text-sub mb-2">{t('profile.select_day')}</p>
                         <div className="flex flex-wrap gap-2 mb-4">
                            {[{id: 1, name: "Sen"}, {id: 2, name: "Sel"}, {id: 3, name: "Rab"}, {id: 4, name: "Kam"}, {id: 5, name: "Jum"}, {id: 6, name: "Sab"}, {id: 0, name: "Min"}].map(day => (
                              <span 
@@ -756,7 +749,7 @@ export function Profile() {
                         </div>
                         {selectedDay !== null && (
                           <div className="animate-pgIn">
-                            <p className="text-[10px] text-text-sub mb-2">Pilih jam pada hari {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"][selectedDay]}</p>
+                            <p className="text-[10px] text-text-sub mb-2">{t('profile.select_hour')} {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"][selectedDay]}</p>
                             <div className="flex flex-wrap gap-2">
                                {["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "18:00", "19:00", "20:00"].map(hour => (
                                  <span 
@@ -776,13 +769,13 @@ export function Profile() {
                 )}
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">Tentang Saya {isTutor ? "(Pengalaman mengajar)" : ""}</label>
+                  <label className="text-[12px] font-bold text-text-sub ml-1 uppercase font-mono tracking-wider">{isTutor ? t('profile.bio_tutor') : t('profile.bio')}</label>
                   <textarea 
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     rows={4}
                     className="w-full bg-bg-2 border border-border-2 rounded-xl px-4 py-3 text-[14px] text-text-main focus:outline-none focus:border-lime focus:ring-1 focus:ring-lime transition-all resize-none"
-                    placeholder="Ceritakan sedikit tentang diri Anda..."
+                    placeholder={isTutor ? t('profile.placeholder_bio_tutor') : t('profile.placeholder_bio')}
                   />
                 </div>
               </div>
@@ -792,7 +785,7 @@ export function Profile() {
                   onClick={() => setIsEditing(false)}
                   className="px-5 py-2.5 rounded-lg border border-border bg-bg-3 font-bold text-[13px] hover:bg-bg-2 transition-colors"
                 >
-                  Batal
+                  {t('common.cancel')}
                 </button>
                 <button 
                   onClick={handleSaveProfile}
@@ -800,7 +793,7 @@ export function Profile() {
                   className="px-6 py-2.5 rounded-lg bg-lime hover:bg-lime-hover text-black font-bold text-[13px] transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                  {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+                  {isSaving ? t('common.loading') : t('common.save')}
                 </button>
               </div>
            </div>
@@ -822,7 +815,7 @@ export function Profile() {
 
             <div className="p-5 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4">
               <p className="text-xs text-text-sub">
-                Paket yang telah Anda beli terikat untuk masing-masing Tutor spesifik agar perhitungan potongan harga adil dan transparan.
+                {t('profile.packages_desc')}
               </p>
 
               {isFetchingPkgs ? (
@@ -832,9 +825,9 @@ export function Profile() {
               ) : myPackages.length === 0 ? (
                 <div className="text-center py-12 px-4 border border-dashed border-border rounded-xl">
                   <Package className="mx-auto text-text-light/50 mb-3" size={36} />
-                  <p className="text-sm font-bold text-text-main">Belum Ada Paket Aktif</p>
+                  <p className="text-sm font-bold text-text-main">{t('profile.empty_packages_title')}</p>
                   <p className="text-xs text-text-sub mt-1">
-                    Silakan beli paket di profil Tutor pilihan Anda untuk menikmati potongan harga spesial.
+                    {t('profile.empty_packages_desc')}
                   </p>
                   <button
                     onClick={() => {
@@ -843,15 +836,15 @@ export function Profile() {
                     }}
                     className="mt-4 px-4 py-2 text-xs font-bold bg-lime text-black rounded-lg hover:bg-lime-hover transition-colors"
                   >
-                    Cari Tutor Terbaik
+                    {t('profile.find_tutor')}
                   </button>
                 </div>
               ) : (
                 <div className="space-y-3.5">
                   {myPackages.map((pkg) => {
                     const expiryStr = pkg.valid_until 
-                      ? new Date(pkg.valid_until).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })
-                      : "Selamanya";
+                      ? new Date(pkg.valid_until).toLocaleDateString(language === 'id' ? "id-ID" : "en-US", { day: 'numeric', month: 'long', year: 'numeric' })
+                      : t('profile.forever');
                     const tutorName = pkg.tutor?.name || "Tutor Kita";
 
                     return (
@@ -859,22 +852,22 @@ export function Profile() {
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="text-xs text-text-sub font-mono font-semibold uppercase tracking-wider text-lime">
-                              {pkg.packages?.name || "Paket Belajar"}
+                              {pkg.packages?.name || t('profile.learning_package')}
                             </div>
                             <div className="font-display text-[15px] font-bold text-text-main mt-0.5">
-                              Tutor: {tutorName}
+                              {t('profile.tutor_label')}: {tutorName}
                             </div>
                             <div className="text-[11px] text-text-sub">
                               {pkg.tutor?.university} • {pkg.tutor?.major}
                             </div>
                           </div>
                           <span className="bg-lime text-black text-[12px] font-bold px-2.5 py-1 rounded-lg font-mono">
-                            {pkg.remaining_sessions} Sesi Sisa
+                            {pkg.remaining_sessions} {t('profile.sessions_left')}
                           </span>
                         </div>
 
                         <div className="flex items-center justify-between text-[11px] text-text-light font-mono pt-2 border-t border-border/65">
-                          <span>Berlaku s/d: {expiryStr}</span>
+                          <span>{t('profile.valid_until')}: {expiryStr}</span>
                           <button
                             onClick={() => {
                               setSelectedTutorId(pkg.tutor?.id);
@@ -882,7 +875,7 @@ export function Profile() {
                             }}
                             className="bg-lime/10 border border-lime/30 text-lime px-3 py-1.5 rounded-lg hover:bg-lime hover:text-black font-bold transition-all"
                           >
-                            Pesan Sesi Baru
+                            {t('profile.book_new_session')}
                           </button>
                         </div>
                       </div>
@@ -897,7 +890,7 @@ export function Profile() {
                 onClick={() => setShowPkgsModal(false)}
                 className="px-5 py-2.5 rounded-lg border border-border bg-bg-3 font-bold text-[13px] hover:bg-bg-2 transition-colors w-full"
               >
-                Tutup
+                {t('common.close')}
               </button>
             </div>
           </div>
