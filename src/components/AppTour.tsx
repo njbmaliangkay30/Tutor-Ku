@@ -119,25 +119,8 @@ export function AppTour() {
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, action, index, type } = data;
 
-    if (type === 'step:after') {
-      if (action === 'next') {
-        if (tourType === 'main' && index === 1) {
-          // Transition to Explore tab
-          setActiveTab('search');
-          setTimeout(() => setStepIndex(index + 1), 600); // give it time to render the explore page
-          return;
-        }
-        setStepIndex(index + 1);
-      } else if (action === 'prev') {
-        if (tourType === 'main' && index === 2) {
-          // Navigating back to Home tab
-          setActiveTab('home');
-          setTimeout(() => setStepIndex(index - 1), 600);
-          return;
-        }
-        setStepIndex(index - 1);
-      }
-    } else if (status === STATUS.FINISHED || status === STATUS.SKIPPED || action === 'close') {
+    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
+    if (finishedStatuses.includes(status) || action === 'close') {
       setRun(false);
       
       if (status === STATUS.SKIPPED || action === 'close') {
@@ -145,14 +128,13 @@ export function AppTour() {
         if (user) {
           supabase.auth.updateUser({ data: { tour_skipped: true } });
         }
-        setTourType(null); // Clear active tour
+        setTourType(null);
       } else {
         if (tourType === 'main') {
           localStorage.setItem('tutorku_tour_main_completed', 'true');
           if (user) {
             supabase.auth.updateUser({ data: { tour_main_completed: true } });
           }
-          setActiveTab('home'); // Go back to dashboard as requested
         } else if (tourType === 'booking') {
           localStorage.setItem('tutorku_tour_booking_completed', 'true');
           if (user) {
@@ -160,6 +142,25 @@ export function AppTour() {
           }
         }
         setTourType(null);
+      }
+      return; 
+    }
+
+    if (type === 'step:after' || type === 'error:target_not_found') {
+      if (action === 'next') {
+        if (tourType === 'main' && index === 1) {
+          setActiveTab('search');
+          setTimeout(() => setStepIndex(index + 1), 600);
+          return;
+        }
+        setStepIndex(index + 1);
+      } else if (action === 'prev') {
+        if (tourType === 'main' && index === 2) {
+          setActiveTab('home');
+          setTimeout(() => setStepIndex(index - 1), 600);
+          return;
+        }
+        setStepIndex(index - 1);
       }
     }
   };
