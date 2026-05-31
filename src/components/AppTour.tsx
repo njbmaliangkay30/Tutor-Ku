@@ -117,10 +117,10 @@ export function AppTour() {
   }, [userRole, selectedTutorId, tourType, activeTab]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, action, index, type } = data;
+    const { status, action, index, type, step } = data;
 
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
-    if (finishedStatuses.includes(status) || action === 'close') {
+    if (finishedStatuses.includes(status) || action === 'close' || type === 'tour:end') {
       setRun(false);
       
       if (status === STATUS.SKIPPED || action === 'close') {
@@ -146,18 +146,28 @@ export function AppTour() {
       return; 
     }
 
-    if (type === 'step:after' || type === 'error:target_not_found') {
+    if (type === 'error:target_not_found') {
+      // If a target is not found, let's gracefully wait a bit and retry, or just skip it
+      if (step.target === '.tour-filter-gender') {
+          setTimeout(() => setStepIndex(index), 100); // Trigger re-eval
+      } else {
+          setStepIndex(index + 1); // Skip the missing step
+      }
+      return;
+    }
+
+    if (type === 'step:after') {
       if (action === 'next') {
         if (tourType === 'main' && index === 1) {
           setActiveTab('search');
-          setTimeout(() => setStepIndex(index + 1), 600);
+          setTimeout(() => setStepIndex(index + 1), 100);
           return;
         }
         setStepIndex(index + 1);
       } else if (action === 'prev') {
         if (tourType === 'main' && index === 2) {
           setActiveTab('home');
-          setTimeout(() => setStepIndex(index - 1), 600);
+          setTimeout(() => setStepIndex(index - 1), 100);
           return;
         }
         setStepIndex(index - 1);
@@ -213,8 +223,6 @@ export function AppTour() {
     );
   };
 
-  if (!run || steps.length === 0) return null;
-
   return (
     <Joyride
       stepIndex={stepIndex}
@@ -224,7 +232,7 @@ export function AppTour() {
       scrollToFirstStep
       showProgress={false}
       showSkipButton
-      spotlightClicks={true}
+      disableOverlayClose={true}
       steps={steps}
       tooltipComponent={CustomTooltip}
       styles={{
