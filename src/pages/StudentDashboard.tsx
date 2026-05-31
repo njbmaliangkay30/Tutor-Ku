@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
-import { Calendar, Package, ArrowRight, BookOpen, Clock, Activity, Video, MessageSquare, Star } from 'lucide-react';
+import { Calendar, Package, ArrowRight, BookOpen, Clock, Activity, Video, MessageSquare, Star, Search, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function StudentDashboard() {
-  const { userProfile, setActiveTab, setTargetSessionId } = useAppContext();
+  const { userProfile, setActiveTab, setTargetSessionId, setSelectedTutorId } = useAppContext();
   const [upcomingSession, setUpcomingSession] = useState<any | null>(null);
   const [activePackages, setActivePackages] = useState<any[]>([]);
   const [latestReport, setLatestReport] = useState<any | null>(null);
-  const [stats, setStats] = useState({ completedSessions: 0, hoursLearned: 0 });
+  const [popularTutors, setPopularTutors] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -84,17 +84,20 @@ export function StudentDashboard() {
 
       setLatestReport(reportData || null);
 
-      // 4. Fetch progress stats
-      const { count: completedSessionsCount } = await supabase
-        .from('sessions')
-        .select('*', { count: 'exact', head: true })
-        .eq('student_id', userProfile?.id)
-        .eq('status', 'completed');
-
-      setStats({
-        completedSessions: completedSessionsCount || 0,
-        hoursLearned: (completedSessionsCount || 0) * 1.5
-      });
+      // 4. Fetch popular tutors for recommendation
+      const { data: tutorsRes } = await supabase
+        .from('tutor_profiles')
+        .select(`
+          id,
+          headline,
+          subjects,
+          price_per_hour,
+          profiles!inner(full_name, avatar_url)
+        `)
+        .eq('is_verified', true)
+        .limit(3);
+        
+      setPopularTutors(tutorsRes || []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -258,54 +261,89 @@ export function StudentDashboard() {
               </motion.div>
             )}
 
-            {/* Progress Stats */}
-            <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
-               <div className="bg-bg-2 border-[1.5px] border-border/60 p-6 md:p-8 rounded-[2rem] flex flex-col justify-center shadow-sm relative overflow-hidden group">
-                 <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-lime/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
-                 <p className="text-text-sub font-mono text-[12px] uppercase tracking-wider font-bold mb-2">Sesi Selesai</p>
-                 <div className="flex items-end gap-2 relative z-10">
-                   <h3 className="font-display text-5xl font-extrabold text-text-main">{stats.completedSessions}</h3>
-                   <span className="text-text-sub text-[15px] font-bold mb-1.5 uppercase font-mono tracking-tight">KALI</span>
-                 </div>
-               </div>
-               
-               <div className="bg-bg-2 border-[1.5px] border-border/60 p-6 md:p-8 rounded-[2rem] flex flex-col justify-center shadow-sm relative overflow-hidden group">
-                 <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-blue-500/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
-                 <p className="text-text-sub font-mono text-[12px] uppercase tracking-wider font-bold mb-2">Jam Belajar</p>
-                 <div className="flex items-end gap-2 relative z-10">
-                   <h3 className="font-display text-5xl font-extrabold text-text-main">{stats.hoursLearned}</h3>
-                   <span className="text-text-sub text-[15px] font-bold mb-1.5 uppercase font-mono tracking-tight">JAM</span>
-                 </div>
-               </div>
-            </motion.div>
-
             {/* Quick Actions */}
-            <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
+            <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4 mt-6">
                <button 
                   onClick={() => setActiveTab('progress')}
-                  className="bg-purple-500/10 border-[1.5px] border-purple-500/20 p-5 md:p-6 justify-start rounded-[2rem] hover:bg-purple-500/15 hover:border-purple-500/30 transition-all flex items-center gap-4 md:gap-5 text-left group"
+                  className="bg-purple-500/10 border-[1.5px] border-purple-500/20 p-5 md:p-6 justify-start rounded-[2rem] hover:bg-purple-500/15 hover:border-purple-500/30 transition-all flex items-center gap-4 md:gap-5 text-left group shadow-sm"
                >
                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/25 group-hover:scale-105 transition-transform">
                    <Activity size={24} strokeWidth={2} />
                  </div>
                  <div>
                    <h4 className="font-bold text-text-main text-[16px] md:text-lg mb-1 tracking-tight">Lihat Progress</h4>
-                   <p className="text-[12px] md:text-[13px] text-text-sub font-medium leading-tight">Pantau seluruh perkembangan</p>
+                   <p className="text-[12px] md:text-[13px] text-text-sub font-medium leading-tight">Pantau perkembangan</p>
                  </div>
                </button>
 
                <button 
                   onClick={() => setActiveTab('explore')}
-                  className="bg-lime/10 border-[1.5px] border-lime/20 p-5 md:p-6 justify-start rounded-[2rem] hover:bg-lime/15 hover:border-lime/30 transition-all flex items-center gap-4 md:gap-5 text-left group"
+                  className="bg-lime/10 border-[1.5px] border-lime/20 p-5 md:p-6 justify-start rounded-[2rem] hover:bg-lime/15 hover:border-lime/30 transition-all flex items-center gap-4 md:gap-5 text-left group shadow-sm"
                >
                  <div className="w-14 h-14 bg-gradient-to-br from-lime to-lime-mid text-black rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-lime/20 group-hover:scale-105 transition-transform">
                    <BookOpen size={24} strokeWidth={2} />
                  </div>
                  <div>
                    <h4 className="font-bold text-text-main text-[16px] md:text-lg mb-1 tracking-tight">Eksplor Tutor</h4>
-                   <p className="text-[12px] md:text-[13px] text-text-sub font-medium leading-tight">Cari pelajaran favormitu</p>
+                   <p className="text-[12px] md:text-[13px] text-text-sub font-medium leading-tight">Cari pelajaran baru</p>
                  </div>
                </button>
+            </motion.div>
+
+            {/* Rekomendasi Tutor */}
+            <motion.div variants={itemVariants} className="mt-8">
+               <div className="flex items-center justify-between mb-4 px-2">
+                 <h2 className="text-xl font-bold font-display text-text-main flex items-center gap-2">
+                   <Star size={20} className="text-yellow-500" /> Rekomendasi Tutor
+                 </h2>
+                 <button onClick={() => setActiveTab('search')} className="text-[13px] font-bold text-lime hover:opacity-80 transition-opacity bg-lime/10 px-3 py-1.5 rounded-full uppercase tracking-wide">
+                   Lihat Semua
+                 </button>
+               </div>
+               <div className="space-y-4">
+                 {popularTutors.map(tutor => (
+                   <div 
+                     key={tutor.id} 
+                     onClick={() => setSelectedTutorId(tutor.id)}
+                     className="bg-bg-2 border-[1.5px] border-border/60 hover:border-lime transition-colors p-4 rounded-2xl flex items-center gap-4 cursor-pointer group shadow-sm"
+                   >
+                      <div className="w-14 h-14 rounded-full bg-border/50 overflow-hidden shrink-0 border-2 border-transparent group-hover:border-lime transition-all">
+                        {tutor.profiles?.avatar_url ? (
+                          <img src={tutor.profiles.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-bg-3 flex items-center justify-center text-text-sub font-bold text-xl">
+                            {tutor.profiles?.full_name?.[0] || '?'}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-text-main truncate text-[15px] group-hover:text-lime transition-colors flex items-center gap-1.5">
+                          {tutor.profiles?.full_name} <ShieldCheck size={14} className="text-blue-500" />
+                        </h3>
+                        <p className="text-[13px] text-text-sub truncate mb-1">{tutor.headline || 'Tutor Mahasiswa'}</p>
+                        <div className="flex items-center gap-2">
+                           {tutor.subjects?.[0] && (
+                             <span className="text-[10px] font-mono font-bold bg-bg-3 px-2 py-0.5 rounded text-text-main">
+                               {tutor.subjects[0]}
+                             </span>
+                           )}
+                           <span className="text-[11px] font-bold text-lime bg-lime/10 px-2 py-0.5 rounded">
+                             Rp{(tutor.price_per_hour || 0).toLocaleString('id-ID')}/jam
+                           </span>
+                        </div>
+                      </div>
+                      <div className="w-8 h-8 rounded-full bg-bg-base border border-border flex items-center justify-center group-hover:bg-lime group-hover:text-black group-hover:border-lime transition-all shrink-0">
+                         <ArrowRight size={16} />
+                      </div>
+                   </div>
+                 ))}
+                 {popularTutors.length === 0 && (
+                   <div className="text-center py-6 border-[1.5px] border-border/50 border-dashed rounded-2xl">
+                     <Search size={24} className="text-text-sub mx-auto mb-2 opacity-50" />
+                     <p className="text-sm text-text-sub">Belum ada rekomendasi.</p>
+                   </div>
+                 )}
+               </div>
             </motion.div>
 
           </div>
