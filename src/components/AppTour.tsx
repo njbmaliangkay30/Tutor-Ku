@@ -213,6 +213,8 @@ export function AppTour() {
     );
   };
 
+  if (!run || steps.length === 0) return null;
+
   return (
     <Joyride
       stepIndex={stepIndex}
