@@ -26,19 +26,40 @@ export function GuidedTour() {
      if (!userProfile || !userProfile.phone) return;
 
      const meta = user.user_metadata || {};
-     // LocalStorage overrides for fast loading
+     
+     // Detect account mismatches and clear leftover localStorage keys
+     // If the database metadata says the user has NOT completed/skipped the tour,
+     // but the local browser cache says they have, it must be from a previous user session.
+     const dbMainDone = meta.tour_main_completed === true || meta.tour_skipped === true;
+     const dbBookingDone = meta.tour_booking_completed === true || meta.tour_skipped === true;
+
+     if (!dbMainDone && localStorage.getItem('tour_main_done') === 'true') {
+         localStorage.removeItem('tour_main_done');
+     }
+     if (!dbBookingDone && localStorage.getItem('tour_booking_done') === 'true') {
+         localStorage.removeItem('tour_booking_done');
+     }
+
      const lsMain = localStorage.getItem('tour_main_done');
      const lsBooking = localStorage.getItem('tour_booking_done');
      
-     const mainDone = meta.tour_main_completed || meta.tour_skipped || lsMain === 'true';
-     const bookingDone = meta.tour_booking_completed || meta.tour_skipped || lsBooking === 'true';
+     const mainDone = dbMainDone || lsMain === 'true';
+     const bookingDone = dbBookingDone || lsBooking === 'true';
      
+     // Cache them to localStorage if they are true from DB meta for faster future loading
+     if (dbMainDone && lsMain !== 'true') {
+         localStorage.setItem('tour_main_done', 'true');
+     }
+     if (dbBookingDone && lsBooking !== 'true') {
+         localStorage.setItem('tour_booking_done', 'true');
+     }
+
      setTourState({
          mainDone,
          bookingDone,
          ready: true
      });
-  }, [user, userRole]);
+  }, [user, userRole, userProfile]);
 
   // Phase logic
   useEffect(() => {
