@@ -56,15 +56,16 @@ export const parseLocationField = (locationStr: string | null | undefined) => {
 };
 
 export function StudentSessions() {
-  const [type, setType] = useState<'upcoming' | 'past' | 'invoices'>('upcoming');
+  const [type, setType] = useState<'upcoming' | 'past'>('upcoming');
   const [sessions, setSessions] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isTrxLoading, setIsTrxLoading] = useState(false);
-  const { user, userProfile, tutors, userRole, setActiveTab } = useAppContext();
+  const { user, userProfile, tutors, userRole, setActiveTab, targetSessionId, setTargetSessionId } = useAppContext();
   const { t, language } = useTranslation();
 
-  // Checkout / Payment detail modal
+  // Checkout / Payment / Session details modal
+  const [selectedSession, setSelectedSession] = useState<any | null>(null);
   const [selectedTrx, setSelectedTrx] = useState<any | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'bank_transfer' | 'qris'>('bank_transfer');
@@ -178,6 +179,21 @@ export function StudentSessions() {
     }
   }, [userProfile, user]);
 
+  useEffect(() => {
+    if (targetSessionId && sessions.length > 0) {
+      const found = sessions.find(s => s.id === targetSessionId);
+      if (found) {
+        setSelectedSession(found);
+        if (found.status === 'completed' || found.status === 'rejected' || found.status === 'cancelled') {
+          setType('past');
+        } else {
+          setType('upcoming');
+        }
+      }
+      setTargetSessionId(null);
+    }
+  }, [targetSessionId, sessions, setTargetSessionId]);
+
   const now = new Date();
   
   const getSessionEndDateTime = (s: any) => {
@@ -192,22 +208,10 @@ export function StudentSessions() {
   };
 
   const upcoming = sessions.filter(s => {
-    // Only show sessions that have been paid/approved, or are 'confirmed'
-    if (s.status === 'completed' || s.status === 'rejected') return false;
-    
-    // If pending, hide from active sessions (it belongs in invoices until approved and paid)
-    if (s.status === 'pending') return false;
-    
-    // Check if there is a pending transaction for this session (meaning it's approved but unpaid).
-    // Let's rely on transactions being paid.
-    // Actually, confirmed but unpaid is fine to show if the user's prompt just says "kalau belum disetujui tutor dan belum dibayar"
-    
-    return getSessionEndDateTime(s) >= now;
+    return s.status !== 'completed' && s.status !== 'rejected' && s.status !== 'cancelled';
   });
   const past = sessions.filter(s => {
-    if (s.status === 'completed' || s.status === 'rejected' || s.status === 'waiting_for_student') return true;
-    if (s.status === 'pending') return false;
-    return getSessionEndDateTime(s) < now;
+    return s.status === 'completed' || s.status === 'rejected' || s.status === 'cancelled';
   });
 
   const displayList = type === 'upcoming' ? upcoming : past;
@@ -272,9 +276,11 @@ export function StudentSessions() {
           }
        }
 
-       alert(t('sessions.alert_proof_success'));
-       fetchTransactions();
-       setSelectedTrx(null);
+        alert(t('sessions.alert_proof_success'));
+        fetchSessions();
+        fetchTransactions();
+        setSelectedSession(null);
+        setSelectedTrx(null);
     } catch (err: any) {
        console.error(err);
        alert(t('sessions.alert_upload_error') + ': ' + err.message);
@@ -374,441 +380,540 @@ export function StudentSessions() {
         >
           {t('sessions.tab_history')} ({past.length})
         </button>
-        <button
-          onClick={() => setType('invoices')}
-          className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${type === 'invoices' ? 'bg-lime-mid text-lime' : 'text-text-sub hover:text-text-main'}`}
-        >
-          {t('sessions.tab_invoices')} ({transactions.filter(t => t.status === 'pending' || t.status === 'pending_verification').length})
-        </button>
       </div>
 
       <div className="flex flex-col gap-4">
-        {type === 'invoices' ? (
-          isTrxLoading ? (
-            <div className="text-center py-8">{t('sessions.loading_invoices')}</div>
-          ) : transactions.length === 0 ? (
-            <div className="text-center py-8 text-text-sub border border-dashed border-border rounded-xl">{t('sessions.no_invoices')}</div>
-          ) : (
-            transactions.map((trx) => {
-              const itemType = trx.transaction_type === 'bundle_purchase' ? t('sessions.item_bundle') : t('sessions.item_single');
-              const associatedSession = Array.isArray(trx.sessions) ? trx.sessions[0] : trx.sessions;
-              const isSessionPending = associatedSession?.status === 'pending';
-              const isSessionRejected = associatedSession?.status === 'rejected';
-
-              return (
-                <div key={trx.id} className="bg-card border-[1.5px] border-border rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-lime/20 transition-colors">
-                  <div className="space-y-1">
-                    <div className="text-xs text-text-sub font-mono">{new Date(trx.created_at).toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID')}</div>
-                    <h3 className="font-bold text-text-main text-base">{itemType}</h3>
-                    <div className="font-mono font-bold text-lime mt-1 text-base">Rp {trx.amount?.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')}</div>
-                    {associatedSession && (
-                      <div className="text-[11px] text-text-sub flex items-center gap-1">
-                        {t('sessions.subject_label')} <strong className="text-text-main">{t(`subjects.${associatedSession.subject}`)}</strong> &bull; {t('sessions.schedule_label')} <strong className="text-text-main">{new Date(associatedSession.session_date).toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID')}</strong>
-                      </div>
-                    )}
-                    {trx.rejection_reason && trx.status === 'failed' && (
-                      <div className="text-xs text-red-400 bg-red-400/5 p-2 rounded border border-red-500/15 mt-2">
-                        {t('sessions.rejection_reason')} "{trx.rejection_reason}"
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
-                    <span className={`px-2.5 py-1.5 rounded text-[10px] font-bold font-mono uppercase tracking-wider text-center ${
-                      trx.status === 'success' ? 'bg-success/10 text-success border border-success/30' :
-                      trx.status === 'pending_verification' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' :
-                      trx.status === 'failed' ? 'bg-red-500/10 text-red-400 border border-red-500/30' :
-                      'bg-warning/15 text-warning border border-warning/30'
-                    }`}>
-                      {trx.status === 'pending_verification' ? t('sessions.status_label_pending_verification') : trx.status === 'success' ? t('sessions.status_label_success') : trx.status === 'failed' ? t('sessions.status_label_failed') : t('sessions.status_label_pending')}
-                    </span>
-                    
-                    {isSessionPending ? (
-                      <div className="flex flex-col items-center sm:items-end gap-1 text-center sm:text-right">
-                        <span className="text-xs text-warning font-semibold flex items-center gap-1 bg-warning/10 px-2.5 py-1 rounded">
-                          <Clock size={12} /> {t('sessions.waiting_tutor_approval')}
-                        </span>
-                        <span className="text-[9px] text-text-sub max-w-[200px] leading-tight">
-                          {t('sessions.payment_unlocks')}
-                        </span>
-                      </div>
-                    ) : isSessionRejected ? (
-                      <div className="flex flex-col items-center sm:items-end gap-1 text-center sm:text-right">
-                        <span className="text-xs text-red-400 font-semibold flex items-center gap-1 bg-red-400/10 px-2.5 py-1 rounded">
-                          <X size={12} /> {t('sessions.rejected_by_tutor')}
-                        </span>
-                        <span className="text-[9px] text-text-sub max-w-[200px] leading-tight">
-                          {t('sessions.rejected_no_pay')}
-                        </span>
-                      </div>
-                    ) : (
-                      (trx.status === 'pending' || trx.status === 'failed') && (
-                        <button
-                          onClick={() => setSelectedTrx(trx)}
-                          className="bg-lime text-black font-bold text-xs px-4 py-2.5 rounded-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5"
-                        >
-                          <CreditCard size={14} /> {t('sessions.pay_now')}
-                        </button>
-                      )
-                    )}
-
-                    {trx.status === 'pending_verification' && (
-                      <button
-                        onClick={() => setSelectedTrx(trx)}
-                        className="bg-bg-2 border border-border text-xs px-4 py-2.5 rounded-lg text-text-main hover:bg-bg-3 transition-colors flex items-center justify-center gap-1"
-                      >
-                        {t('sessions.invoice_detail')}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )
+        {isLoading ? (
+          <div className="text-center py-8">{t('sessions.loading_sessions')}</div>
+        ) : displayList.length === 0 ? (
+          <div className="text-center py-8 text-text-sub border border-dashed border-border rounded-xl">
+            {type === 'upcoming' ? t('sessions.no_sessions_upcoming') : t('sessions.no_sessions_past')}
+          </div>
         ) : (
-          isLoading ? (
-            <div className="text-center py-8">{t('sessions.loading_sessions')}</div>
-          ) : displayList.length === 0 ? (
-            <div className="text-center py-8 text-text-sub border border-dashed border-border rounded-xl">
-              {type === 'upcoming' ? t('sessions.no_sessions_upcoming') : t('sessions.no_sessions_past')}
-            </div>
-          ) : (
-            displayList.map(session => {
-              let statusText = session.status;
-              let statusColor = "bg-bg-3 text-text-sub";
-              if (session.status === 'pending') {
-                statusText = t('sessions.status_pending');
-                statusColor = "bg-warning/20 text-warning";
-              } else if (session.status === 'confirmed') {
-                statusText = t('sessions.status_confirmed');
-                statusColor = "bg-lime-dim text-lime border border-lime/30";
-              } else if (session.status === 'completed') {
-                statusText = t('sessions.status_completed');
-                statusColor = "bg-bg-2 border border-border text-text-sub";
-              } else if (session.status === 'rejected') {
-                statusText = t('sessions.status_rejected');
-                statusColor = "bg-red-500/10 text-red-400 border border-red-500/20";
-              } else if (session.status === 'waiting_for_student') {
-                statusText = t('sessions.status_waiting');
-                statusColor = "bg-warning/20 text-warning border border-warning/30";
-              } else if (session.status === 'cancelled') {
-                statusText = t('sessions.status_cancelled');
-                statusColor = "bg-red-500/10 text-red-500 border border-red-500/30";
-              }
+          displayList.map(session => {
+            const trx = transactions.find(t => t.session_id === session.id || (t.student_package_id && session.material_notes?.includes(`bundle_init:`) && t.student_package_id === session.student_package_id));
+            
+            const isPaid = session.payment_status === 'paid' || trx?.status === 'success';
+            const isPendingVerification = trx?.status === 'pending_verification';
+            const isPaymentFailed = trx?.status === 'failed';
+            const isAwaitingPayment = session.status === 'confirmed' && session.payment_status === 'unpaid' && (!trx || trx.status === 'pending' || trx.status === 'failed');
 
-              return (
-                <div key={session.id} className={`bg-card border-[1.5px] border-border rounded-xl p-4 ${session.status === 'pending' ? 'border-warning/30' : ''}`}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full text-white flex items-center justify-center font-bold font-display" style={{backgroundColor: getAvatarColor(session.tutor_profiles?.profiles?.full_name || 'Tutor')}}>
-                        {(session.tutor_profiles?.profiles?.full_name || 'T').substring(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="font-bold text-text-main font-display">{session.tutor_profiles?.profiles?.full_name || 'Tutor'}</div>
-                        <div className="text-xs text-text-sub font-mono">{t(`subjects.${session.subject}`)}</div>
-                        {(() => {
-                          const parsed = parseSessionNotes(session.material_notes);
-                          if (!parsed.meta) return null;
-                          if (parsed.meta === "prepaid") {
-                            return (
-                              <div className="mt-1">
-                                <span className="text-[9px] bg-cyan-500/15 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
-                                  {t('sessions.badge_prepaid')}
-                                </span>
-                              </div>
-                            );
-                          }
-                          if (parsed.meta === "single") {
-                            return (
-                              <div className="mt-1">
-                                <span className="text-[9px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
-                                  {t('sessions.badge_single')}
-                                </span>
-                              </div>
-                            );
-                          }
-                          if (parsed.meta.startsWith("bundle_init:")) {
-                            const pkgName = parsed.meta.replace("bundle_init:", "");
-                            return (
-                              <div className="mt-1">
-                                <span className="text-[9px] bg-indigo-500/15 text-indigo-400 border border-indigo-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
-                                  {t('sessions.badge_bundle')} {pkgName}
-                                </span>
-                              </div>
-                            );
-                          }
-                          return null;
-                        })()}
-                      </div>
-                    </div>
-                    <div className={`text-[10px] font-bold px-2.5 py-1.5 rounded font-mono uppercase tracking-wider ${statusColor}`}>
-                      {statusText}
-                    </div>
-                  </div>
+            let statusText = session.status;
+            let statusColor = "bg-bg-3 text-text-sub";
+            if (session.status === 'pending') {
+              statusText = t('sessions.status_pending');
+              statusColor = "bg-warning/20 text-warning";
+            } else if (isAwaitingPayment) {
+              statusText = "Menunggu Pembayaran";
+              statusColor = "bg-yellow-500/20 text-yellow-500 border border-yellow-500/30";
+            } else if (isPendingVerification) {
+              statusText = "Menunggu Verifikasi";
+              statusColor = "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30";
+            } else if (isPaymentFailed) {
+              statusText = "Pembayaran Ditolak";
+              statusColor = "bg-red-500/15 text-red-400 border border-red-500/20";
+            } else if (session.status === 'confirmed') {
+              statusText = t('sessions.status_confirmed');
+              statusColor = "bg-lime-dim text-lime border border-lime/30";
+            } else if (session.status === 'completed') {
+              statusText = t('sessions.status_completed');
+              statusColor = "bg-bg-2 border border-border text-text-sub";
+            } else if (session.status === 'rejected') {
+              statusText = t('sessions.status_rejected');
+              statusColor = "bg-red-500/10 text-red-400 border border-red-500/20";
+            } else if (session.status === 'waiting_for_student') {
+              statusText = t('sessions.status_waiting');
+              statusColor = "bg-warning/20 text-warning border border-warning/30";
+            } else if (session.status === 'cancelled') {
+              statusText = t('sessions.status_cancelled');
+              statusColor = "bg-red-500/10 text-red-500 border border-red-500/30";
+            }
 
-                  <div className="bg-bg-2 rounded-lg p-3 mb-4 space-y-2 border border-border/50">
-                    <div className="flex items-center gap-2 text-sm text-text-main">
-                      <Calendar size={16} className="text-text-sub" />
-                      <span>{new Date(session.session_date).toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            return (
+              <div 
+                key={session.id} 
+                onClick={() => setSelectedSession(session)}
+                className={`bg-card border-[1.5px] border-border rounded-xl p-4 cursor-pointer hover:border-lime/40 transition-all ${session.status === 'pending' ? 'border-warning/30' : ''}`}
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full text-white flex items-center justify-center font-bold font-display" style={{backgroundColor: getAvatarColor(session.tutor_profiles?.profiles?.full_name || 'Tutor')}}>
+                      {(session.tutor_profiles?.profiles?.full_name || 'T').substring(0, 2).toUpperCase()}
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-text-main">
-                      <Clock size={16} className="text-text-sub" />
-                      <span>{formatTime(session.start_time)} - {formatTime(session.end_time)}</span>
-                    </div>
-                    {(() => {
-                      const parsed = parseSessionNotes(session.material_notes);
-                      return (
-                        <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">
-                          <span className="text-xs text-text-sub font-medium font-mono uppercase tracking-wider">{t('sessions.extra_notes_label')}</span>
-                           <p className="text-sm font-sans italic">
-                             {parsed.notes ? `"${parsed.notes}"` : t('sessions.notes_default')}
-                           </p>
-                        </div>
-                      );
-                    })()}
-                    <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-border/40 text-xs">
-                      {session.meeting_type !== 'offline' && (
-                        <div className="flex flex-col gap-0.5">
-                          <span className="font-bold text-[11px] text-text-sub uppercase font-mono tracking-wider">{t('sessions.online_link_label')}</span>
-                          {session.meeting_link ? (
-                            <div className="mt-0.5">
-                              <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/15 px-2.5 py-1 rounded border border-lime/30 text-xs text-center justify-center font-display">
-                                {t('sessions.open_online_link')}
-                              </a>
-                            </div>
-                          ) : (
-                            <p className="text-text-sub italic text-[11px]">{t('sessions.link_not_added')}</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {type === 'upcoming' ? (
-                    <div className="flex gap-2 w-full">
-                      {session.status === 'confirmed' && session.payment_status === 'unpaid' ? (
-                        <div className="flex-1 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                          <div className="space-y-0.5">
-                            <span className="text-[10px] sm:text-xs font-bold text-warning uppercase tracking-wider block">{t('sessions.awaiting_payment_title')}</span>
-                            <p className="text-xs text-text-sub">{t('sessions.awaiting_payment_note')}</p>
-                          </div>
-                          <button
-                            onClick={() => setType('invoices')}
-                            className="bg-lime text-black font-bold text-xs px-4 py-2 rounded-lg hover:opacity-95 transition-all whitespace-nowrap self-stretch sm:self-auto text-center"
-                          >
-                            {t('sessions.open_invoice')}
-                          </button>
-                        </div>
-                      ) : session.meeting_type === 'offline' ? (
-                        (() => {
-                          const parsedLoc = parseLocationField(session.location);
+                    <div>
+                      <div className="font-bold text-text-main font-display">{session.tutor_profiles?.profiles?.full_name || 'Tutor'}</div>
+                      <div className="text-xs text-text-sub font-mono">{t(`subjects.${session.subject}`)}</div>
+                      {(() => {
+                        const parsed = parseSessionNotes(session.material_notes);
+                        if (!parsed.meta) return null;
+                        if (parsed.meta === "prepaid") {
                           return (
-                            <div className="w-full bg-bg-2 border border-border p-3 rounded-lg text-[12px] leading-relaxed text-text-main shadow-sm">
-                              <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div className="flex items-start gap-1.5 flex-1 min-w-[200px]">
-                                  <span className="font-bold text-text-sub font-mono uppercase text-[10px] mt-0.5">📍:</span>
-                                  <span className="text-text-main font-medium">{parsedLoc.text || t('sessions.no_location')}</span>
-                                </div>
-                                {parsedLoc.url && (
-                                  <a
-                                    href={parsedLoc.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 bg-lime text-black font-extrabold px-2.5 py-1 rounded-md text-[11px] hover:bg-lime-dim transition-all whitespace-nowrap border border-black/10 shadow hover:scale-[1.01] active:scale-[0.99]"
-                                  >
-                                    {t('sessions.open_maps')}
-                                  </a>
-                                )}
-                              </div>
+                            <div className="mt-1">
+                              <span className="text-[9px] bg-cyan-500/15 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
+                                {t('sessions.badge_prepaid')}
+                              </span>
                             </div>
                           );
-                        })()
-                      ) : (
-                        session.meeting_link ? (
-                          <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">
-                            <Video size={16} /> {t('sessions.open_meeting_link')}
-                          </a>
-                        ) : (
-                          <div className="flex-1 bg-bg-2 border border-dashed border-border text-center text-text-sub font-mono font-bold py-2.5 rounded-lg text-[12px] flex items-center justify-center gap-2">
-                            {t('sessions.link_unavailable')}
-                          </div>
-                        )
-                      )}
+                        }
+                        if (parsed.meta === "single") {
+                          return (
+                            <div className="mt-1">
+                              <span className="text-[9px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
+                                {t('sessions.badge_single')}
+                              </span>
+                            </div>
+                          );
+                        }
+                        if (parsed.meta.startsWith("bundle_init:")) {
+                          const pkgName = parsed.meta.replace("bundle_init:", "");
+                          return (
+                            <div className="mt-1">
+                              <span className="text-[9px] bg-indigo-500/15 text-indigo-400 border border-indigo-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
+                                {t('sessions.badge_bundle')} {pkgName}
+                              </span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
+                  </div>
+                  <div className={`text-[10px] font-bold px-2.5 py-1.5 rounded font-mono uppercase tracking-wider ${statusColor}`}>
+                    {statusText}
+                  </div>
+                </div>
+
+                <div className="bg-bg-2 rounded-lg p-3 mb-4 space-y-2 border border-border/50">
+                  <div className="flex items-center gap-2 text-sm text-text-main">
+                    <Calendar size={16} className="text-text-sub" />
+                    <span>{new Date(session.session_date).toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-text-main">
+                    <Clock size={16} className="text-text-sub" />
+                    <span>{formatTime(session.start_time)} - {formatTime(session.end_time)}</span>
+                  </div>
+                  {(() => {
+                    const parsed = parseSessionNotes(session.material_notes);
+                    return (
+                      <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">
+                        <span className="text-xs text-text-sub font-medium font-mono uppercase tracking-wider">{t('sessions.extra_notes_label')}</span>
+                         <p className="text-sm font-sans italic">
+                           {parsed.notes ? `"${parsed.notes}"` : t('sessions.notes_default')}
+                         </p>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Card CTA Actions */}
+                <div className="flex gap-2 w-full">
+                  {isAwaitingPayment ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSession(session);
+                      }}
+                      className="flex-1 bg-lime text-black font-bold text-xs py-2.5 rounded-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <CreditCard size={14} /> Bayar Sekarang
+                    </button>
+                  ) : isPendingVerification ? (
+                    <div 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSession(session);
+                      }}
+                      className="flex-1 text-center py-2 text-xs font-mono text-cyan-400 bg-cyan-500/5 border border-cyan-500/10 rounded-lg hover:bg-cyan-500/10 transition-colors"
+                    >
+                      Dalam Proses Verifikasi &bull; Detail
+                    </div>
+                  ) : isPaymentFailed ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSession(session);
+                      }}
+                      className="flex-1 bg-red-500 text-white font-bold text-xs py-2.5 rounded-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <AlertOctagon size={14} /> Pembayaran Ditolak - Unggah Ulang
+                    </button>
+                  ) : session.status === 'confirmed' && isPaid ? (
+                    session.meeting_type !== 'offline' ? (
+                      session.meeting_link ? (
+                        <a 
+                          href={session.meeting_link} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex-1 bg-lime text-black font-bold py-2 rounded-lg text-xs hover:bg-lime-dim transition-colors flex items-center justify-center gap-2"
+                        >
+                          <Video size={14} /> Buka Link Meeting
+                        </a>
+                      ) : (
+                        <div className="flex-1 bg-bg-2 border border-dashed border-border text-center text-text-sub font-mono font-bold py-2 rounded-lg text-xs flex items-center justify-center gap-2">
+                          Link meeting belum dimasukkan
+                        </div>
+                      )
+                    ) : (
+                      (() => {
+                        const parsedLoc = parseLocationField(session.location);
+                        return (
+                          <div 
+                            className="w-full bg-bg-2 border border-border p-2.5 rounded-lg text-xs leading-relaxed text-text-main"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <div className="flex items-start gap-1 flex-1 min-w-[150px]">
+                                <span className="font-bold text-text-sub font-mono uppercase text-[9px] mt-0.5">📍:</span>
+                                <span className="text-text-main font-medium">{parsedLoc.text || t('sessions.no_location')}</span>
+                              </div>
+                              {parsedLoc.url && (
+                                <a
+                                  href={parsedLoc.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 bg-lime text-black font-extrabold px-2 py-0.5 rounded text-[10px] hover:bg-lime-dim transition-all whitespace-nowrap"
+                                >
+                                  Maps ↗
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()
+                    )
+                  ) : session.status === 'waiting_for_student' ? (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setReviewModal(session);
+                      }}
+                      className="flex-1 border-[1.5px] border-lime bg-lime text-black font-bold py-2 rounded-lg text-xs hover:bg-lime-dim transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Star size={14} /> Tandai Selesai & Beri Ulasan
+                    </button>
+                  ) : session.status === 'completed' && !session.rating ? (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setReviewModal(session);
+                      }}
+                      className="flex-1 border-[1.5px] border-lime/50 text-lime font-bold py-2 rounded-lg text-xs hover:bg-lime-mid transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Star size={14} /> Beri Ulasan
+                    </button>
                   ) : (
-                    <div className="flex gap-2">
-                      {session.status === 'waiting_for_student' && (
-                        <button 
-                          onClick={() => setReviewModal(session)}
-                          className="flex-1 border-[1.5px] border-lime bg-lime text-black font-bold py-2 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2"
-                        >
-                          <Star size={16} /> {t('sessions.mark_complete')}
-                        </button>
-                      )}
-                      {session.status === 'completed' && !session.rating && (
-                        <button 
-                          onClick={() => setReviewModal(session)}
-                          className="flex-1 border-[1.5px] border-lime/50 text-lime font-bold py-2 rounded-lg text-sm hover:bg-lime-mid transition-colors flex items-center justify-center gap-2"
-                        >
-                          <Star size={16} /> {t('sessions.give_review')}
-                        </button>
-                      )}
+                    <div className="flex-1 text-center py-2 text-xs text-text-sub border border-dashed border-border rounded-lg">
+                      Detail Sesi Belajar &rarr;
                     </div>
                   )}
                 </div>
-              );
-            })
-          )
+              </div>
+            );
+          })
         )}
       </div>
 
-      {/* Checkout / Payment Modal */}
-      {selectedTrx && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>
-          <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="flex justify-between items-center p-4 border-b-[1.5px] border-border bg-bg-2">
-              <div className="font-display font-bold text-[16px]">
-                {selectedTrx.status === 'pending_verification' ? t('sessions.payment_info_title') : t('sessions.complete_payment_title')}
-              </div>
-              <button
-                onClick={() => setSelectedTrx(null)}
-                className="text-text-sub hover:text-text-main"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="p-5 overflow-y-auto space-y-4">
-              <div className="bg-bg-2 p-4 rounded-xl border border-border/80">
-                <span className="text-[10px] text-text-sub font-mono uppercase">{t('sessions.total_payment')}</span>
-                <div className="text-2xl font-bold text-lime font-display mt-0.5">Rp {selectedTrx.amount?.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')}</div>
-                <div className="text-xs text-text-sub mt-1">{t('sessions.invoice_id')}: {selectedTrx.id.substring(0, 8).toUpperCase()}</div>
-              </div>
+      {/* Unified Session Details & Checkout Modal */}
+      {selectedSession && (() => {
+        const trx = transactions.find(t => t.session_id === selectedSession.id || (t.student_package_id && selectedSession.material_notes?.includes(`bundle_init:`) && t.student_package_id === selectedSession.student_package_id));
+        
+        const isPaid = selectedSession.payment_status === 'paid' || trx?.status === 'success';
+        const isPendingVerification = trx?.status === 'pending_verification';
+        const isPaymentFailed = trx?.status === 'failed';
+        const isAwaitingPayment = selectedSession.status === 'confirmed' && selectedSession.payment_status === 'unpaid' && (!trx || trx.status === 'pending' || trx.status === 'failed');
+        
+        let statusTitle = "";
+        let statusDesc = "";
+        let statusBadgeColor = "";
+        
+        if (selectedSession.status === 'pending') {
+          statusTitle = t('sessions.status_pending');
+          statusDesc = "Tutor sedang meninjau permintaan jadwal sesi belajar Anda. Pembayaran akan dibuka setelah tutor menyetujui jadwal ini.";
+          statusBadgeColor = "bg-warning/20 text-warning border border-warning/30";
+        } else if (isAwaitingPayment) {
+          statusTitle = "Menunggu Pembayaran";
+          statusDesc = "Jadwal sesi telah disetujui oleh tutor. Silakan selesaikan pembayaran tagihan di bawah ini agar link kelas/lokasi dapat diakses.";
+          statusBadgeColor = "bg-yellow-500/15 text-yellow-500 border border-yellow-500/30";
+        } else if (isPendingVerification) {
+          statusTitle = "Menunggu Verifikasi Pembayaran";
+          statusDesc = "Bukti pembayaran Anda sudah diterima dan sedang dalam proses verifikasi oleh admin. Mohon tunggu maksimal 24 jam.";
+          statusBadgeColor = "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30";
+        } else if (isPaymentFailed) {
+          statusTitle = "Pembayaran Ditolak";
+          statusDesc = `Pembayaran Anda ditolak oleh admin dengan alasan: "${trx?.rejection_reason || 'Bukti transfer tidak valid'}". Silakan unggah ulang bukti transfer yang valid.`;
+          statusBadgeColor = "bg-red-500/15 text-red-400 border border-red-500/30";
+        } else if (selectedSession.status === 'confirmed' && isPaid) {
+          statusTitle = "Terkonfirmasi & Lunas";
+          statusDesc = "Jadwal sesi belajar Anda telah terkonfirmasi dan lunas. Selamat belajar!";
+          statusBadgeColor = "bg-lime/20 text-lime border border-lime/30";
+        } else if (selectedSession.status === 'waiting_for_student') {
+          statusTitle = "Menunggu Konfirmasi Selesai";
+          statusDesc = "Sesi belajar telah selesai dilaksanakan. Silakan tandai selesai dan berikan ulasan Anda.";
+          statusBadgeColor = "bg-warning/20 text-warning border border-warning/30";
+        } else if (selectedSession.status === 'completed') {
+          statusTitle = "Selesai";
+          statusDesc = "Sesi belajar ini telah selesai dilaksanakan. Terima kasih!";
+          statusBadgeColor = "bg-bg-3 border border-border text-text-sub";
+        } else if (selectedSession.status === 'rejected') {
+          statusTitle = "Ditolak oleh Tutor";
+          statusDesc = "Maaf, permintaan sesi belajar Anda ditolak oleh tutor karena berhalangan.";
+          statusBadgeColor = "bg-red-500/15 text-red-400 border border-red-500/30";
+        } else if (selectedSession.status === 'cancelled') {
+          statusTitle = "Dibatalkan";
+          statusDesc = "Sesi belajar ini telah dibatalkan.";
+          statusBadgeColor = "bg-red-500/15 text-red-500 border border-red-500/30";
+        }
 
-              {selectedTrx.status === 'pending_verification' ? (
-                <div className="space-y-4 text-center py-4">
-                  <div className="w-16 h-16 bg-cyan-500/10 text-cyan-400 rounded-full flex items-center justify-center mx-auto border border-cyan-500/20">
-                    <Clock size={32} />
+        return createPortal(
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>
+            <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden flex flex-col max-h-[90vh]">
+              
+              <div className="flex justify-between items-center p-4 border-b-[1.5px] border-border bg-bg-2">
+                <div className="font-display font-bold text-[16px]">
+                  Detail Sesi Belajar
+                </div>
+                <button
+                  onClick={() => setSelectedSession(null)}
+                  className="text-text-sub hover:text-text-main"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="p-5 overflow-y-auto space-y-4 custom-scrollbar">
+                
+                <div className="flex items-center gap-3 bg-bg-2 p-3.5 rounded-xl border border-border">
+                  <div className="w-10 h-10 rounded-full text-white flex items-center justify-center font-bold font-display" style={{backgroundColor: getAvatarColor(selectedSession.tutor_profiles?.profiles?.full_name || 'Tutor')}}>
+                    {(selectedSession.tutor_profiles?.profiles?.full_name || 'T').substring(0, 2).toUpperCase()}
                   </div>
                   <div>
-                    <h3 className="font-bold text-text-main text-base">{t('sessions.in_verification_title')}</h3>
-                    <p className="text-sm text-text-sub mt-1">
-                      {t('sessions.in_verification_desc')}
-                    </p>
+                    <div className="font-bold text-text-main font-display">{selectedSession.tutor_profiles?.profiles?.full_name || 'Tutor'}</div>
+                    <div className="text-xs text-text-sub font-mono">{t(`subjects.${selectedSession.subject}`)}</div>
                   </div>
-                  {selectedTrx.proof_url && (
-                    <div className="pt-2">
-                      <span className="block text-[10px] text-text-sub font-mono uppercase pb-1.5">{t('sessions.proof_uploaded')}</span>
-                      <a href={selectedTrx.proof_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 bg-bg-3 border border-border text-xs py-2 px-4 rounded-lg hover:bg-bg-2 text-lime font-medium">
-                        {t('sessions.view_proof')}
-                      </a>
-                    </div>
-                  )}
+                  <div className="ml-auto">
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded font-mono uppercase tracking-wider ${statusBadgeColor}`}>
+                      {statusTitle}
+                    </span>
+                  </div>
                 </div>
-              ) : (
-                <>
-                  <div className="flex bg-bg-3 p-1 rounded-lg border border-border gap-1">
-                    <button
-                      onClick={() => setPaymentMethod('bank_transfer')}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${paymentMethod === 'bank_transfer' ? 'bg-lime text-black' : 'text-text-sub'}`}
-                    >
-                      {t('sessions.bank_transfer_tab')}
-                    </button>
-                    <button
-                      onClick={() => setPaymentMethod('qris')}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${paymentMethod === 'qris' ? 'bg-lime text-black' : 'text-text-sub'}`}
-                    >
-                      {t('sessions.qris_tab')}
-                    </button>
-                  </div>
 
-                  {paymentMethod === 'bank_transfer' ? (
-                    <div className="space-y-3 pt-2">
-                      <div className="text-xs text-text-sub leading-relaxed">
-                        {t('sessions.transfer_instruction')}
+                <div className="bg-bg-2 rounded-xl p-3.5 space-y-2 border border-border/50 text-sm">
+                  <div className="flex items-center gap-2 text-text-main">
+                    <Calendar size={16} className="text-text-sub" />
+                    <span>{new Date(selectedSession.session_date).toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-text-main">
+                    <Clock size={16} className="text-text-sub" />
+                    <span>{formatTime(selectedSession.start_time)} - {formatTime(selectedSession.end_time)}</span>
+                  </div>
+                  {(() => {
+                    const parsed = parseSessionNotes(selectedSession.material_notes);
+                    return (
+                      <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">
+                        <span className="text-[10px] text-text-sub font-bold font-mono uppercase tracking-wider">Catatan Tambahan:</span>
+                        <p className="text-sm italic">
+                          {parsed.notes ? `"${parsed.notes}"` : t('sessions.notes_default')}
+                        </p>
                       </div>
-                      
-                      <div className="space-y-2">
-                        <div className="bg-bg-2 border border-border p-3 rounded-lg flex justify-between items-center">
+                    );
+                  })()}
+                </div>
+
+                <div className="bg-bg-3 p-3.5 rounded-xl border border-border/85 text-xs text-text-sub leading-relaxed">
+                  {statusDesc}
+                </div>
+
+                {trx && (isAwaitingPayment || isPendingVerification || isPaymentFailed) && (
+                  <div className="border-t border-border/60 pt-4 space-y-4">
+                    <div className="bg-bg-2 p-4 rounded-xl border border-border">
+                      <span className="text-[10px] text-text-sub font-mono uppercase">{t('sessions.total_payment')}</span>
+                      <div className="text-xl font-bold text-lime font-display mt-0.5">Rp {trx.amount?.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')}</div>
+                      <div className="text-[10px] text-text-sub mt-1">Invoice ID: {trx.id.substring(0, 8).toUpperCase()}</div>
+                    </div>
+
+                    {isPendingVerification ? (
+                      <div className="space-y-3 text-center py-2">
+                        {trx.proof_url && (
                           <div>
-                            <span className="block text-[10px] text-text-sub font-semibold">{paymentSettings.bank_name}</span>
-                            <span className="font-bold font-mono tracking-wide text-text-main">{paymentSettings.account_number}</span>
-                            <span className="block text-[9px] text-text-sub leading-none mt-1">{paymentSettings.account_name}</span>
+                            <span className="block text-[10px] text-text-sub font-mono uppercase pb-1.5">{t('sessions.proof_uploaded')}</span>
+                            <a href={trx.proof_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 bg-bg-3 border border-border text-xs py-1.5 px-3 rounded-lg hover:bg-bg-2 text-lime font-medium">
+                              {t('sessions.view_proof')}
+                            </a>
                           </div>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex bg-bg-3 p-1 rounded-lg border border-border gap-1">
                           <button
-                            onClick={() => handleCopyText(paymentSettings.account_number)}
-                            className="text-lime hover:text-lime-dim p-1.5 flex items-center gap-1 cursor-pointer transition-all border border-border bg-bg-base/30 rounded-lg px-2.5 hover:bg-bg-3"
-                            title="Salin No. Rekening"
+                            onClick={() => setPaymentMethod('bank_transfer')}
+                            className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${paymentMethod === 'bank_transfer' ? 'bg-lime text-black' : 'text-text-sub'}`}
                           >
-                            {copiedText ? (
-                              <>
-                                <span className="text-[10px] font-bold text-success font-sans">{t('sessions.copied_btn')}</span>
-                                <Check size={14} className="text-success" />
-                              </>
-                            ) : (
-                              <>
-                                <span className="text-[10px] text-text-sub font-semibold font-sans">{t('sessions.copy_btn')}</span>
-                                <Copy size={13} className="text-text-sub" />
-                              </>
-                            )}
+                            {t('sessions.bank_transfer_tab')}
+                          </button>
+                          <button
+                            onClick={() => setPaymentMethod('qris')}
+                            className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${paymentMethod === 'qris' ? 'bg-lime text-black' : 'text-text-sub'}`}
+                          >
+                            {t('sessions.qris_tab')}
                           </button>
                         </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center pt-2 space-y-3">
-                      <div className="text-xs text-text-sub">
-                        {t('sessions.scan_qris_instruction')}
-                      </div>
-                      <div className="bg-white p-2.5 rounded-xl inline-block border border-border/40 shadow-sm max-w-[185px] w-full aspect-square">
-                        <img 
-                          src={paymentSettings.qris_url} 
-                          alt="Platform QRIS" 
-                          className="w-full h-full object-contain"
-                          onError={(e) => {
-                            e.currentTarget.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=RuangTutorPlatformQRIS";
-                          }}
-                        />
-                      </div>
-                      <div className="text-[10px] text-lime font-bold tracking-wider font-mono">SCAN QRIS PLATFORM &bull; OTOMATIS AMAN</div>
-                    </div>
-                  )}
 
-                  <div className="pt-2 border-t border-border/60">
-                    <label className="block text-xs font-bold text-text-sub uppercase mb-2 font-mono tracking-wider">{t('sessions.upload_proof_label')}</label>
-                    <div className="relative border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-lime/40 transition-colors bg-bg-2">
-                      <input 
-                        type="file" 
-                        accept="image/*"
-                        onChange={(e) => handleUploadReceipt(selectedTrx.id, e)}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        disabled={isUploading}
-                      />
-                      <div className="flex flex-col items-center gap-1.5 cursor-pointer">
-                        <Upload size={24} className="text-text-sub" />
-                        <span className="text-xs font-bold text-text-main">{t('sessions.choose_image')}</span>
-                        <span className="text-[10px] text-text-sub">{t('sessions.max_size')}</span>
-                      </div>
-                    </div>
-                    {isUploading && (
-                      <div className="text-center text-xs text-lime font-medium mt-2">{t('sessions.uploading')}</div>
+                        {paymentMethod === 'bank_transfer' ? (
+                          <div className="space-y-3 pt-1">
+                            <div className="text-[11px] text-text-sub leading-relaxed">
+                              {t('sessions.transfer_instruction')}
+                            </div>
+                            
+                            <div className="bg-bg-2 border border-border p-3 rounded-lg flex justify-between items-center">
+                              <div>
+                                <span className="block text-[10px] text-text-sub font-semibold">{paymentSettings.bank_name}</span>
+                                <span className="font-bold font-mono tracking-wide text-text-main">{paymentSettings.account_number}</span>
+                                <span className="block text-[9px] text-text-sub leading-none mt-1">{paymentSettings.account_name}</span>
+                              </div>
+                              <button
+                                onClick={() => handleCopyText(paymentSettings.account_number)}
+                                className="text-lime hover:text-lime-dim p-1.5 flex items-center gap-1 cursor-pointer transition-all border border-border bg-bg-base/30 rounded-lg px-2 hover:bg-bg-3"
+                              >
+                                {copiedText ? (
+                                  <>
+                                    <span className="text-[9px] font-bold text-success">{t('sessions.copied_btn')}</span>
+                                    <Check size={12} className="text-success" />
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="text-[9px] text-text-sub font-semibold">{t('sessions.copy_btn')}</span>
+                                    <Copy size={12} className="text-text-sub" />
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center pt-1 space-y-2">
+                            <div className="text-[11px] text-text-sub">
+                              {t('sessions.scan_qris_instruction')}
+                            </div>
+                            <div className="bg-white p-2 rounded-xl inline-block border border-border/40 shadow-sm max-w-[150px] w-full aspect-square">
+                              <img 
+                                src={paymentSettings.qris_url} 
+                                alt="Platform QRIS" 
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="pt-2 border-t border-border/60">
+                          <label className="block text-[10px] font-bold text-text-sub uppercase mb-2 font-mono tracking-wider">{t('sessions.upload_proof_label')}</label>
+                          <div className="relative border-2 border-dashed border-border rounded-xl p-4 text-center hover:border-lime/40 transition-colors bg-bg-2">
+                            <input 
+                              type="file" 
+                              accept="image/*"
+                              onChange={(e) => handleUploadReceipt(trx.id, e)}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              disabled={isUploading}
+                            />
+                            <div className="flex flex-col items-center gap-1 cursor-pointer">
+                              <Upload size={20} className="text-text-sub" />
+                              <span className="text-xs font-bold text-text-main">{t('sessions.choose_image')}</span>
+                              <span className="text-[9px] text-text-sub">{t('sessions.max_size')}</span>
+                            </div>
+                          </div>
+                          {isUploading && (
+                            <div className="text-center text-xs text-lime font-medium mt-2">{t('sessions.uploading')}</div>
+                          )}
+                        </div>
+                      </>
                     )}
                   </div>
-                </>
-              )}
-            </div>
+                )}
 
-            <div className="p-4 bg-bg-2 border-t-[1.5px] border-border flex justify-end">
-              <button
-                onClick={() => setSelectedTrx(null)}
-                className="w-full bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:opacity-90 transition-colors"
-                disabled={isUploading}
-              >
-                {t('sessions.close_btn')}
-              </button>
+                {selectedSession.status === 'confirmed' && isPaid && (
+                  <div className="border-t border-border/60 pt-4 space-y-3">
+                    <span className="block text-[10px] text-text-sub font-bold font-mono uppercase tracking-wider">Detail Link / Lokasi:</span>
+                    {selectedSession.meeting_type !== 'offline' ? (
+                      selectedSession.meeting_link ? (
+                        <a href={selectedSession.meeting_link} target="_blank" rel="noopener noreferrer" className="w-full bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">
+                          <Video size={16} /> Buka Link Meeting (Zoom/GMeet)
+                        </a>
+                      ) : (
+                        <div className="bg-bg-2 border border-dashed border-border text-center text-text-sub font-mono font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2">
+                          Link meeting belum dimasukkan oleh tutor.
+                        </div>
+                      )
+                    ) : (
+                      (() => {
+                        const parsedLoc = parseLocationField(selectedSession.location);
+                        return (
+                          <div className="bg-bg-2 border border-border p-3 rounded-lg text-xs leading-relaxed text-text-main">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <div className="flex items-start gap-1 flex-1 min-w-[150px]">
+                                <MapPin size={14} className="text-text-sub mt-0.5 flex-shrink-0" />
+                                <span className="text-text-main font-medium">{parsedLoc.text || 'Belum ada detail lokasi'}</span>
+                              </div>
+                              {parsedLoc.url && (
+                                <a
+                                  href={parsedLoc.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 bg-lime text-black font-extrabold px-2 py-1 rounded-md text-[10px] hover:bg-lime-dim transition-all"
+                                >
+                                  Buka Maps ↗
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()
+                    )}
+                  </div>
+                )}
+
+                {selectedSession.status === 'waiting_for_student' && (
+                  <div className="border-t border-border/60 pt-4">
+                    <button 
+                      onClick={() => {
+                        setReviewModal(selectedSession);
+                        setSelectedSession(null);
+                      }}
+                      className="w-full border-[1.5px] border-lime bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Star size={16} /> Tandai Sesi Selesai & Beri Ulasan
+                    </button>
+                  </div>
+                )}
+
+                {selectedSession.status === 'completed' && !selectedSession.rating && (
+                  <div className="border-t border-border/60 pt-4">
+                    <button 
+                      onClick={() => {
+                        setReviewModal(selectedSession);
+                        setSelectedSession(null);
+                      }}
+                      className="w-full border-[1.5px] border-lime text-lime font-bold py-2.5 rounded-lg text-sm hover:bg-lime-mid transition-colors flex items-center justify-center gap-2 bg-transparent"
+                    >
+                      <Star size={16} /> Beri Ulasan Sekarang
+                    </button>
+                  </div>
+                )}
+                
+              </div>
+
+              <div className="p-4 bg-bg-2 border-t-[1.5px] border-border flex justify-end">
+                <button
+                  onClick={() => setSelectedSession(null)}
+                  className="w-full bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:opacity-90 transition-colors"
+                >
+                  Tutup
+                </button>
+              </div>
+
             </div>
           </div>
-        </div>
-      , document.body)}
+        , document.body);
+      })()}
 
       {reviewModal && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-pgIn" style={{overscrollBehavior: 'none'}}>
