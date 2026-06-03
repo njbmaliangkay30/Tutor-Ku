@@ -179,7 +179,7 @@ export default function App() {
             <div
               className={`text-[9px] font-bold text-text-muted tracking-[0.12em] uppercase pt-1 pb-[3px] font-mono transition-all duration-300 ${showDesktopSidebar ? "opacity-100 px-2" : "opacity-0 h-0 p-0 text-center"}`}
             >
-              {showDesktopSidebar ? "Menu Utama" : ""}
+              {showDesktopSidebar ? t('nav.main_menu') : ""}
             </div>
 
             {userRole === "tutor" ? (
@@ -277,7 +277,7 @@ export default function App() {
                 
                 <button
                   onClick={() => handleNav("admin-tutors")}
-                  title="Data Tutor"
+                  title={t('nav.admin_tutors')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-tutors" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -286,12 +286,12 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Data Tutor
+                    {t('nav.admin_tutors')}
                   </span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-verifications")}
-                  title="Data Verifikasi"
+                  title={t('nav.admin_verifications')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-verifications" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -300,12 +300,12 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Data Verifikasi
+                    {t('nav.admin_verifications')}
                   </span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-rate-requests")}
-                  title="Pengajuan Harga"
+                  title={t('nav.admin_rate_requests')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-rate-requests" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -314,12 +314,12 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Pengajuan Harga
+                    {t('nav.admin_rate_requests')}
                   </span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-students")}
-                  title="Data Student"
+                  title={t('nav.admin_students')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-students" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -328,12 +328,12 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Data Student
+                    {t('nav.admin_students')}
                   </span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-transactions")}
-                  title="Transaksi"
+                  title={t('nav.admin_transactions')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-transactions" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -342,12 +342,12 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Transaksi
+                    {t('nav.admin_transactions')}
                   </span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-packages")}
-                  title="Package"
+                  title={t('nav.admin_packages')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-packages" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -356,12 +356,12 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Package
+                    {t('nav.admin_packages')}
                   </span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-sessions")}
-                  title="Sesi Belajar"
+                  title={t('nav.admin_sessions')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-sessions" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -370,12 +370,12 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Sesi Belajar
+                    {t('nav.admin_sessions')}
                   </span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-reviews")}
-                  title="Review Tutor"
+                  title={t('nav.admin_reviews')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "admin-reviews" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -384,7 +384,7 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Review Tutor
+                    {t('nav.admin_reviews')}
                   </span>
                 </button>
               </>
@@ -455,7 +455,7 @@ export default function App() {
                 )}
                 <button
                   onClick={() => handleNav("progress")}
-                  title="Progress"
+                  title={t('nav.progress')}
                   className={`flex items-center rounded-lg cursor-pointer transition-colors px-[11px] py-[11px] border-[1.5px] w-full text-left text-xs tracking-[0.01em] relative overflow-hidden ${activeTab === "progress" ? "bg-lime-mid text-lime font-bold border-lime" : "bg-transparent text-text-sub font-semibold border-transparent hover:text-text-main hover:bg-bg-3 hover:border-border"}`}
                 >
                   <span className="flex items-center justify-center shrink-0 w-[22px] transition-all">
@@ -464,7 +464,7 @@ export default function App() {
                   <span
                     className={`absolute left-[44px] whitespace-nowrap transition-all duration-300 ${showDesktopSidebar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
                   >
-                    Progress
+                    {t('nav.progress')}
                   </span>
                 </button>
               </>
@@ -629,7 +629,7 @@ export default function App() {
                   >
                     <Home size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Dash</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.home')}</span>
                 </button>
                 <button
                   onClick={() => handleNav("schedule")}
@@ -640,7 +640,7 @@ export default function App() {
                   >
                     <Calendar size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "schedule" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Jadwal</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "schedule" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.schedule')}</span>
                 </button>
                 <button
                   onClick={() => handleNav("sessions")}
@@ -651,7 +651,7 @@ export default function App() {
                   >
                     <BookOpen size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "sessions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Sesi</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "sessions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.sessions_mobile')}</span>
                 </button>
                 <button
                   onClick={() => handleNav("chat")}
@@ -665,7 +665,7 @@ export default function App() {
                       <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full border-[1.5px] border-bg-1 flex items-center justify-center">{unreadChatCount}</span>
                     )}
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "chat" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Pesan</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "chat" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.chat_mobile')}</span>
                 </button>
                 <button
                   onClick={() => handleNav("history")}
@@ -676,7 +676,7 @@ export default function App() {
                   >
                     <Clock size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "history" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>History</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "history" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.history')}</span>
                 </button>
               </>
             ) : userRole === "admin" ? (
@@ -690,7 +690,7 @@ export default function App() {
                   >
                     <Home size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Info</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.admin_overview_mobile')}</span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-tutors")}
@@ -701,7 +701,7 @@ export default function App() {
                   >
                     <BookOpen size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-tutors" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Tutor</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-tutors" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.admin_tutors_mobile')}</span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-verifications")}
@@ -712,7 +712,7 @@ export default function App() {
                   >
                     <ShieldCheck size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-verifications" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Verif</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-verifications" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.admin_verifications_mobile')}</span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-rate-requests")}
@@ -723,7 +723,7 @@ export default function App() {
                   >
                     <DollarSign size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-rate-requests" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Harga</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-rate-requests" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.admin_rate_requests_mobile')}</span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-students")}
@@ -734,7 +734,7 @@ export default function App() {
                   >
                     <Users size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-students" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Siswa</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-students" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.admin_students_mobile')}</span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-sessions")}
@@ -745,7 +745,7 @@ export default function App() {
                   >
                     <Calendar size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-sessions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Sesi</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-sessions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.sessions_mobile')}</span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-transactions")}
@@ -756,7 +756,7 @@ export default function App() {
                   >
                     <CreditCard size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-transactions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Bayar</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-transactions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.admin_transactions_mobile')}</span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-packages")}
@@ -767,7 +767,7 @@ export default function App() {
                   >
                     <Package size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-packages" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Paket</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-packages" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.admin_packages_mobile')}</span>
                 </button>
                 <button
                   onClick={() => handleNav("admin-reviews")}
@@ -778,7 +778,7 @@ export default function App() {
                   >
                     <Star size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-reviews" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Ulasan</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "admin-reviews" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.admin_reviews_mobile')}</span>
                 </button>
               </>
             ) : (
@@ -793,7 +793,7 @@ export default function App() {
                     >
                       <Home size={22} />
                     </span>
-                    <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Dash</span>
+                    <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "home" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.home')}</span>
                   </button>
                 )}
                 <button
@@ -805,7 +805,7 @@ export default function App() {
                   >
                     <Search size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${(activeTab === "search" || (activeTab === "home" && userRole === "guest")) ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Explore</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${(activeTab === "search" || (activeTab === "home" && userRole === "guest")) ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.explore_mobile')}</span>
                 </button>
                 <button
                   onClick={() => handleNav("student_sessions")}
@@ -816,7 +816,7 @@ export default function App() {
                   >
                     <Calendar size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "student_sessions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Sesi</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "student_sessions" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.sessions_mobile')}</span>
                 </button>
                 {userRole !== "guest" && (
                   <button
@@ -831,7 +831,7 @@ export default function App() {
                         <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full border-[1.5px] border-bg-1 flex items-center justify-center">{unreadChatCount}</span>
                       )}
                     </span>
-                    <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "chat" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Pesan</span>
+                    <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "chat" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.chat_mobile')}</span>
                   </button>
                 )}
                 <button
@@ -843,7 +843,7 @@ export default function App() {
                   >
                     <Activity size={22} />
                   </span>
-                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "progress" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>Progres</span>
+                  <span className={`text-[10px] font-bold font-mono tracking-tight uppercase ${activeTab === "progress" ? "opacity-100 font-bold text-lime" : "opacity-70"}`}>{t('nav.progress_mobile')}</span>
                 </button>
               </>
             )}
