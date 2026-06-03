@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useAppContext } from '../AppContext';
 import { supabase } from '../lib/supabase';
 import { Sparkles, Navigation } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export function GuidedTour() {
   const { user, userRole, activeTab, selectedTutorId, userProfile } = useAppContext();
@@ -104,33 +105,34 @@ export function GuidedTour() {
 
 function TourEngine({ subStep, onNext, onCompleteMain, onCompleteBooking, onSkip }: any) {
     const isMobile = window.innerWidth < 768;
+    const { t } = useTranslation();
     let config: any = null;
 
     if (subStep === 'main_explore') {
         config = {
             targetSelector: isMobile ? '.tour-explore-mobile' : '.tour-explore-desktop',
-            title: 'Mulai Pencarian',
-            content: 'Ketuk menu Eksplorasi ini untuk berpindah ke halaman pencarian tutor.',
+            title: t('tour.step_main_explore_title'),
+            content: t('tour.step_main_explore_content'),
             actionType: 'wait_click',
-            actionText: 'Ketuk area yang ditunjuk'
+            actionText: t('tour.step_main_explore_action')
         };
     } else if (subStep === 'main_filter_gender') {
         config = {
             targetSelector: '.tour-filter-gender',
-            title: 'Saring Sesuai Kebutuhan',
-            content: 'Pilih preferensi jenis kelamin tutor yang membuatmu nyaman untuk belajar.',
+            title: t('tour.step_main_filter_gender_title'),
+            content: t('tour.step_main_filter_gender_content'),
             actionType: 'button',
-            actionText: 'Lanjut',
+            actionText: t('tour.step_main_filter_gender_action'),
             onAction: () => onNext('main_filter_subject'),
             placement: 'bottom'
         };
     } else if (subStep === 'main_filter_subject') {
         config = {
             targetSelector: '.tour-filter-subject',
-            title: 'Mata Pelajaran',
-            content: 'Geser bagian ini dan pilih spesifik pelajaran yang sedang kamu butuhkan.',
+            title: t('tour.step_main_filter_subject_title'),
+            content: t('tour.step_main_filter_subject_content'),
             actionType: 'button',
-            actionText: 'Lanjut',
+            actionText: t('tour.step_main_filter_subject_action'),
             onAction: () => onNext('main_card'),
             placement: 'bottom'
         };
@@ -138,20 +140,20 @@ function TourEngine({ subStep, onNext, onCompleteMain, onCompleteBooking, onSkip
         config = {
             targetSelector: '.tour-tutor-card-list > div:not(.text-center)', 
             fallbackSelector: '.tour-tutor-card-list',
-            title: 'Pilih Tutor',
-            content: 'Ketuk salah satu kartu tutor untuk melihat detail rating/ulasan, jadwal, opsi metode pertemuan, dan mulai booking kelas!',
+            title: t('tour.step_main_card_title'),
+            content: t('tour.step_main_card_content'),
             actionType: 'wait_click',
-            actionText: 'Pilih Tutor',
+            actionText: t('tour.step_main_card_action'),
             onAction: onCompleteMain,
             placement: 'top'
         };
     } else if (subStep === 'book_review') {
         config = {
             targetSelector: '.tour-book-review',
-            title: 'Cek Profil Tutor',
-            content: 'Di halaman ini, kamu bisa melihat profil lengkap, kualifikasi, tarif, serta ulasan terbaru dari siswa lain sebelum memesan.',
+            title: t('tour.step_book_review_title'),
+            content: t('tour.step_book_review_content'),
             actionType: 'button',
-            actionText: 'Paham',
+            actionText: t('tour.step_book_review_action'),
             onAction: () => onNext('book_package'),
             placement: 'bottom'
         };
@@ -159,20 +161,20 @@ function TourEngine({ subStep, onNext, onCompleteMain, onCompleteBooking, onSkip
         config = {
             targetSelector: '.tour-package',
             fallbackSelector: '.tour-schedule',
-            title: 'Sesi atau Paket?',
-            content: 'Kamu bisa memesan satu sesi untuk percobaan, atau membeli bundel paket (4, 8, 12 sesi) agar lebih hemat dan belajarnya terarah. Bisa pilih sesuai kebutuhan!',
+            title: t('tour.step_book_package_title'),
+            content: t('tour.step_book_package_content'),
             actionType: 'button',
-            actionText: 'Mengerti',
+            actionText: t('tour.step_book_package_action'),
             onAction: () => onNext('book_schedule'),
             placement: 'top'
         };
     } else if (subStep === 'book_schedule') {
         config = {
             targetSelector: '.tour-schedule',
-            title: 'Pilih Waktu',
-            content: 'Pilih satu tanggal dan jam untuk sesi pertamamu. Jadwal lain bisa disesuaikan nanti bersama tutor.',
+            title: t('tour.step_book_schedule_title'),
+            content: t('tour.step_book_schedule_content'),
             actionType: 'button',
-            actionText: 'Lanjut',
+            actionText: t('tour.step_book_schedule_action'),
             onAction: () => onNext('book_method'),
             placement: 'top',
             fixedPlacement: true
@@ -180,30 +182,30 @@ function TourEngine({ subStep, onNext, onCompleteMain, onCompleteBooking, onSkip
     } else if (subStep === 'book_method') {
         config = {
             targetSelector: '.tour-mapel-method',
-            title: 'Mapel & Metode',
-            content: 'Pilih kembali Mata Pelajaran di atas (wajib) dan Metode Pertemuannya. Bisa pilih Online (Video Call) atau Offline lho!',
+            title: t('tour.step_book_method_title'),
+            content: t('tour.step_book_method_content'),
             actionType: 'button',
-            actionText: 'Mengerti',
+            actionText: t('tour.step_book_method_action'),
             onAction: () => onNext('book_notes'),
             placement: 'top'
         };
     } else if (subStep === 'book_notes') {
         config = {
             targetSelector: '.tour-notes',
-            title: 'Catatan & Lokasi',
-            content: 'Jika kamu memilih Offline, pastikan untuk membagikan alamat jelasmu. Tinggalkan juga catatan bebas seputar materi yang ingin diajarkan!',
+            title: t('tour.step_book_notes_title'),
+            content: t('tour.step_book_notes_content'),
             actionType: 'button',
-            actionText: 'Tentu!',
+            actionText: t('tour.step_book_notes_action'),
             onAction: () => onNext('book_submit'),
             placement: 'top'
         };
     } else if (subStep === 'book_submit') {
         config = {
             targetSelector: '.tour-book-now',
-            title: 'Selesai!',
-            content: 'Jika semuanya sudah siap, kamu bisa klik tombol ini untuk mengajukan jadwal ke tutor. Selamat belajar!',
+            title: t('tour.step_book_submit_title'),
+            content: t('tour.step_book_submit_content'),
             actionType: 'button',
-            actionText: 'Selesai Tour',
+            actionText: t('tour.step_book_submit_action'),
             onAction: onCompleteBooking,
             placement: 'top'
         };
