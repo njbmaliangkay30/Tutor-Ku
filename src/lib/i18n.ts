@@ -15,7 +15,29 @@ export const translations = {
       admin_overview: "Ikhtisar",
       admin_requests: "Persetujuan Tutor",
       my_profile: "Profil Saya",
-      profile_mobile: "Profil"
+      profile_mobile: "Profil",
+      main_menu: "Menu Utama",
+      progress: "Progress",
+      admin_tutors: "Data Tutor",
+      admin_verifications: "Data Verifikasi",
+      admin_rate_requests: "Pengajuan Harga",
+      admin_students: "Data Student",
+      admin_transactions: "Transaksi",
+      admin_packages: "Package",
+      admin_sessions: "Sesi Belajar",
+      admin_reviews: "Review Tutor",
+      chat_mobile: "Pesan",
+      sessions_mobile: "Sesi",
+      progress_mobile: "Progres",
+      admin_overview_mobile: "Info",
+      admin_tutors_mobile: "Tutor",
+      admin_verifications_mobile: "Verif",
+      admin_rate_requests_mobile: "Harga",
+      admin_students_mobile: "Siswa",
+      admin_transactions_mobile: "Bayar",
+      admin_packages_mobile: "Paket",
+      admin_reviews_mobile: "Ulasan",
+      explore_mobile: "Eksplor"
     },
     common: {
       loading: "Memuat...",
@@ -361,6 +383,27 @@ export const translations = {
       homework: "Tugas Mandiri (PR)",
       understanding: "Tingkat Pemahaman",
       understand_btn: "Mengerti"
+    },
+    notifications: {
+      title: "Notifikasi",
+      mark_all_read: "Tandai semua dibaca",
+      allow_browser: "Izinkan Notifikasi Di Browser",
+      test_push: "Uji Push Notifikasi",
+      no_notifications: "Belum ada notifikasi baru untukmu.",
+      alert_permission_requested: "Izin push notification diminta. Coba aktifkan/refresh.",
+      alert_test_sent: "Pesan uji coba dikirim ke server! Jika kamu belum menerima PWA Push, pastikan kamu membuka aplikasi di Tab Baru (bukan iframe AI Studio) dan sudah mengizinkan notifikasi."
+    },
+    chat: {
+      title: "Obrolan",
+      search_placeholder: "Cari obrolan...",
+      loading_conversations: "Memuat obrolan...",
+      no_conversations: "Belum ada obrolan",
+      no_conversations_desc: "Booking tutor untuk memulai obrolan atau tunggu sampai ada pesan masuk.",
+      you: "Anda:",
+      select_chat: "Pilih Obrolan",
+      select_chat_desc: "Silakan pilih kontak dari samping untuk mulai mengirim pesan.",
+      type_message: "Ketik pesan...",
+      alert_send_error: "Gagal mengirim pesan"
     }
   },
   en: {
@@ -377,7 +420,29 @@ export const translations = {
       admin_overview: "Overview",
       admin_requests: "Tutor Approvals",
       my_profile: "My Profile",
-      profile_mobile: "Profile"
+      profile_mobile: "Profile",
+      main_menu: "Main Menu",
+      progress: "Progress",
+      admin_tutors: "Tutor Data",
+      admin_verifications: "Verifications",
+      admin_rate_requests: "Price Requests",
+      admin_students: "Student Data",
+      admin_transactions: "Transactions",
+      admin_packages: "Packages",
+      admin_sessions: "Sessions",
+      admin_reviews: "Tutor Reviews",
+      chat_mobile: "Chat",
+      sessions_mobile: "Sessions",
+      progress_mobile: "Progress",
+      admin_overview_mobile: "Info",
+      admin_tutors_mobile: "Tutors",
+      admin_verifications_mobile: "Verif",
+      admin_rate_requests_mobile: "Rates",
+      admin_students_mobile: "Students",
+      admin_transactions_mobile: "Pay",
+      admin_packages_mobile: "Packages",
+      admin_reviews_mobile: "Reviews",
+      explore_mobile: "Explore"
     },
     common: {
       loading: "Loading...",
@@ -723,6 +788,27 @@ export const translations = {
       homework: "Self-Study Task (HW)",
       understanding: "Understanding Level",
       understand_btn: "Got it"
+    },
+    notifications: {
+      title: "Notifications",
+      mark_all_read: "Mark all as read",
+      allow_browser: "Allow Browser Notifications",
+      test_push: "Test Push Notification",
+      no_notifications: "No new notifications for you.",
+      alert_permission_requested: "Push notification permission requested. Please enable/refresh.",
+      alert_test_sent: "Test push message sent to server! If you haven't received PWA Push, make sure you open the app in a New Tab (not the AI Studio iframe) and have allowed notifications."
+    },
+    chat: {
+      title: "Chats",
+      search_placeholder: "Search chats...",
+      loading_conversations: "Loading chats...",
+      no_conversations: "No chats yet",
+      no_conversations_desc: "Book a tutor to start a conversation or wait for incoming messages.",
+      you: "You:",
+      select_chat: "Select a Chat",
+      select_chat_desc: "Choose a contact from the sidebar to start messaging.",
+      type_message: "Type a message...",
+      alert_send_error: "Failed to send message"
     }
   }
 };
