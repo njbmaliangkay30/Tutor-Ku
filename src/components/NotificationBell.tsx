@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Bell } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface NotificationBellProps {
   id?: string;
@@ -10,6 +11,7 @@ interface NotificationBellProps {
 
 export function NotificationBell({ id = 'default' }: NotificationBellProps) {
   const { userProfile, userRole, setActiveTab, setTargetSessionId } = useAppContext();
+  const { t, language } = useTranslation();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -173,10 +175,10 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
           >
             <div className="flex flex-col border-b border-border bg-bg-2">
               <div className="flex justify-between items-center p-4 pb-2">
-                <h3 className="font-bold font-display text-sm">Notifikasi</h3>
+                <h3 className="font-bold font-display text-sm">{t('notifications.title')}</h3>
                 {unreadCount > 0 && (
                   <button onClick={markAllAsRead} className="text-[10px] text-lime hover:underline font-mono uppercase font-bold">
-                    Tandai semua dibaca
+                    {t('notifications.mark_all_read')}
                   </button>
                 )}
               </div>
@@ -184,11 +186,11 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
                 <button 
                   onClick={async () => {
                     await Notification.requestPermission();
-                    alert("Izin push notification diminta. Coba aktifkan/refresh.");
+                    alert(t('notifications.alert_permission_requested'));
                   }}
                   className="text-[9px] bg-bg-3 hover:bg-border px-2 py-1 rounded-md text-text-main font-mono transition-colors"
                 >
-                  Izinkan Notifikasi Di Browser
+                  {t('notifications.allow_browser')}
                 </button>
                 <button 
                   onClick={async () => {
@@ -197,11 +199,11 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
                        headers: { 'Content-Type': 'application/json' },
                        body: JSON.stringify({ user_id: userProfile?.id })
                      });
-                     alert("Pesan uji coba dikirim ke server! Jika kamu belum menerima PWA Push, pastikan kamu membuka aplikasi di Tab Baru (bukan iframe AI Studio) dan sudah mengizinkan notifikasi.");
+                     alert(t('notifications.alert_test_sent'));
                   }}
                   className="text-[9px] bg-lime hover:opacity-80 px-2 py-1 rounded-md text-black font-mono font-bold transition-opacity"
                 >
-                  Uji Push Notifikasi
+                  {t('notifications.test_push')}
                 </button>
               </div>
             </div>
@@ -209,7 +211,7 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
                    <Bell size={32} className="text-text-muted mb-2 opacity-20" />
-                   <p className="text-xs text-text-sub">Belum ada notifikasi baru untukmu.</p>
+                   <p className="text-xs text-text-sub">{t('notifications.no_notifications')}</p>
                 </div>
               ) : (
                 notifications.map((n) => (
@@ -223,7 +225,7 @@ export function NotificationBell({ id = 'default' }: NotificationBellProps) {
                         <h4 className="text-[13px] font-bold text-text-main leading-tight">{n.title}</h4>
                         <p className="text-[11px] text-text-sub mt-1 leading-snug">{n.message}</p>
                         <span className="text-[9px] text-text-muted mt-2 block font-mono">
-                           {new Date(n.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'})}
+                           {new Date(n.created_at).toLocaleString(language === 'en' ? 'en-US' : 'id-ID', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'})}
                         </span>
                       </div>
                     </div>
