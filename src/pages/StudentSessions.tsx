@@ -554,11 +554,11 @@ export function StudentSessions() {
                           onClick={(e) => e.stopPropagation()}
                           className="flex-1 bg-lime text-black font-bold py-2 rounded-lg text-xs hover:bg-lime-dim transition-colors flex items-center justify-center gap-2"
                         >
-                          <Video size={14} /> Buka Link Meeting
+                          <Video size={14} /> {t('sessions.open_meeting_link')}
                         </a>
                       ) : (
                         <div className="flex-1 bg-bg-2 border border-dashed border-border text-center text-text-sub font-mono font-bold py-2 rounded-lg text-xs flex items-center justify-center gap-2">
-                          Link meeting belum dimasukkan
+                          {t('sessions.link_not_added')}
                         </div>
                       )
                     ) : (
