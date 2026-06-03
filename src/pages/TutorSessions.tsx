@@ -653,7 +653,6 @@ export function TutorSessions() {
                               }
                               
                               const link = /^https?:\/\//i.test(cleanLink) ? cleanLink : 'https://' + cleanLink;
-                              
                               try {
                                 await supabase.from('sessions').update({ meeting_link: link }).eq('id', session.id);
                                 // Notify Student
@@ -663,11 +662,10 @@ export function TutorSessions() {
                                   message: `Tutor ${userProfile?.full_name || 'kamu'} telah menyertakan link meeting untuk kelas ${session.subject} pada ${new Date(session.session_date).toLocaleDateString('id-ID')}.`,
                                   link: session.id ? `student_sessions:${session.id}` : "student_sessions"
                                 });
-                                  fetchSessions();
-                                } catch (err) {
-                                  console.error('Error adding meeting link and notification:', err);
-                                  fetchSessions();
-                                }
+                                fetchSessions();
+                              } catch (err) {
+                                console.error('Error adding meeting link and notification:', err);
+                                fetchSessions();
                               }
                             }} className="flex-1 bg-bg-2 border border-lime text-lime font-bold py-2.5 rounded-lg text-sm hover:bg-lime/10 transition-colors flex items-center justify-center gap-2">
                               <Video size={16} /> Tambah Link Meeting
