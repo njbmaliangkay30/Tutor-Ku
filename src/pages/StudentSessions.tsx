@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
 import { getAvatarColor } from '../data';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const parseSessionNotes = (rawNotes: string | null | undefined) => {
   if (!rawNotes) return { meta: null, notes: "" };
@@ -61,6 +62,7 @@ export function StudentSessions() {
   const [isLoading, setIsLoading] = useState(false);
   const [isTrxLoading, setIsTrxLoading] = useState(false);
   const { user, userProfile, tutors, userRole, setActiveTab } = useAppContext();
+  const { t, language } = useTranslation();
 
   // Checkout / Payment detail modal
   const [selectedTrx, setSelectedTrx] = useState<any | null>(null);
@@ -270,12 +272,12 @@ export function StudentSessions() {
           }
        }
 
-       alert('Bukti transfer berhasil diunggah! Pembayaran Anda sekarang sedang dalam tahap verifikasi oleh admin.');
+       alert(t('sessions.alert_proof_success'));
        fetchTransactions();
        setSelectedTrx(null);
     } catch (err: any) {
        console.error(err);
-       alert('Kesalahan saat mengunggah: ' + err.message);
+       alert(t('sessions.alert_upload_error') + ': ' + err.message);
     } finally {
        setIsUploading(false);
     }
@@ -331,7 +333,7 @@ export function StudentSessions() {
       fetchSessions();
     } catch (error) {
       console.error('Error submitting review:', error);
-      alert('Gagal mengirim ulasan.');
+       alert(t('sessions.alert_review_error'));
     } finally {
       setIsSubmittingReview(false);
     }
@@ -340,13 +342,13 @@ export function StudentSessions() {
   if (userRole === 'guest' || !userProfile) {
     return (
       <div className="p-4 md:p-8 animate-pgIn max-w-4xl mx-auto w-full text-center mt-10">
-        <h1 className="text-2xl font-bold font-display text-text-main mb-4">Sesi Belajar</h1>
-        <p className="text-sm text-text-sub mb-6">Silakan login untuk melihat dan mengelola sesi belajarmu.</p>
+        <h1 className="text-2xl font-bold font-display text-text-main mb-4">{t('sessions.title')}</h1>
+        <p className="text-sm text-text-sub mb-6">{t('sessions.login_prompt')}</p>
         <button 
           onClick={() => setActiveTab('login')} 
           className="bg-lime text-black font-bold py-3 px-8 rounded-lg hover:bg-lime-dim transition-colors"
         >
-          Login Sekarang
+          {t('sessions.login_now')}
         </button>
       </div>
     );
@@ -355,8 +357,8 @@ export function StudentSessions() {
   return (
     <div className="p-4 md:p-8 animate-pgIn max-w-4xl mx-auto w-full pb-24">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold font-display text-text-main">Sesi Belajar</h1>
-        <p className="text-sm text-text-sub">Kelola jadwal belajar kamu dengan tutor.</p>
+        <h1 className="text-2xl font-bold font-display text-text-main">{t('sessions.title')}</h1>
+        <p className="text-sm text-text-sub">{t('sessions.subtitle')}</p>
       </div>
 
       <div className="flex bg-bg-2 border-[1.5px] border-border rounded-lg p-1 mb-6 gap-1">
@@ -364,31 +366,31 @@ export function StudentSessions() {
           onClick={() => setType('upcoming')}
           className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${type === 'upcoming' ? 'bg-lime-mid text-lime' : 'text-text-sub hover:text-text-main'}`}
         >
-          Akan Datang ({upcoming.length})
+          {t('sessions.tab_upcoming')} ({upcoming.length})
         </button>
         <button
           onClick={() => setType('past')}
           className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${type === 'past' ? 'bg-lime-mid text-lime' : 'text-text-sub hover:text-text-main'}`}
         >
-          Riwayat ({past.length})
+          {t('sessions.tab_history')} ({past.length})
         </button>
         <button
           onClick={() => setType('invoices')}
           className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${type === 'invoices' ? 'bg-lime-mid text-lime' : 'text-text-sub hover:text-text-main'}`}
         >
-          Tagihan ({transactions.filter(t => t.status === 'pending' || t.status === 'pending_verification').length})
+          {t('sessions.tab_invoices')} ({transactions.filter(t => t.status === 'pending' || t.status === 'pending_verification').length})
         </button>
       </div>
 
       <div className="flex flex-col gap-4">
         {type === 'invoices' ? (
           isTrxLoading ? (
-            <div className="text-center py-8">Memuat tagihan...</div>
+            <div className="text-center py-8">{t('sessions.loading_invoices')}</div>
           ) : transactions.length === 0 ? (
-            <div className="text-center py-8 text-text-sub border border-dashed border-border rounded-xl">Belum ada tagihan belanja.</div>
+            <div className="text-center py-8 text-text-sub border border-dashed border-border rounded-xl">{t('sessions.no_invoices')}</div>
           ) : (
             transactions.map((trx) => {
-              const itemType = trx.transaction_type === 'bundle_purchase' ? 'Beli Paket Belajar' : 'Booking Sesi Satuan';
+              const itemType = trx.transaction_type === 'bundle_purchase' ? t('sessions.item_bundle') : t('sessions.item_single');
               const associatedSession = Array.isArray(trx.sessions) ? trx.sessions[0] : trx.sessions;
               const isSessionPending = associatedSession?.status === 'pending';
               const isSessionRejected = associatedSession?.status === 'rejected';
@@ -396,17 +398,17 @@ export function StudentSessions() {
               return (
                 <div key={trx.id} className="bg-card border-[1.5px] border-border rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-lime/20 transition-colors">
                   <div className="space-y-1">
-                    <div className="text-xs text-text-sub font-mono">{new Date(trx.created_at).toLocaleDateString()}</div>
+                    <div className="text-xs text-text-sub font-mono">{new Date(trx.created_at).toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID')}</div>
                     <h3 className="font-bold text-text-main text-base">{itemType}</h3>
-                    <div className="font-mono font-bold text-lime mt-1 text-base">Rp {trx.amount?.toLocaleString('id-ID')}</div>
+                    <div className="font-mono font-bold text-lime mt-1 text-base">Rp {trx.amount?.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')}</div>
                     {associatedSession && (
                       <div className="text-[11px] text-text-sub flex items-center gap-1">
-                        Subjek: <strong className="text-text-main">{associatedSession.subject}</strong> &bull; Jadwal: <strong className="text-text-main">{new Date(associatedSession.session_date).toLocaleDateString('id-ID')}</strong>
+                        {t('sessions.subject_label')} <strong className="text-text-main">{t(`subjects.${associatedSession.subject}`)}</strong> &bull; {t('sessions.schedule_label')} <strong className="text-text-main">{new Date(associatedSession.session_date).toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID')}</strong>
                       </div>
                     )}
                     {trx.rejection_reason && trx.status === 'failed' && (
                       <div className="text-xs text-red-400 bg-red-400/5 p-2 rounded border border-red-500/15 mt-2">
-                        Alasan Tolak: "{trx.rejection_reason}"
+                        {t('sessions.rejection_reason')} "{trx.rejection_reason}"
                       </div>
                     )}
                   </div>
@@ -417,25 +419,25 @@ export function StudentSessions() {
                       trx.status === 'failed' ? 'bg-red-500/10 text-red-400 border border-red-500/30' :
                       'bg-warning/15 text-warning border border-warning/30'
                     }`}>
-                      {trx.status === 'pending_verification' ? 'Menunggu Verifikasi' : trx.status === 'success' ? 'Lunas' : trx.status === 'failed' ? 'Ditolak' : 'Belum Bayar'}
+                      {trx.status === 'pending_verification' ? t('sessions.status_label_pending_verification') : trx.status === 'success' ? t('sessions.status_label_success') : trx.status === 'failed' ? t('sessions.status_label_failed') : t('sessions.status_label_pending')}
                     </span>
                     
                     {isSessionPending ? (
                       <div className="flex flex-col items-center sm:items-end gap-1 text-center sm:text-right">
                         <span className="text-xs text-warning font-semibold flex items-center gap-1 bg-warning/10 px-2.5 py-1 rounded">
-                          <Clock size={12} /> Menunggu Persetujuan Tutor
+                          <Clock size={12} /> {t('sessions.waiting_tutor_approval')}
                         </span>
                         <span className="text-[9px] text-text-sub max-w-[200px] leading-tight">
-                          Pembayaran dibuka setelah tutor menyetujui request jadwal Anda.
+                          {t('sessions.payment_unlocks')}
                         </span>
                       </div>
                     ) : isSessionRejected ? (
                       <div className="flex flex-col items-center sm:items-end gap-1 text-center sm:text-right">
                         <span className="text-xs text-red-400 font-semibold flex items-center gap-1 bg-red-400/10 px-2.5 py-1 rounded">
-                          <X size={12} /> Ditolak oleh Tutor
+                          <X size={12} /> {t('sessions.rejected_by_tutor')}
                         </span>
                         <span className="text-[9px] text-text-sub max-w-[200px] leading-tight">
-                          Sesi request ditolak oleh tutor. Anda tidak perlu membayar tagihan ini.
+                          {t('sessions.rejected_no_pay')}
                         </span>
                       </div>
                     ) : (
@@ -444,7 +446,7 @@ export function StudentSessions() {
                           onClick={() => setSelectedTrx(trx)}
                           className="bg-lime text-black font-bold text-xs px-4 py-2.5 rounded-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5"
                         >
-                          <CreditCard size={14} /> Bayar Sekarang
+                          <CreditCard size={14} /> {t('sessions.pay_now')}
                         </button>
                       )
                     )}
@@ -454,7 +456,7 @@ export function StudentSessions() {
                         onClick={() => setSelectedTrx(trx)}
                         className="bg-bg-2 border border-border text-xs px-4 py-2.5 rounded-lg text-text-main hover:bg-bg-3 transition-colors flex items-center justify-center gap-1"
                       >
-                        Detail Invoice
+                        {t('sessions.invoice_detail')}
                       </button>
                     )}
                   </div>
@@ -464,30 +466,32 @@ export function StudentSessions() {
           )
         ) : (
           isLoading ? (
-            <div className="text-center py-8">Memuat sesi...</div>
+            <div className="text-center py-8">{t('sessions.loading_sessions')}</div>
           ) : displayList.length === 0 ? (
-            <div className="text-center py-8 text-text-sub border border-dashed border-border rounded-xl">Tidak ada sesi {type === 'upcoming' ? 'akan datang' : 'sebelumnya'}.</div>
+            <div className="text-center py-8 text-text-sub border border-dashed border-border rounded-xl">
+              {type === 'upcoming' ? t('sessions.no_sessions_upcoming') : t('sessions.no_sessions_past')}
+            </div>
           ) : (
             displayList.map(session => {
               let statusText = session.status;
               let statusColor = "bg-bg-3 text-text-sub";
               if (session.status === 'pending') {
-                statusText = 'Menunggu Konfirmasi';
+                statusText = t('sessions.status_pending');
                 statusColor = "bg-warning/20 text-warning";
               } else if (session.status === 'confirmed') {
-                statusText = 'Terkonfirmasi';
+                statusText = t('sessions.status_confirmed');
                 statusColor = "bg-lime-dim text-lime border border-lime/30";
               } else if (session.status === 'completed') {
-                statusText = 'Selesai';
+                statusText = t('sessions.status_completed');
                 statusColor = "bg-bg-2 border border-border text-text-sub";
               } else if (session.status === 'rejected') {
-                statusText = 'Ditolak';
+                statusText = t('sessions.status_rejected');
                 statusColor = "bg-red-500/10 text-red-400 border border-red-500/20";
               } else if (session.status === 'waiting_for_student') {
-                statusText = 'Tunggu Konfirmasi Selesai';
+                statusText = t('sessions.status_waiting');
                 statusColor = "bg-warning/20 text-warning border border-warning/30";
               } else if (session.status === 'cancelled') {
-                statusText = 'Dibatalkan';
+                statusText = t('sessions.status_cancelled');
                 statusColor = "bg-red-500/10 text-red-500 border border-red-500/30";
               }
 
@@ -500,7 +504,7 @@ export function StudentSessions() {
                       </div>
                       <div>
                         <div className="font-bold text-text-main font-display">{session.tutor_profiles?.profiles?.full_name || 'Tutor'}</div>
-                        <div className="text-xs text-text-sub font-mono">{session.subject}</div>
+                        <div className="text-xs text-text-sub font-mono">{t(`subjects.${session.subject}`)}</div>
                         {(() => {
                           const parsed = parseSessionNotes(session.material_notes);
                           if (!parsed.meta) return null;
@@ -508,7 +512,7 @@ export function StudentSessions() {
                             return (
                               <div className="mt-1">
                                 <span className="text-[9px] bg-cyan-500/15 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
-                                  ⚡ Kuota Paket (Prepaid)
+                                  {t('sessions.badge_prepaid')}
                                 </span>
                               </div>
                             );
@@ -517,7 +521,7 @@ export function StudentSessions() {
                             return (
                               <div className="mt-1">
                                 <span className="text-[9px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
-                                  🎯 Sesi Satuan (Single)
+                                  {t('sessions.badge_single')}
                                 </span>
                               </div>
                             );
@@ -527,7 +531,7 @@ export function StudentSessions() {
                             return (
                               <div className="mt-1">
                                 <span className="text-[9px] bg-indigo-500/15 text-indigo-400 border border-indigo-500/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider inline-block">
-                                  📦 Sesi Paket: {pkgName}
+                                  {t('sessions.badge_bundle')} {pkgName}
                                 </span>
                               </div>
                             );
@@ -544,7 +548,7 @@ export function StudentSessions() {
                   <div className="bg-bg-2 rounded-lg p-3 mb-4 space-y-2 border border-border/50">
                     <div className="flex items-center gap-2 text-sm text-text-main">
                       <Calendar size={16} className="text-text-sub" />
-                      <span>{new Date(session.session_date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                      <span>{new Date(session.session_date).toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-text-main">
                       <Clock size={16} className="text-text-sub" />
@@ -554,9 +558,9 @@ export function StudentSessions() {
                       const parsed = parseSessionNotes(session.material_notes);
                       return (
                         <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">
-                          <span className="text-xs text-text-sub font-medium font-mono uppercase tracking-wider">Catatan Tambahan:</span>
+                          <span className="text-xs text-text-sub font-medium font-mono uppercase tracking-wider">{t('sessions.extra_notes_label')}</span>
                            <p className="text-sm font-sans italic">
-                             {parsed.notes ? `"${parsed.notes}"` : "- (Membahas materi umum sesuai pelajaran)"}
+                             {parsed.notes ? `"${parsed.notes}"` : t('sessions.notes_default')}
                            </p>
                         </div>
                       );
@@ -564,15 +568,15 @@ export function StudentSessions() {
                     <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-border/40 text-xs">
                       {session.meeting_type !== 'offline' && (
                         <div className="flex flex-col gap-0.5">
-                          <span className="font-bold text-[11px] text-text-sub uppercase font-mono tracking-wider">🖥️ Link Kelas Online:</span>
+                          <span className="font-bold text-[11px] text-text-sub uppercase font-mono tracking-wider">{t('sessions.online_link_label')}</span>
                           {session.meeting_link ? (
                             <div className="mt-0.5">
                               <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/15 px-2.5 py-1 rounded border border-lime/30 text-xs text-center justify-center font-display">
-                                🔗 Buka Link Kelas Online (GMeet/Zoom) ↗
+                                {t('sessions.open_online_link')}
                               </a>
                             </div>
                           ) : (
-                            <p className="text-text-sub italic text-[11px]">Link meeting belum dimasukkan oleh tutor.</p>
+                            <p className="text-text-sub italic text-[11px]">{t('sessions.link_not_added')}</p>
                           )}
                         </div>
                       )}
@@ -584,14 +588,14 @@ export function StudentSessions() {
                       {session.status === 'confirmed' && session.payment_status === 'unpaid' ? (
                         <div className="flex-1 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                           <div className="space-y-0.5">
-                            <span className="text-[10px] sm:text-xs font-bold text-warning uppercase tracking-wider block">Menunggu Pembayaran</span>
-                            <p className="text-xs text-text-sub">Silakan selesaikan pembayaran tagihan untuk mengakses link atau lokasi sesi ini.</p>
+                            <span className="text-[10px] sm:text-xs font-bold text-warning uppercase tracking-wider block">{t('sessions.awaiting_payment_title')}</span>
+                            <p className="text-xs text-text-sub">{t('sessions.awaiting_payment_note')}</p>
                           </div>
                           <button
                             onClick={() => setType('invoices')}
                             className="bg-lime text-black font-bold text-xs px-4 py-2 rounded-lg hover:opacity-95 transition-all whitespace-nowrap self-stretch sm:self-auto text-center"
                           >
-                            Buka Tagihan
+                            {t('sessions.open_invoice')}
                           </button>
                         </div>
                       ) : session.meeting_type === 'offline' ? (
@@ -602,7 +606,7 @@ export function StudentSessions() {
                               <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="flex items-start gap-1.5 flex-1 min-w-[200px]">
                                   <span className="font-bold text-text-sub font-mono uppercase text-[10px] mt-0.5">📍:</span>
-                                  <span className="text-text-main font-medium">{parsedLoc.text || "Belum ada lokasi detail"}</span>
+                                  <span className="text-text-main font-medium">{parsedLoc.text || t('sessions.no_location')}</span>
                                 </div>
                                 {parsedLoc.url && (
                                   <a
@@ -611,7 +615,7 @@ export function StudentSessions() {
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1 bg-lime text-black font-extrabold px-2.5 py-1 rounded-md text-[11px] hover:bg-lime-dim transition-all whitespace-nowrap border border-black/10 shadow hover:scale-[1.01] active:scale-[0.99]"
                                   >
-                                    Buka Google Maps ↗
+                                    {t('sessions.open_maps')}
                                   </a>
                                 )}
                               </div>
@@ -621,11 +625,11 @@ export function StudentSessions() {
                       ) : (
                         session.meeting_link ? (
                           <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">
-                            <Video size={16} /> Buka Link Meeting
+                            <Video size={16} /> {t('sessions.open_meeting_link')}
                           </a>
                         ) : (
                           <div className="flex-1 bg-bg-2 border border-dashed border-border text-center text-text-sub font-mono font-bold py-2.5 rounded-lg text-[12px] flex items-center justify-center gap-2">
-                            Link belum tersedia
+                            {t('sessions.link_unavailable')}
                           </div>
                         )
                       )}
@@ -637,7 +641,7 @@ export function StudentSessions() {
                           onClick={() => setReviewModal(session)}
                           className="flex-1 border-[1.5px] border-lime bg-lime text-black font-bold py-2 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2"
                         >
-                          <Star size={16} /> Tandai Selesai & Beri Ulasan
+                          <Star size={16} /> {t('sessions.mark_complete')}
                         </button>
                       )}
                       {session.status === 'completed' && !session.rating && (
@@ -645,7 +649,7 @@ export function StudentSessions() {
                           onClick={() => setReviewModal(session)}
                           className="flex-1 border-[1.5px] border-lime/50 text-lime font-bold py-2 rounded-lg text-sm hover:bg-lime-mid transition-colors flex items-center justify-center gap-2"
                         >
-                          <Star size={16} /> Beri Ulasan
+                          <Star size={16} /> {t('sessions.give_review')}
                         </button>
                       )}
                     </div>
@@ -663,7 +667,7 @@ export function StudentSessions() {
           <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center p-4 border-b-[1.5px] border-border bg-bg-2">
               <div className="font-display font-bold text-[16px]">
-                {selectedTrx.status === 'pending_verification' ? 'Informasi Pembayaran' : 'Selesaikan Pembayaran'}
+                {selectedTrx.status === 'pending_verification' ? t('sessions.payment_info_title') : t('sessions.complete_payment_title')}
               </div>
               <button
                 onClick={() => setSelectedTrx(null)}
@@ -675,9 +679,9 @@ export function StudentSessions() {
             
             <div className="p-5 overflow-y-auto space-y-4">
               <div className="bg-bg-2 p-4 rounded-xl border border-border/80">
-                <span className="text-[10px] text-text-sub font-mono uppercase">Total Pembayaran</span>
-                <div className="text-2xl font-bold text-lime font-display mt-0.5">Rp {selectedTrx.amount?.toLocaleString('id-ID')}</div>
-                <div className="text-xs text-text-sub mt-1">Invoice ID: {selectedTrx.id.substring(0, 8).toUpperCase()}</div>
+                <span className="text-[10px] text-text-sub font-mono uppercase">{t('sessions.total_payment')}</span>
+                <div className="text-2xl font-bold text-lime font-display mt-0.5">Rp {selectedTrx.amount?.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')}</div>
+                <div className="text-xs text-text-sub mt-1">{t('sessions.invoice_id')}: {selectedTrx.id.substring(0, 8).toUpperCase()}</div>
               </div>
 
               {selectedTrx.status === 'pending_verification' ? (
@@ -686,16 +690,16 @@ export function StudentSessions() {
                     <Clock size={32} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-text-main text-base">Dalam Proses Verifikasi</h3>
+                    <h3 className="font-bold text-text-main text-base">{t('sessions.in_verification_title')}</h3>
                     <p className="text-sm text-text-sub mt-1">
-                      Bukti pembayaran Anda sudah diterima oleh sistem. Mohon tunggu maksimal 1x24 jam untuk admin memvalidasi transfer Anda.
+                      {t('sessions.in_verification_desc')}
                     </p>
                   </div>
                   {selectedTrx.proof_url && (
                     <div className="pt-2">
-                      <span className="block text-[10px] text-text-sub font-mono uppercase pb-1.5">Bukti Terunggah:</span>
+                      <span className="block text-[10px] text-text-sub font-mono uppercase pb-1.5">{t('sessions.proof_uploaded')}</span>
                       <a href={selectedTrx.proof_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 bg-bg-3 border border-border text-xs py-2 px-4 rounded-lg hover:bg-bg-2 text-lime font-medium">
-                        Lihat Gambar Bukti ↗
+                        {t('sessions.view_proof')}
                       </a>
                     </div>
                   )}
@@ -707,20 +711,20 @@ export function StudentSessions() {
                       onClick={() => setPaymentMethod('bank_transfer')}
                       className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${paymentMethod === 'bank_transfer' ? 'bg-lime text-black' : 'text-text-sub'}`}
                     >
-                      Transfer Bank Manual
+                      {t('sessions.bank_transfer_tab')}
                     </button>
                     <button
                       onClick={() => setPaymentMethod('qris')}
                       className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${paymentMethod === 'qris' ? 'bg-lime text-black' : 'text-text-sub'}`}
                     >
-                      QRIS / E-Wallet
+                      {t('sessions.qris_tab')}
                     </button>
                   </div>
 
                   {paymentMethod === 'bank_transfer' ? (
                     <div className="space-y-3 pt-2">
                       <div className="text-xs text-text-sub leading-relaxed">
-                        Silakan transfer nominal di atas secara tepat ke rekening resmi platform berikut:
+                        {t('sessions.transfer_instruction')}
                       </div>
                       
                       <div className="space-y-2">
@@ -737,12 +741,12 @@ export function StudentSessions() {
                           >
                             {copiedText ? (
                               <>
-                                <span className="text-[10px] font-bold text-success font-sans">Disalin!</span>
+                                <span className="text-[10px] font-bold text-success font-sans">{t('sessions.copied_btn')}</span>
                                 <Check size={14} className="text-success" />
                               </>
                             ) : (
                               <>
-                                <span className="text-[10px] text-text-sub font-semibold font-sans">Salin</span>
+                                <span className="text-[10px] text-text-sub font-semibold font-sans">{t('sessions.copy_btn')}</span>
                                 <Copy size={13} className="text-text-sub" />
                               </>
                             )}
@@ -753,7 +757,7 @@ export function StudentSessions() {
                   ) : (
                     <div className="text-center pt-2 space-y-3">
                       <div className="text-xs text-text-sub">
-                        Scan kode QRIS resmi platform ini menggunakan GoPay, OVO, Dana, ShopeePay, atau m-Banking Anda:
+                        {t('sessions.scan_qris_instruction')}
                       </div>
                       <div className="bg-white p-2.5 rounded-xl inline-block border border-border/40 shadow-sm max-w-[185px] w-full aspect-square">
                         <img 
@@ -770,7 +774,7 @@ export function StudentSessions() {
                   )}
 
                   <div className="pt-2 border-t border-border/60">
-                    <label className="block text-xs font-bold text-text-sub uppercase mb-2 font-mono tracking-wider">Unggah Bukti Transfer</label>
+                    <label className="block text-xs font-bold text-text-sub uppercase mb-2 font-mono tracking-wider">{t('sessions.upload_proof_label')}</label>
                     <div className="relative border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-lime/40 transition-colors bg-bg-2">
                       <input 
                         type="file" 
@@ -781,12 +785,12 @@ export function StudentSessions() {
                       />
                       <div className="flex flex-col items-center gap-1.5 cursor-pointer">
                         <Upload size={24} className="text-text-sub" />
-                        <span className="text-xs font-bold text-text-main">Pilih gambar atau Drag & Drop</span>
-                        <span className="text-[10px] text-text-sub">Maksimal 5MB (PNG, JPG, JPEG)</span>
+                        <span className="text-xs font-bold text-text-main">{t('sessions.choose_image')}</span>
+                        <span className="text-[10px] text-text-sub">{t('sessions.max_size')}</span>
                       </div>
                     </div>
                     {isUploading && (
-                      <div className="text-center text-xs text-lime font-medium mt-2">Mengunggah bukti transfer...</div>
+                      <div className="text-center text-xs text-lime font-medium mt-2">{t('sessions.uploading')}</div>
                     )}
                   </div>
                 </>
@@ -799,7 +803,7 @@ export function StudentSessions() {
                 className="w-full bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:opacity-90 transition-colors"
                 disabled={isUploading}
               >
-                Tutup Selesai
+                {t('sessions.close_btn')}
               </button>
             </div>
           </div>
@@ -811,7 +815,7 @@ export function StudentSessions() {
           <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh1 animate-slideUp overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center p-4 border-b-[1.5px] border-border bg-bg-2">
               <div className="font-display font-bold text-[16px]">
-                Selesaikan Sesi & Beri Ulasan
+                {t('sessions.finish_review_title')}
               </div>
               <button
                 onClick={() => setReviewModal(null)}
@@ -826,18 +830,18 @@ export function StudentSessions() {
             <div className="p-5 overflow-y-auto">
               <div className="mb-4">
                 <div className="text-xs text-text-sub font-mono uppercase tracking-wider mb-1">
-                  Tutor
+                  {t('profile.tutor_label')}
                 </div>
                 <div className="font-bold font-display text-lg">
                   {reviewModal.tutor_profiles?.profiles?.full_name || 'Tutor'}
                 </div>
                 <div className="text-sm text-lime font-mono">
-                  {reviewModal.subject || 'Mapel'} · {new Date(reviewModal.session_date).toLocaleDateString()}
+                  {t(`subjects.${reviewModal.subject}`)} · {new Date(reviewModal.session_date).toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID')}
                 </div>
               </div>
               
               <div className="mb-6">
-                <label className="block text-xs font-bold text-text-sub uppercase font-mono tracking-wider mb-3 text-center">Beri Rating</label>
+                <label className="block text-xs font-bold text-text-sub uppercase font-mono tracking-wider mb-3 text-center">{t('sessions.give_rating')}</label>
                 <div className="flex justify-center gap-3">
                   {[1, 2, 3, 4, 5].map(star => (
                      <button 
@@ -852,11 +856,11 @@ export function StudentSessions() {
               </div>
 
               <div className="mb-2">
-                <label className="block text-xs font-bold text-text-sub uppercase font-mono tracking-wider mb-1.5">Ulasan (Opsional)</label>
+                <label className="block text-xs font-bold text-text-sub uppercase font-mono tracking-wider mb-1.5">{t('sessions.review_optional')}</label>
                 <textarea
                   value={reviewText}
                   onChange={(e) => setReviewText(e.target.value)}
-                  placeholder="Ceritakan pengalaman belajar kamu, metode mengajar tutor, dll..."
+                  placeholder={t('sessions.review_placeholder')}
                   className="w-full bg-bg-2 border border-border rounded-lg p-3 text-sm text-text-main focus:outline-none focus:border-lime transition-colors h-24 resize-none"
                 />
               </div>
@@ -868,14 +872,14 @@ export function StudentSessions() {
                 className="flex-1 font-bold py-2.5 rounded-lg text-sm text-text-main hover:bg-bg-3 border border-transparent transition-colors"
                 disabled={isSubmittingReview}
               >
-                Batal
+                {t('sessions.cancel_btn')}
               </button>
               <button
                 onClick={handleSubmitReview}
                 className="flex-[2] bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors disabled:opacity-50"
                 disabled={isSubmittingReview}
               >
-                {isSubmittingReview ? 'Menyimpan...' : (reviewModal.status === 'completed' ? 'Kirim Ulasan' : 'Selesai & Kirim Ulasan')}
+                {isSubmittingReview ? t('sessions.saving') : (reviewModal.status === 'completed' ? t('sessions.submit_review') : t('sessions.submit_finish'))}
               </button>
             </div>
           </div>
@@ -884,9 +888,10 @@ export function StudentSessions() {
 
       {copiedText && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[10000] bg-lime text-black font-semibold font-mono text-xs py-2 px-4 rounded-full shadow-lg border border-lime/50 animate-bounce">
-          ✓ Rekening Berhasil Disalin!
+          {t('sessions.copied_toast')}
         </div>
       )}
     </div>
   );
 }
+
