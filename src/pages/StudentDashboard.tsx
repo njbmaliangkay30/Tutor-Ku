@@ -5,6 +5,13 @@ import { Calendar, Package, ArrowRight, BookOpen, Clock, Activity, Video, Messag
 import { motion } from 'motion/react';
 import { useTranslation } from '../hooks/useTranslation';
 
+const getExternalUrl = (url: string | null | undefined): string => {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return 'https://' + trimmed;
+};
+
 export function StudentDashboard() {
   const { userProfile, setActiveTab, setTargetSessionId, setSelectedTutorId } = useAppContext();
   const { t, getLocalizedValue } = useTranslation();
@@ -199,7 +206,7 @@ export function StudentDashboard() {
                    {upcomingSession.meeting_link && (
                      <div className="mt-6 pt-6 border-t border-border/40 relative z-10">
                         <a 
-                          href={upcomingSession.meeting_link} 
+                          href={getExternalUrl(upcomingSession.meeting_link)} 
                           target="_blank" 
                           rel="noreferrer"
                           onClick={e => e.stopPropagation()}
@@ -424,3 +431,4 @@ export function StudentDashboard() {
     </div>
   );
 }
+
