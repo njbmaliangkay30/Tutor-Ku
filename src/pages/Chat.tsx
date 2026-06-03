@@ -3,11 +3,13 @@ import { supabase } from "../lib/supabase";
 import { useAppContext } from "../AppContext";
 import { Send, ChevronLeft, Search } from "lucide-react";
 import { getAvatarColor } from "../data";
+import { useTranslation } from "../hooks/useTranslation";
 
 import { SessionBookingCard } from "../components/SessionBookingCard";
 
 export function Chat() {
   const { userProfile, user, userRole, setActiveTab, tutors, targetSessionId, setTargetSessionId } = useAppContext();
+  const { t, language } = useTranslation();
   const [conversations, setConversations] = useState<any[]>([]);
   const [activeContactId, setActiveContactId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -240,7 +242,7 @@ export function Chat() {
       }).select().single();
       
       if (error) {
-        alert("Gagal mengirim pesan: " + error.message);
+        alert(t("chat.alert_send_error") + ": " + error.message);
         // Hapus pesan temp jika gagal
         setMessages(prev => prev.filter(m => m.id !== tempId));
       } else if (data) {
@@ -284,20 +286,20 @@ export function Chat() {
         className={`w-full md:w-[320px] lg:w-[350px] border-r-[1.5px] border-border/80 flex flex-col bg-bg-1 h-full shrink-0 ${activeContactId ? 'hidden md:flex' : 'flex'}`}
       >
         <div className="p-4 border-b border-border">
-           <h2 className="font-display text-xl font-extrabold text-lime mb-3">Obrolan</h2>
+           <h2 className="font-display text-xl font-extrabold text-lime mb-3">{t("chat.title")}</h2>
            <div className="relative">
-             <input type="text" placeholder="Cari obrolan..." className="w-full bg-bg-2 border border-border rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none focus:border-lime/50 transition-colors" />
+             <input type="text" placeholder={t("chat.search_placeholder")} className="w-full bg-bg-2 border border-border rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none focus:border-lime/50 transition-colors" />
              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-sub" />
            </div>
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar">
           {isLoading ? (
-            <div className="text-center p-6 text-text-sub text-xs">Memuat obrolan...</div>
+            <div className="text-center p-6 text-text-sub text-xs">{t("chat.loading_conversations")}</div>
           ) : conversations.length === 0 ? (
             <div className="text-center p-8">
-              <p className="text-text-sub text-xs font-mono mb-2">Belum ada obrolan</p>
-              <p className="text-[11px] text-text-muted">Booking tutor untuk memulai obrolan atau tunggu sampai ada pesan masuk.</p>
+              <p className="text-text-sub text-xs font-mono mb-2">{t("chat.no_conversations")}</p>
+              <p className="text-[11px] text-text-muted">{t("chat.no_conversations_desc")}</p>
             </div>
           ) : (
             <div>
@@ -319,16 +321,16 @@ export function Chat() {
                        )}
                        {isUnread && <div className="absolute top-0 right-0 w-3 h-3 bg-lime rounded-full border-2 border-bg-1" />}
                      </div>
-                     <div className="flex-1 min-w-0">
-                       <div className="flex justify-between items-baseline mb-1">
-                         <span className="font-bold text-sm truncate text-text-main">{c.profile?.full_name}</span>
-                         <span className="text-[10px] text-text-muted font-mono">{new Date(c.lastMessage?.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                       </div>
-                       <div className={`text-xs truncate ${isUnread ? 'text-text-main font-bold' : 'text-text-sub'}`}>
-                         {c.lastMessage?.sender_id === user?.id && <span className="font-mono text-[10px] mr-1 opacity-70">Anda:</span>}
-                         {c.lastMessage?.content}
-                       </div>
-                     </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-baseline mb-1">
+                          <span className="font-bold text-sm truncate text-text-main">{c.profile?.full_name}</span>
+                          <span className="text-[10px] text-text-muted font-mono">{new Date(c.lastMessage?.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                        <div className={`text-xs truncate ${isUnread ? 'text-text-main font-bold' : 'text-text-sub'}`}>
+                          {c.lastMessage?.sender_id === user?.id && <span className="font-mono text-[10px] mr-1 opacity-70">{t("chat.you")}</span>}
+                          {c.lastMessage?.content}
+                        </div>
+                      </div>
                    </button>
                  );
               })}
@@ -345,8 +347,8 @@ export function Chat() {
               <div className="w-16 h-16 rounded-full bg-bg-2 border border-border flex items-center justify-center mx-auto mb-4 text-lime/50">
                  <Search size={28} />
               </div>
-              <h3 className="font-display text-lg font-bold text-text-main mb-1">Pilih Obrolan</h3>
-              <p className="text-sm text-text-sub">Silakan pilih kontak dari samping untuk mulai mengirim pesan.</p>
+              <h3 className="font-display text-lg font-bold text-text-main mb-1">{t("chat.select_chat")}</h3>
+              <p className="text-sm text-text-sub">{t("chat.select_chat_desc")}</p>
             </div>
           </div>
         ) : (
@@ -371,7 +373,7 @@ export function Chat() {
               </div>
               <div className="flex-1">
                 <div className="font-bold text-sm text-text-main">{activeProfile?.full_name}</div>
-                <div className="text-[10px] text-lime font-mono capitalize">{activeProfile?.role || 'User'}</div>
+                <div className="text-[10px] text-lime font-mono capitalize">{t('profile.role_' + (activeProfile?.role || 'student'))}</div>
               </div>
             </div>
 
@@ -429,7 +431,7 @@ export function Chat() {
                   type="text" 
                   value={newMessage}
                   onChange={e => setNewMessage(e.target.value)}
-                  placeholder="Ketik pesan..."
+                  placeholder={t("chat.type_message")}
                   className="flex-1 bg-bg-2 border border-border rounded-full px-4 py-3 text-[13.5px] outline-none focus:border-lime/50 transition-colors text-text-main placeholder:text-text-muted"
                 />
                 <button 
@@ -447,3 +449,4 @@ export function Chat() {
     </div>
   );
 }
+
