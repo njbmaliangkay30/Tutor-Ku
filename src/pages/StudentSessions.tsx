@@ -6,6 +6,13 @@ import { useAppContext } from '../AppContext';
 import { getAvatarColor } from '../data';
 import { useTranslation } from '../hooks/useTranslation';
 
+export const getExternalUrl = (url: string | null | undefined): string => {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return 'https://' + trimmed;
+};
+
 export const parseSessionNotes = (rawNotes: string | null | undefined) => {
   if (!rawNotes) return { meta: null, notes: "" };
   if (rawNotes.startsWith("[META:")) {
@@ -541,7 +548,7 @@ export function StudentSessions() {
                     session.meeting_type !== 'offline' ? (
                       session.meeting_link ? (
                         <a 
-                          href={session.meeting_link} 
+                          href={getExternalUrl(session.meeting_link)} 
                           target="_blank" 
                           rel="noopener noreferrer" 
                           onClick={(e) => e.stopPropagation()}
@@ -851,7 +858,7 @@ export function StudentSessions() {
                     <span className="block text-[10px] text-text-sub font-bold font-mono uppercase tracking-wider">{language === 'en' ? 'Link / Location Details:' : 'Detail Link / Lokasi:'}</span>
                     {selectedSession.meeting_type !== 'offline' ? (
                       selectedSession.meeting_link ? (
-                        <a href={selectedSession.meeting_link} target="_blank" rel="noopener noreferrer" className="w-full bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">
+                        <a href={getExternalUrl(selectedSession.meeting_link)} target="_blank" rel="noopener noreferrer" className="w-full bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">
                           <Video size={16} /> {t('sessions.open_meeting_link')}
                         </a>
                       ) : (
