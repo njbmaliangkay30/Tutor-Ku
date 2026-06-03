@@ -130,6 +130,8 @@ export function Profile() {
   }, [isEditing]);
 
   const handleLogout = async () => {
+    localStorage.removeItem('tour_main_done');
+    localStorage.removeItem('tour_booking_done');
     await supabase.auth.signOut();
     setUserRole("guest");
     setActiveTab("home");
