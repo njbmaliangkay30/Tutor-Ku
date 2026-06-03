@@ -3,9 +3,11 @@ import { useAppContext } from '../AppContext';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
+import { useTranslation } from '../hooks/useTranslation';
 
 export function StudentProgress() {
   const { userRole, userProfile, setActiveTab, user } = useAppContext();
+  const { t, language } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,13 +54,13 @@ export function StudentProgress() {
   if (userRole === 'guest' || !userProfile) {
     return (
       <div className="p-4 md:p-8 animate-pgIn max-w-4xl mx-auto w-full text-center mt-10">
-        <h1 className="text-2xl font-bold font-display text-text-main mb-4">Progress Belajar</h1>
-        <p className="text-sm text-text-sub mb-6">Silakan login untuk memantau perkembangan belajarmu.</p>
+        <h1 className="text-2xl font-bold font-display text-text-main mb-4">{t('progress.title')}</h1>
+        <p className="text-sm text-text-sub mb-6">{t('progress.login_prompt')}</p>
         <button 
           onClick={() => setActiveTab('login')} 
           className="bg-lime text-black font-bold py-3 px-8 rounded-lg hover:bg-lime-dim transition-colors"
         >
-          Login Sekarang
+          {t('progress.login_now')}
         </button>
       </div>
     );
@@ -93,13 +95,13 @@ export function StudentProgress() {
   if (sessions.length === 0) {
      return (
       <div className="p-4 md:p-8 animate-pgIn max-w-4xl mx-auto w-full text-center mt-10">
-        <h1 className="text-2xl font-bold font-display text-text-main mb-4">Progress Belajar</h1>
-        <p className="text-sm text-text-sub mb-6">Belum ada data progress. Mulai booking tutor dan selesaikan sesimu!</p>
+        <h1 className="text-2xl font-bold font-display text-text-main mb-4">{t('progress.title')}</h1>
+        <p className="text-sm text-text-sub mb-6">{t('progress.no_data')}</p>
         <button 
           onClick={() => setActiveTab('search')} 
           className="bg-lime text-black font-bold py-3 px-8 rounded-lg hover:bg-lime-dim transition-colors"
         >
-          Cari Tutor
+          {t('progress.find_tutor')}
         </button>
       </div>
      );
@@ -108,20 +110,20 @@ export function StudentProgress() {
   return (
     <div className="p-4 md:p-8 animate-pgIn max-w-4xl mx-auto w-full pb-24">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold font-display text-text-main">Progressku</h1>
-        <p className="text-sm text-text-sub">Pantau perkembangan belajarmu dari waktu ke waktu.</p>
+        <h1 className="text-2xl font-bold font-display text-text-main">{t('progress.my_title')}</h1>
+        <p className="text-sm text-text-sub">{t('progress.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
          <div className="bg-bg-2 border-[1.5px] border-border rounded-xl p-4 flex flex-col items-center justify-center text-center">
            <BookOpen size={24} className="text-lime mb-2" />
            <div className="text-2xl font-bold font-display mb-1">{completedSessions.length}</div>
-           <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider">Sesi Selesai</div>
+           <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider">{t('progress.sessions_done')}</div>
          </div>
          <div className="bg-bg-2 border-[1.5px] border-border rounded-xl p-4 flex flex-col items-center justify-center text-center">
            <Target size={24} className="text-lime mb-2" />
            <div className="text-2xl font-bold font-display mb-1">{uniqueSubjectsCount}</div>
-           <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider">Subjek Aktif</div>
+           <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider">{t('progress.active_subjects')}</div>
          </div>
          <div className="bg-bg-2 border-[1.5px] border-border rounded-xl p-4 flex flex-col items-center justify-center text-center relative overflow-hidden">
            <div className="absolute top-0 right-0 w-16 h-16 bg-[#00E5FF]/10 blur-xl rounded-full" />
@@ -133,19 +135,19 @@ export function StudentProgress() {
            <div className="absolute bottom-0 left-0 w-16 h-16 bg-[#FF3366]/10 blur-xl rounded-full" />
            <TrendingUp size={24} className="text-[#FF3366] mb-2" />
            <div className="text-2xl font-bold font-display mb-1">{totalHours.toFixed(1)}h</div>
-           <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider">Total Belajar</div>
+           <div className="text-[10px] text-text-sub font-mono uppercase tracking-wider">{t('progress.total_learning')}</div>
          </div>
       </div>
 
       <h2 className="text-lg font-bold font-display text-text-main mb-4 mt-8 flex items-center gap-2">
         <MessageSquare size={20} className="text-lime" />
-        Feedback Tutor Terbaru
+        {t('progress.latest_feedback')}
       </h2>
 
       <div className="flex flex-col gap-3 mb-8">
         {reports.length === 0 ? (
           <div className="text-center py-8 bg-bg-2 border border-border rounded-xl text-text-sub text-sm">
-            Belum ada feedback dari tutor. Selesaikan satu sesi untuk melihat laporan.
+            {t('progress.no_feedback')}
           </div>
         ) : (
           <>
@@ -157,8 +159,8 @@ export function StudentProgress() {
               >
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="font-bold text-sm text-text-main group-hover:text-lime transition-colors">{report.sessions?.subject}</h3>
-                    <p className="text-[10px] text-text-sub font-mono uppercase tracking-wider">{new Date(report.sessions?.session_date).toLocaleDateString()}</p>
+                    <h3 className="font-bold text-sm text-text-main group-hover:text-lime transition-colors">{t(`subjects.${report.sessions?.subject}`)}</h3>
+                    <p className="text-[10px] text-text-sub font-mono uppercase tracking-wider">{new Date(report.sessions?.session_date).toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID')}</p>
                   </div>
                   <div className="flex text-warning">
                     {[...Array(5)].map((_, i) => (
@@ -168,15 +170,15 @@ export function StudentProgress() {
                 </div>
                 <p className="text-[12px] text-text-sub line-clamp-2 italic mb-3">"{report.summary}"</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-lime font-display">Oleh {report.tutor_profiles?.profiles?.full_name}</span>
-                  <span className="text-[10px] font-mono text-text-sub bg-bg-3 px-2 py-0.5 rounded border border-border">Klik untuk Detail</span>
+                  <span className="text-[11px] font-bold text-lime font-display">{t('progress.by_tutor')} {report.tutor_profiles?.profiles?.full_name}</span>
+                  <span className="text-[10px] font-mono text-text-sub bg-bg-3 px-2 py-0.5 rounded border border-border">{t('progress.click_detail')}</span>
                 </div>
               </div>
             ))}
             {reports.length > 3 && (
               <details className="group">
                 <summary className="text-center py-2 text-xs font-bold text-text-sub cursor-pointer hover:text-lime transition-colors list-none font-mono uppercase tracking-widest">
-                   Lihat Semua Feedback ({reports.length})
+                   {t('progress.see_all_feedback')} ({reports.length})
                 </summary>
                 <div className="flex flex-col gap-3 mt-3 pt-3 border-t border-border/50">
                    {reports.slice(3).map((report) => (
@@ -187,8 +189,8 @@ export function StudentProgress() {
                       >
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h3 className="font-bold text-[13px] text-text-main group-hover:text-lime transition-colors">{report.sessions?.subject}</h3>
-                            <p className="text-[9px] text-text-sub font-mono tracking-wider">{new Date(report.sessions?.session_date).toLocaleDateString()}</p>
+                            <h3 className="font-bold text-[13px] text-text-main group-hover:text-lime transition-colors">{t(`subjects.${report.sessions?.subject}`)}</h3>
+                            <p className="text-[9px] text-text-sub font-mono tracking-wider">{new Date(report.sessions?.session_date).toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID')}</p>
                           </div>
                         </div>
                         <p className="text-[11px] text-text-sub truncate italic">"{report.summary}"</p>
@@ -201,7 +203,7 @@ export function StudentProgress() {
         )}
       </div>
 
-      <h2 className="text-lg font-bold font-display text-text-main mb-4">Mastery per Mata Pelajaran</h2>
+      <h2 className="text-lg font-bold font-display text-text-main mb-4">{t('progress.mastery_per_subject')}</h2>
 
       <div className="flex flex-col gap-4 mb-10">
          {Object.entries(subjectsMap).map(([subject, count], idx) => {
@@ -214,8 +216,8 @@ export function StudentProgress() {
              <div key={subject} className="bg-card border-[1.5px] border-border rounded-xl p-5">
                <div className="flex justify-between items-end mb-3">
                   <div>
-                     <h3 className="font-bold text-lg font-display">{subject}</h3>
-                     <p className="text-xs text-text-sub">{count} Sesi Selesai</p>
+                     <h3 className="font-bold text-lg font-display">{t(`subjects.${subject}`)}</h3>
+                     <p className="text-xs text-text-sub">{count} {t('progress.sessions_done_count')}</p>
                   </div>
                   <div className="text-lime font-bold text-lg font-display tracking-tight">{levelStr}</div>
                </div>
@@ -233,7 +235,7 @@ export function StudentProgress() {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-pgIn">
            <div className="bg-card w-full max-w-md rounded-2xl border-[2px] border-border shadow-sh2 animate-slideUp overflow-hidden">
               <div className="p-4 border-b border-border bg-bg-2 flex justify-between items-center">
-                 <h3 className="font-bold font-display">Laporan Sesi</h3>
+                 <h3 className="font-bold font-display">{t('progress.report_title')}</h3>
                  <button onClick={() => setSelectedReport(null)} className="text-text-sub hover:text-text-main">
                     <BookOpen size={20} />
                  </button>
@@ -244,26 +246,26 @@ export function StudentProgress() {
                        <ClipboardList size={24} />
                     </div>
                     <div>
-                       <div className="font-bold font-display text-lg">{selectedReport.sessions?.subject}</div>
-                       <div className="text-xs text-text-sub font-mono uppercase">{new Date(selectedReport.sessions?.session_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</div>
+                       <div className="font-bold font-display text-lg">{t(`subjects.${selectedReport.sessions?.subject}`)}</div>
+                       <div className="text-xs text-text-sub font-mono uppercase">{new Date(selectedReport.sessions?.session_date).toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</div>
                     </div>
                  </div>
 
                  <div className="space-y-6">
                     <div>
-                       <div className="text-[10px] text-text-sub font-mono uppercase tracking-widest mb-2 font-bold">Ringkasan Materi</div>
+                       <div className="text-[10px] text-text-sub font-mono uppercase tracking-widest mb-2 font-bold">{t('progress.material_summary')}</div>
                        <p className="text-sm text-text-main leading-relaxed bg-bg-2 p-4 rounded-xl border border-border/50">"{selectedReport.summary}"</p>
                     </div>
                     
                     {selectedReport.homework && (
                        <div>
-                          <div className="text-[10px] text-text-sub font-mono uppercase tracking-widest mb-2 font-bold">Tugas Mandiri (PR)</div>
+                          <div className="text-[10px] text-text-sub font-mono uppercase tracking-widest mb-2 font-bold">{t('progress.homework')}</div>
                           <p className="text-sm text-lime bg-lime/5 p-4 rounded-xl border border-lime/20 font-medium">📝 {selectedReport.homework}</p>
                        </div>
                     )}
 
                     <div className="flex justify-between items-center pt-4 border-t border-border/50">
-                       <div className="text-xs text-text-sub">Tingkat Pemahaman</div>
+                       <div className="text-xs text-text-sub">{t('progress.understanding')}</div>
                        <div className="flex gap-1 text-warning">
                           {[...Array(5)].map((_, i) => (
                              <Star key={i} size={14} fill={i < selectedReport.student_understanding_level ? "currentColor" : "none"} strokeOpacity={i < selectedReport.student_understanding_level ? 1 : 0.4} />
@@ -276,7 +278,7 @@ export function StudentProgress() {
                   onClick={() => setSelectedReport(null)}
                   className="w-full mt-8 bg-lime text-black font-bold py-3 rounded-xl hover:opacity-90 transition-opacity"
                  >
-                    Mengerti
+                    {t('progress.understand_btn')}
                  </button>
               </div>
            </div>
@@ -285,3 +287,4 @@ export function StudentProgress() {
     </div>
   );
 }
+
