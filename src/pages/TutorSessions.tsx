@@ -5,6 +5,36 @@ import { supabase } from '../lib/supabase';
 import { useAppContext } from '../AppContext';
 import { getAvatarColor } from '../data';
 
+export const getExternalUrl = (url: string | null | undefined): string => {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return 'https://' + trimmed;
+};
+
+export const isValidUrl = (str: string | null | undefined): boolean => {
+  if (!str) return false;
+  const trimmed = str.trim();
+  if (trimmed.includes(' ') || !trimmed.includes('.')) {
+    return false;
+  }
+  try {
+    let temp = trimmed;
+    if (!/^https?:\/\//i.test(trimmed)) {
+      temp = 'https://' + trimmed;
+    }
+    const u = new URL(temp);
+    const hostParts = u.hostname.split('.');
+    if (hostParts.length < 2) return false;
+    const tld = hostParts[hostParts.length - 1];
+    if (tld.length < 2) return false;
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch (_) {
+    return false;
+  }
+};
+
+
 export const parseSessionNotes = (rawNotes: string | null | undefined) => {
   if (!rawNotes) return { meta: null, notes: "" };
   if (rawNotes.startsWith("[META:")) {
@@ -537,10 +567,37 @@ export function TutorSessions() {
                             <div className="flex flex-col gap-0.5">
                               <span className="font-bold text-[11px] text-text-sub uppercase font-mono tracking-wider">🖥️ Link Kelas Online:</span>
                               {session.meeting_link ? (
-                                <div className="mt-0.5 font-sans">
-                                  <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/15 px-2 py-0.5 rounded border border-lime/30 text-[11px]">
+                                <div className="mt-0.5 font-sans flex items-center gap-2 flex-wrap">
+                                  <a href={getExternalUrl(session.meeting_link)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/15 px-2 py-0.5 rounded border border-lime/30 text-[11px]">
                                     🔗 {session.meeting_link} ↗
                                   </a>
+                                  <button
+                                    onClick={async () => {
+                                      const rawLink = prompt('Edit Link Meeting (Zoom/GMeet):', session.meeting_link);
+                                      if (rawLink === null) return;
+                                      const cleanLink = rawLink.trim();
+                                      if (!cleanLink) {
+                                        alert('Link meeting tidak boleh kosong.');
+                                        return;
+                                      }
+                                      if (!isValidUrl(cleanLink)) {
+                                        alert('Format URL tidak valid. Harap masukkan URL yang benar (contoh: meet.google.com/abc-defg-hij atau https://zoom.us/...)');
+                                        return;
+                                      }
+                                      const link = /^https?:\/\//i.test(cleanLink) ? cleanLink : 'https://' + cleanLink;
+                                      try {
+                                        await supabase.from('sessions').update({ meeting_link: link }).eq('id', session.id);
+                                        fetchSessions();
+                                      } catch (err) {
+                                        console.error('Error updating meeting link:', err);
+                                        fetchSessions();
+                                      }
+                                    }}
+                                    className="text-text-sub hover:text-lime p-1 rounded hover:bg-border/30 transition-colors inline-flex items-center justify-center"
+                                    title="Edit Link Meeting"
+                                  >
+                                    <Edit3 size={12} />
+                                  </button>
                                 </div>
                               ) : (
                                 <p className="text-text-sub italic text-[11px]">Link meeting belum dimasukkan. Silakan ketuk tombol tambah di bawah.</p>
@@ -577,22 +634,35 @@ export function TutorSessions() {
                           })()
                         ) : (
                           session.meeting_link ? (
-                            <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">
+                            <a href={getExternalUrl(session.meeting_link)} target="_blank" rel="noopener noreferrer" className="flex-1 bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">
                               <Video size={16} /> Buka Link Meeting
                             </a>
                           ) : (
                             <button onClick={async () => {
-                              const link = prompt('Masukkan Link Meeting (Zoom/GMeet):');
-                              if (link) {
-                                try {
-                                  await supabase.from('sessions').update({ meeting_link: link }).eq('id', session.id);
-                                  // Notify Student
-                                  await supabase.from('notifications').insert({
-                                    user_id: session.student_id,
-                                    title: "Link Kelas Sudah Siap!",
-                                    message: `Tutor ${userProfile?.full_name || 'kamu'} telah menyertakan link meeting untuk kelas ${session.subject} pada ${new Date(session.session_date).toLocaleDateString('id-ID')}.`,
-                                    link: session.id ? `student_sessions:${session.id}` : "student_sessions"
-                                  });
+                              const rawLink = prompt('Masukkan Link Meeting (Zoom/GMeet):');
+                              if (rawLink === null) return;
+                              const cleanLink = rawLink.trim();
+                              if (!cleanLink) {
+                                alert('Link meeting tidak boleh kosong.');
+                                return;
+                              }
+                              
+                              if (!isValidUrl(cleanLink)) {
+                                alert('Format URL tidak valid. Harap masukkan URL yang benar (contoh: meet.google.com/abc-defg-hij atau https://zoom.us/...)');
+                                return;
+                              }
+                              
+                              const link = /^https?:\/\//i.test(cleanLink) ? cleanLink : 'https://' + cleanLink;
+                              
+                              try {
+                                await supabase.from('sessions').update({ meeting_link: link }).eq('id', session.id);
+                                // Notify Student
+                                await supabase.from('notifications').insert({
+                                  user_id: session.student_id,
+                                  title: "Link Kelas Sudah Siap!",
+                                  message: `Tutor ${userProfile?.full_name || 'kamu'} telah menyertakan link meeting untuk kelas ${session.subject} pada ${new Date(session.session_date).toLocaleDateString('id-ID')}.`,
+                                  link: session.id ? `student_sessions:${session.id}` : "student_sessions"
+                                });
                                   fetchSessions();
                                 } catch (err) {
                                   console.error('Error adding meeting link and notification:', err);
