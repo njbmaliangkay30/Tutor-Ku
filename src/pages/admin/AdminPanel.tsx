@@ -5,6 +5,13 @@ import { supabase } from "../../lib/supabase";
 import { PlatformPaymentSettings } from "../../components/PlatformPaymentSettings";
 import { useTranslation } from "../../hooks/useTranslation";
 
+export const getExternalUrl = (url: string | null | undefined): string => {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return 'https://' + trimmed;
+};
+
 export const parseLocationField = (locationStr: string | null | undefined) => {
   if (!locationStr) return { text: "", url: "" };
 
@@ -1016,7 +1023,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                            <span className="font-bold text-[10px] text-text-sub uppercase font-mono tracking-wider block mb-1">🖥️ Link Sesi Online (GMeet/Zoom):</span>
                            {session.meeting_link ? (
                               <div className="mt-1">
-                                 <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/10 px-2.5 py-1 rounded border border-lime/25 font-sans text-xs">
+                                 <a href={getExternalUrl(session.meeting_link)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-lime font-bold hover:underline underline-offset-2 break-all bg-lime/10 px-2.5 py-1 rounded border border-lime/25 font-sans text-xs">
                                     🔗 Buka Link Kelas ↗
                                  </a>
                                  <p className="text-[10px] text-text-sub mt-1 break-all font-mono select-all">{session.meeting_link}</p>
@@ -1528,7 +1535,7 @@ export function AdminPanel({ activeSubTab }: { activeSubTab: "tutors" | "student
                                     <div className="col-span-2 font-semibold text-text-sub uppercase tracking-wider text-[10px] pt-1.5 border-t border-border/30 mt-1">🖥️ Link Sesi Online Class:</div>
                                     <div className="col-span-2 text-text-main leading-snug font-sans mt-0.5 break-all normal-case font-medium">
                                       {session.meeting_link ? (
-                                        <a href={session.meeting_link} target="_blank" rel="noopener noreferrer" className="text-lime font-bold hover:underline underline-offset-2 break-all inline-block bg-lime/10 px-2 py-0.5 rounded border border-lime/15 text-[11px]">
+                                        <a href={getExternalUrl(session.meeting_link)} target="_blank" rel="noopener noreferrer" className="text-lime font-bold hover:underline underline-offset-2 break-all inline-block bg-lime/10 px-2 py-0.5 rounded border border-lime/15 text-[11px]">
                                           {session.meeting_link} ↗
                                         </a>
                                       ) : (
