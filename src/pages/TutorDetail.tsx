@@ -282,7 +282,7 @@ export function TutorDetail() {
             user_id: user.id,
             title: "Sesi Berhasil Diajukan!",
             message: `Jadwal sesi tambahan menggunakan paket langganan telah berhasil diajukan untuk subjek ${subjectName}. Menunggu konfirmasi dari tutor.`,
-            link: "student_sessions"
+            link: generatedSessionId ? `student_sessions:${generatedSessionId}` : "student_sessions"
           }
         ]);
 
@@ -343,7 +343,7 @@ export function TutorDetail() {
               user_id: user.id,
               title: "Pesanan Sesi Berhasil!",
               message: `Kamu telah berhasil memesan 1 sesi untuk subjek ${subjectName}. Silakan segera melakukan pembayaran di halaman tagihan agar jadwal dapat dikonfirmasi tutor.`,
-              link: "student_transactions"
+              link: generatedSessionId ? `student_sessions:${generatedSessionId}` : "student_sessions"
             }
           ]);
 
@@ -437,7 +437,7 @@ export function TutorDetail() {
               user_id: user.id,
               title: "Pesanan Paket Berhasil!",
               message: `Kamu telah memesan ${pkgInfo.name} untuk subjek ${subjectName}. Silakan segera melakukan pembayaran di halaman tagihan agar jadwal dapat dikonfirmasi tutor.`,
-              link: "student_transactions"
+              link: generatedSessionId ? `student_sessions:${generatedSessionId}` : "student_sessions"
             }
           ]);
         }
