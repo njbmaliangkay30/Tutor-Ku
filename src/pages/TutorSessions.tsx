@@ -172,7 +172,7 @@ export function TutorSessions() {
         message: newStatus === 'confirmed' 
           ? "Tutor telah menyetujui jadwal sesi kamu. Silakan selesaikan pembayaran di tab Tagihan agar link kelas dapat diakses!"
           : "Maaf, tutor tidak dapat memenuhi permintaan sesi kamu pada waktu tersebut.",
-        link: "student_sessions"
+        link: sessionId ? `student_sessions:${sessionId}` : "student_sessions"
       });
       
       fetchSessions();
@@ -591,7 +591,7 @@ export function TutorSessions() {
                                     user_id: session.student_id,
                                     title: "Link Kelas Sudah Siap!",
                                     message: `Tutor ${userProfile?.full_name || 'kamu'} telah menyertakan link meeting untuk kelas ${session.subject} pada ${new Date(session.session_date).toLocaleDateString('id-ID')}.`,
-                                    link: "student_sessions"
+                                    link: session.id ? `student_sessions:${session.id}` : "student_sessions"
                                   });
                                   fetchSessions();
                                 } catch (err) {
