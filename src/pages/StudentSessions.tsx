@@ -478,7 +478,7 @@ export function StudentSessions() {
                       })()}
                     </div>
                   </div>
-                  <div className={`text-[10px] font-bold px-2.5 py-1.5 rounded font-mono uppercase tracking-wider ${statusColor}`}>
+                  <div className={`text-[10px] font-bold px-2.5 py-1.5 rounded font-mono uppercase tracking-wider flex-shrink-0 whitespace-nowrap ${statusColor}`}>
                     {statusText}
                   </div>
                 </div>
@@ -629,39 +629,55 @@ export function StudentSessions() {
         
         if (selectedSession.status === 'pending') {
           statusTitle = t('sessions.status_pending');
-          statusDesc = "Tutor sedang meninjau permintaan jadwal sesi belajar Anda. Pembayaran akan dibuka setelah tutor menyetujui jadwal ini.";
+          statusDesc = language === 'en'
+            ? "The tutor is currently reviewing your session schedule request. Payment will be enabled once the tutor approves."
+            : "Tutor sedang meninjau permintaan jadwal sesi belajar Anda. Pembayaran akan dibuka setelah tutor menyetujui jadwal ini.";
           statusBadgeColor = "bg-warning/20 text-warning border border-warning/30";
         } else if (isAwaitingPayment) {
-          statusTitle = "Menunggu Pembayaran";
-          statusDesc = "Jadwal sesi telah disetujui oleh tutor. Silakan selesaikan pembayaran tagihan di bawah ini agar link kelas/lokasi dapat diakses.";
+          statusTitle = language === 'en' ? "Awaiting Payment" : "Menunggu Pembayaran";
+          statusDesc = language === 'en'
+            ? "The session schedule has been approved by the tutor. Please complete the payment below to unlock the class link or location."
+            : "Jadwal sesi telah disetujui oleh tutor. Silakan selesaikan pembayaran tagihan di bawah ini agar link kelas/lokasi dapat diakses.";
           statusBadgeColor = "bg-yellow-500/15 text-yellow-500 border border-yellow-500/30";
         } else if (isPendingVerification) {
-          statusTitle = "Menunggu Verifikasi Pembayaran";
-          statusDesc = "Bukti pembayaran Anda sudah diterima dan sedang dalam proses verifikasi oleh admin. Mohon tunggu maksimal 24 jam.";
+          statusTitle = t('sessions.status_label_pending_verification');
+          statusDesc = t('sessions.in_verification_desc');
           statusBadgeColor = "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30";
         } else if (isPaymentFailed) {
-          statusTitle = "Pembayaran Ditolak";
-          statusDesc = `Pembayaran Anda ditolak oleh admin dengan alasan: "${trx?.rejection_reason || 'Bukti transfer tidak valid'}". Silakan unggah ulang bukti transfer yang valid.`;
+          statusTitle = language === 'en' ? "Payment Rejected" : "Pembayaran Ditolak";
+          statusDesc = language === 'en'
+            ? `Your payment was rejected by the admin for the following reason: "${trx?.rejection_reason || 'Invalid transfer proof'}". Please upload a valid transfer proof.`
+            : `Pembayaran Anda ditolak oleh admin dengan alasan: "${trx?.rejection_reason || 'Bukti transfer tidak valid'}". Silakan unggah ulang bukti transfer yang valid.`;
           statusBadgeColor = "bg-red-500/15 text-red-400 border border-red-500/30";
         } else if (selectedSession.status === 'confirmed' && isPaid) {
-          statusTitle = "Terkonfirmasi & Lunas";
-          statusDesc = "Jadwal sesi belajar Anda telah terkonfirmasi dan lunas. Selamat belajar!";
+          statusTitle = language === 'en' ? "Confirmed & Paid" : "Terkonfirmasi & Lunas";
+          statusDesc = language === 'en'
+            ? "Your session schedule has been confirmed and paid. Happy learning!"
+            : "Jadwal sesi belajar Anda telah terkonfirmasi dan lunas. Selamat belajar!";
           statusBadgeColor = "bg-lime/20 text-lime border border-lime/30";
         } else if (selectedSession.status === 'waiting_for_student') {
-          statusTitle = "Menunggu Konfirmasi Selesai";
-          statusDesc = "Sesi belajar telah selesai dilaksanakan. Silakan tandai selesai dan berikan ulasan Anda.";
+          statusTitle = t('sessions.status_waiting');
+          statusDesc = language === 'en'
+            ? "The learning session is completed. Please mark it complete and write your review."
+            : "Sesi belajar telah selesai dilaksanakan. Silakan tandai selesai dan berikan ulasan Anda.";
           statusBadgeColor = "bg-warning/20 text-warning border border-warning/30";
         } else if (selectedSession.status === 'completed') {
-          statusTitle = "Selesai";
-          statusDesc = "Sesi belajar ini telah selesai dilaksanakan. Terima kasih!";
+          statusTitle = t('sessions.status_completed');
+          statusDesc = language === 'en'
+            ? "This learning session has been completed. Thank you!"
+            : "Sesi belajar ini telah selesai dilaksanakan. Terima kasih!";
           statusBadgeColor = "bg-bg-3 border border-border text-text-sub";
         } else if (selectedSession.status === 'rejected') {
-          statusTitle = "Ditolak oleh Tutor";
-          statusDesc = "Maaf, permintaan sesi belajar Anda ditolak oleh tutor karena berhalangan.";
+          statusTitle = t('sessions.status_rejected');
+          statusDesc = language === 'en'
+            ? "Sorry, your session request has been rejected by the tutor."
+            : "Maaf, permintaan sesi belajar Anda ditolak oleh tutor karena berhalangan.";
           statusBadgeColor = "bg-red-500/15 text-red-400 border border-red-500/30";
         } else if (selectedSession.status === 'cancelled') {
-          statusTitle = "Dibatalkan";
-          statusDesc = "Sesi belajar ini telah dibatalkan.";
+          statusTitle = t('sessions.status_cancelled');
+          statusDesc = language === 'en'
+            ? "This learning session has been cancelled."
+            : "Sesi belajar ini telah dibatalkan.";
           statusBadgeColor = "bg-red-500/15 text-red-500 border border-red-500/30";
         }
 
@@ -671,7 +687,7 @@ export function StudentSessions() {
               
               <div className="flex justify-between items-center p-4 border-b-[1.5px] border-border bg-bg-2">
                 <div className="font-display font-bold text-[16px]">
-                  Detail Sesi Belajar
+                  {language === 'en' ? 'Session Details' : 'Detail Sesi Belajar'}
                 </div>
                 <button
                   onClick={() => setSelectedSession(null)}
@@ -691,8 +707,8 @@ export function StudentSessions() {
                     <div className="font-bold text-text-main font-display">{selectedSession.tutor_profiles?.profiles?.full_name || 'Tutor'}</div>
                     <div className="text-xs text-text-sub font-mono">{t(`subjects.${selectedSession.subject}`)}</div>
                   </div>
-                  <div className="ml-auto">
-                    <span className={`text-[10px] font-bold px-2 py-1 rounded font-mono uppercase tracking-wider ${statusBadgeColor}`}>
+                  <div className="ml-auto flex-shrink-0">
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded font-mono uppercase tracking-wider whitespace-nowrap ${statusBadgeColor}`}>
                       {statusTitle}
                     </span>
                   </div>
@@ -711,7 +727,7 @@ export function StudentSessions() {
                     const parsed = parseSessionNotes(selectedSession.material_notes);
                     return (
                       <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50">
-                        <span className="text-[10px] text-text-sub font-bold font-mono uppercase tracking-wider">Catatan Tambahan:</span>
+                        <span className="text-[10px] text-text-sub font-bold font-mono uppercase tracking-wider">{t('sessions.extra_notes_label')}</span>
                         <p className="text-sm italic">
                           {parsed.notes ? `"${parsed.notes}"` : t('sessions.notes_default')}
                         </p>
@@ -832,15 +848,15 @@ export function StudentSessions() {
 
                 {selectedSession.status === 'confirmed' && isPaid && (
                   <div className="border-t border-border/60 pt-4 space-y-3">
-                    <span className="block text-[10px] text-text-sub font-bold font-mono uppercase tracking-wider">Detail Link / Lokasi:</span>
+                    <span className="block text-[10px] text-text-sub font-bold font-mono uppercase tracking-wider">{language === 'en' ? 'Link / Location Details:' : 'Detail Link / Lokasi:'}</span>
                     {selectedSession.meeting_type !== 'offline' ? (
                       selectedSession.meeting_link ? (
                         <a href={selectedSession.meeting_link} target="_blank" rel="noopener noreferrer" className="w-full bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2">
-                          <Video size={16} /> Buka Link Meeting (Zoom/GMeet)
+                          <Video size={16} /> {t('sessions.open_meeting_link')}
                         </a>
                       ) : (
                         <div className="bg-bg-2 border border-dashed border-border text-center text-text-sub font-mono font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2">
-                          Link meeting belum dimasukkan oleh tutor.
+                          {t('sessions.link_not_added')}
                         </div>
                       )
                     ) : (
@@ -851,7 +867,7 @@ export function StudentSessions() {
                             <div className="flex flex-wrap items-center justify-between gap-2">
                               <div className="flex items-start gap-1 flex-1 min-w-[150px]">
                                 <MapPin size={14} className="text-text-sub mt-0.5 flex-shrink-0" />
-                                <span className="text-text-main font-medium">{parsedLoc.text || 'Belum ada detail lokasi'}</span>
+                                <span className="text-text-main font-medium">{parsedLoc.text || t('sessions.no_location')}</span>
                               </div>
                               {parsedLoc.url && (
                                 <a
@@ -860,7 +876,7 @@ export function StudentSessions() {
                                   rel="noopener noreferrer"
                                   className="inline-flex items-center gap-1 bg-lime text-black font-extrabold px-2 py-1 rounded-md text-[10px] hover:bg-lime-dim transition-all"
                                 >
-                                  Buka Maps ↗
+                                  {t('sessions.open_maps')}
                                 </a>
                               )}
                             </div>
@@ -880,7 +896,7 @@ export function StudentSessions() {
                       }}
                       className="w-full border-[1.5px] border-lime bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:bg-lime-dim transition-colors flex items-center justify-center gap-2"
                     >
-                      <Star size={16} /> Tandai Sesi Selesai & Beri Ulasan
+                      <Star size={16} /> {t('sessions.mark_complete')}
                     </button>
                   </div>
                 )}
@@ -894,7 +910,7 @@ export function StudentSessions() {
                       }}
                       className="w-full border-[1.5px] border-lime text-lime font-bold py-2.5 rounded-lg text-sm hover:bg-lime-mid transition-colors flex items-center justify-center gap-2 bg-transparent"
                     >
-                      <Star size={16} /> Beri Ulasan Sekarang
+                      <Star size={16} /> {t('sessions.give_review')}
                     </button>
                   </div>
                 )}
@@ -906,7 +922,7 @@ export function StudentSessions() {
                   onClick={() => setSelectedSession(null)}
                   className="w-full bg-lime text-black font-bold py-2.5 rounded-lg text-sm hover:opacity-90 transition-colors"
                 >
-                  Tutup
+                  {t('common.close')}
                 </button>
               </div>
 
